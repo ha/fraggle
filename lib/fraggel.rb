@@ -40,6 +40,8 @@ class Fraggel < EM::Connection
             @buf   = ''
             result, @parts = @parts, []
             return result
+          else
+            return self.next('')
           end
         end
       end
