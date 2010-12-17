@@ -5,7 +5,7 @@ require 'fraggel'
 class FraggelParserTest < Test::Unit::TestCase
   def test_parse_integer
     result = nil
-    parser = Fraggel::Parser.new do |item|
+    parser = Fraggel::Parser.new do |item, err|
       result = item
     end
 
@@ -16,7 +16,7 @@ class FraggelParserTest < Test::Unit::TestCase
 
   def test_parse_integer_partial
     result = nil
-    parser = Fraggel::Parser.new do |item|
+    parser = Fraggel::Parser.new do |item, err|
       result = item
     end
 
@@ -29,22 +29,18 @@ class FraggelParserTest < Test::Unit::TestCase
   end
 
   def test_parse_string_invalid_format
-    result = nil
-    parser = Fraggel::Parser.new do |item|
-      result = item
+    parser = Fraggel::Parser.new do |item, err|
+      assert false
     end
 
-    "$3\r\nfooAA".each_char do |x|
-      assert_nil(result)
-      parser.receive_data(x)
+    assert_raise(StandardError) do
+      parser.receive_data("$3\r\nfooAA")
     end
-
-    assert_equal(:invalid_format, result)
   end
 
   def test_parse_string
     result = nil
-    parser = Fraggel::Parser.new do |item|
+    parser = Fraggel::Parser.new do |item, err|
       result = item
     end
 
@@ -57,22 +53,18 @@ class FraggelParserTest < Test::Unit::TestCase
   end
 
   def test_parse_with_garbage_command_token
-    result = nil
-    parser = Fraggel::Parser.new do |item|
-      result = item
+    parser = Fraggel::Parser.new do |item, err|
+      assert false
     end
 
-    "(".each_char do |x|
-      assert_nil(result)
-      parser.receive_data(x)
+    assert_raise(StandardError) do
+      parser.receive_data("(")
     end
-
-    assert_equal(:fatal_error, result)
   end
 
   def test_parse_array
     result = nil
-    parser = Fraggel::Parser.new do |item|
+    parser = Fraggel::Parser.new do |item, err|
       result = item
     end
 
@@ -83,7 +75,7 @@ class FraggelParserTest < Test::Unit::TestCase
 
   def test_parse_nested_array
     result = nil
-    parser = Fraggel::Parser.new do |item|
+    parser = Fraggel::Parser.new do |item, err|
       result = item
     end
 

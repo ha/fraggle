@@ -10,15 +10,13 @@ class Fraggel
   end
 
 
-  class Parser < EM::Connection
-    def initialize
+  class Parser
+    def initialize(&blk)
       @buf = ''
       @pending_read = nil
       @pending_readline = nil
       @stream_error = false
-      main do |value, err|
-        receive_value(value, err)
-      end
+      main(&blk)
     end
 
     def main(&blk)
@@ -109,10 +107,17 @@ class Fraggel
     end
   end
 
-  class Connection < Parser
+  class Connection < EM::Connection
     def post_init
       @opid = 0
       @cbs  = Hash.new { Proc.new {} }
+      @parser = Parser.new do |value, err|
+        receive_value(value, err)
+      end
+    end
+
+    def receive_data(data)
+      @parser.receive_data(data)
     end
 
     def receive_value(response, err)
