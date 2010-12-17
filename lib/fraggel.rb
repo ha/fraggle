@@ -1,21 +1,21 @@
 require 'eventmachine'
 
 class Fraggel < EM::Connection
-  
-  
-  class Parser    
+
+
+  class Parser
     def initialize
       @buf = ''
       @pending_read = nil
       @pending_readline = nil
       @stream_error = false
     end
-    
+
     def receive_data(data)
       raise Exception.new('stream error') if @stream_error
-      
+
       @buf << data
-      
+
       if not @pending_read.nil? and @buf.length >= @pending_read[:num]
         pr = @pending_read
         @pending_read = nil
@@ -26,7 +26,7 @@ class Fraggel < EM::Connection
         fr_readline(&prl)
       end
     end
-    
+
     def fr_read(n, &blk)
       if @buf.length < n
         @pending_read = {:num => n, :block => blk}
@@ -34,7 +34,7 @@ class Fraggel < EM::Connection
         blk.call(@buf.slice!(0, n))
       end
     end
-    
+
     def fr_readline(&blk)
       line = @buf.slice!(/.+\r\n/)
       if line.nil?
@@ -43,7 +43,7 @@ class Fraggel < EM::Connection
         blk.call(line)
       end
     end
-    
+
     def read_array_items(arrayLength, &blk)
       f = lambda { |items|
         parse do |item|
@@ -56,7 +56,7 @@ class Fraggel < EM::Connection
       }
       f.call([])
     end
-    
+
     def parse(&blk)
       fr_read(1) do |c|
         if c == ':'
@@ -100,10 +100,10 @@ class Fraggel < EM::Connection
       @size  = nil  # TODO: find a better default
       @buf   = ''
       @parts = []
-      
+
       @nested_array = false
     end
-    
+
     def buf
       @buf
     end
@@ -114,36 +114,30 @@ class Fraggel < EM::Connection
       when :line
         while line = @buf.slice!(/.+\r\n/)
           (line ||= "").chomp!
-          
-          puts "next, line: #{line.inspect}, buf: #{buf.inspect}"
-          
+
           case line[0]
           when ?*
             old_count = @count
             @count = Integer(line[1..-1])
-            
+
             if @nested_array
               nested_buf = "*#{@count}\r\n#{@buf}"
-              
+
               nested_scanner = Scanner.new
               nested_result = nested_scanner.next(nested_buf)
-              puts "result: #{nested_result.inspect}"
-              puts "remaining bytes: #{nested_scanner.buf.inspect}"
-              
+
               @parts << nested_result
-              
+
               @buf = nested_scanner.buf
               @cs = :line
-              
+
               @count = old_count
-              
+
               return self.next('')
-              
-              puts "recursion?: #{nested_buf.inspect}, result: #{Scanner.new.next(nested_buf).inspect}"
             else
               @nested_array = true
             end
-            
+
           when ?$
             @size = Integer(line[1..-1])
             @cs = :raw
@@ -155,10 +149,8 @@ class Fraggel < EM::Connection
           @parts << @buf.slice!(0, @size)
           @buf.slice!(0,2) # remove the tailing \r\n
           @cs = :line
-          
-          puts "#{@parts.inspect}, parts size: #{@parts.size}, count: #{@count}"
+
           if @parts.size == @count
-            
             # may need to reset this explicitly
             #@buf   = ''
             result, @parts = @parts, []
