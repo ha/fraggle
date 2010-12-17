@@ -1,25 +1,35 @@
 require 'eventmachine'
 
-class Fraggel < EM::Connection
+class Fraggel
 
-  class Parser
+  Closed = 1
+  Last   = 2
+
+  def self.connect(host, port)
+    EM.connect(host, port, Connection)
+  end
+
+
+  class Parser < EM::Connection
     def initialize(&blk)
       @buf = ''
       @pending_read = nil
       @pending_readline = nil
       @stream_error = false
-      main(&blk)
+      main do |value, err|
+        receive_value(value, err)
+      end
     end
 
     def main(&blk)
-      parse do |x|
-        blk.call(x)
+      parse do |x, err|
+        blk.call(x, err)
         main(&blk)
       end
     end
 
     def receive_data(data)
-      raise Exception.new('stream error') if @stream_error
+      raise if @stream_error
 
       @buf << data
 
@@ -52,121 +62,92 @@ class Fraggel < EM::Connection
     end
 
     def read_array_items(arrayLength, &blk)
-      f = lambda { |items|
-        parse do |item|
+      f = lambda { |items, err|
+        parse do |item, err|
           if items.length < (arrayLength - 1)
-            f.call(items << item)
+            f.call(items << item, err)
           else
-            blk.call(items << item)
+            blk.call(items << item, err)
           end
         end
       }
-      f.call([])
+      f.call([], nil)
     end
 
     def parse(&blk)
       fr_read(1) do |c|
         if c == ':'
           fr_readline do |line|
-            blk.call(line.to_i)
+            blk.call(line.to_i, nil)
           end
         elsif c == '$'
           fr_readline do |dataLength|
             fr_read(dataLength.to_i + 2) do |data|
               if data[dataLength.to_i, 2] != "\r\n"
-                @stream_error = true
-                blk.call(:invalid_format)
+                raise StandardError, 'stream error'
               else
-                blk.call(data[0, dataLength.to_i])
+                blk.call(data[0, dataLength.to_i], nil)
               end
             end
           end
         elsif c == '*'
           fr_readline do |arrayLength|
-            read_array_items(arrayLength.to_i) do |items|
-              blk.call(items)
-            end
+            read_array_items(arrayLength.to_i, &blk)
+          end
+        elsif c == '+'
+          fr_readline do |line|
+            blk.call(line, nil)
+          end
+        elsif c == '-'
+          fr_readline do |line|
+            blk.call(nil, line)
           end
         else
-          @stream_error = true
-          blk.call(:fatal_error)
+          raise StandardError, 'stream error'
         end
       end
     end
   end
 
-  class Scanner
-    unless defined?(Empty)
-      Delim = "\r\n"
-      Empty = ""
+  class Connection < Parser
+    def post_init
+      @opid = 0
+      @cbs  = Hash.new { Proc.new {} }
     end
 
-    def initialize
-      @cs    = :line
-      @count = 1
-      @size  = nil  # TODO: find a better default
-      @buf   = ''
-      @parts = []
-
-      @nested_array = false
-    end
-
-    def buf
-      @buf
-    end
-
-    def next(bytes)
-      @buf << bytes
-      case @cs
-      when :line
-        while line = @buf.slice!(/.+\r\n/)
-          (line ||= "").chomp!
-
-          case line[0]
-          when ?*
-            old_count = @count
-            @count = Integer(line[1..-1])
-
-            if @nested_array
-              nested_buf = "*#{@count}\r\n#{@buf}"
-
-              nested_scanner = Scanner.new
-              nested_result = nested_scanner.next(nested_buf)
-
-              @parts << nested_result
-
-              @buf = nested_scanner.buf
-              @cs = :line
-
-              @count = old_count
-
-              return self.next('')
-            else
-              @nested_array = true
-            end
-
-          when ?$
-            @size = Integer(line[1..-1])
-            @cs = :raw
-            return self.next('')
-          end
-        end
-      when :raw
-        if @buf.size >= @size
-          @parts << @buf.slice!(0, @size)
-          @buf.slice!(0,2) # remove the tailing \r\n
-          @cs = :line
-
-          if @parts.size == @count
-            # may need to reset this explicitly
-            #@buf   = ''
-            result, @parts = @parts, []
-            return result
-          else
-            return self.next('')
-          end
-        end
+    def receive_value(response, err)
+      opid, flags, data = response
+      p [:response, opid, flags, data, err]
+      if flags&Closed == 0
+        @cbs[opid].call(data, err)
+      end
+      if flags&(Last|Closed) != 0
+        @cbs.delete(opid)
       end
     end
+
+    def call(verb, args, &blk)
+      @opid += 1
+      @cbs[@opid] = blk
+      send_data(encode([verb, @opid, args]))
+      @opid
+    end
+
+    def encode(arg)
+      case arg
+      when Array
+        "*%d\r\n%s" % [
+          arg.length,
+          arg.map {|x| encode(x) }
+        ]
+      when Integer
+        ":#{arg}\r\n"
+      else
+        str = arg.to_str
+        "$%d\r\n%s\r\n" % [str.length, str]
+      end
+    end
+
   end
+
 end
