@@ -4,22 +4,19 @@ require 'fraggel'
 
 class FraggelParserTest < Test::Unit::TestCase
   def test_parse_integer
-    parser = Fraggel::Parser.new
     result = nil
-
-    parser.parse do |item|
+    parser = Fraggel::Parser.new do |item|
       result = item
     end
+
     parser.receive_data(":5555\r\n")
 
     assert_equal(5555, result)
   end
 
   def test_parse_integer_partial
-    parser = Fraggel::Parser.new
     result = nil
-
-    parser.parse do |item|
+    parser = Fraggel::Parser.new do |item|
       result = item
     end
 
@@ -32,10 +29,8 @@ class FraggelParserTest < Test::Unit::TestCase
   end
 
   def test_parse_string_invalid_format
-    parser = Fraggel::Parser.new
     result = nil
-
-    parser.parse do |item|
+    parser = Fraggel::Parser.new do |item|
       result = item
     end
 
@@ -48,10 +43,8 @@ class FraggelParserTest < Test::Unit::TestCase
   end
 
   def test_parse_string
-    parser = Fraggel::Parser.new
     result = nil
-
-    parser.parse do |item|
+    parser = Fraggel::Parser.new do |item|
       result = item
     end
 
@@ -64,10 +57,8 @@ class FraggelParserTest < Test::Unit::TestCase
   end
 
   def test_parse_with_garbage_command_token
-    parser = Fraggel::Parser.new
     result = nil
-
-    parser.parse do |item|
+    parser = Fraggel::Parser.new do |item|
       result = item
     end
 
@@ -80,10 +71,8 @@ class FraggelParserTest < Test::Unit::TestCase
   end
 
   def test_parse_array
-    parser = Fraggel::Parser.new
     result = nil
-
-    parser.parse do |item|
+    parser = Fraggel::Parser.new do |item|
       result = item
     end
 
@@ -93,10 +82,8 @@ class FraggelParserTest < Test::Unit::TestCase
   end
 
   def test_parse_nested_array
-    parser = Fraggel::Parser.new
     result = nil
-
-    parser.parse do |item|
+    parser = Fraggel::Parser.new do |item|
       result = item
     end
 

@@ -2,13 +2,20 @@ require 'eventmachine'
 
 class Fraggel < EM::Connection
 
-
   class Parser
-    def initialize
+    def initialize(&blk)
       @buf = ''
       @pending_read = nil
       @pending_readline = nil
       @stream_error = false
+      main(&blk)
+    end
+
+    def main(&blk)
+      parse do |x|
+        blk.call(x)
+        main(&blk)
+      end
     end
 
     def receive_data(data)
