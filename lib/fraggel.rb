@@ -1,150 +1,128 @@
-require 'eventmachine'
+module Fraggel
 
-class Fraggel
+  module Parser
 
-  Closed = 1
-  Last   = 2
+    class Poisioned < StandardError ; end
 
-  def self.connect(host, port)
-    EM.connect(host, port, Connection)
-  end
-
-
-  class Parser
-    def initialize(&blk)
-      @buf = ''
-      @reader = nil
-      @stream_error = false
-      main(&blk)
-    end
-
-    def main(&blk)
-      parse do |x, err|
-        blk.call(x, err)
-        main(&blk)
-      end
-    end
+    def emit(msg, v) ; end
 
     def receive_data(data)
-      raise if @stream_error
+      @buf ||= ""
       @buf << data
-      check
-    end
 
-    def fr_read(n, &blk)
-      @reader = {:block => blk, :num => n}
-      check
-    end
-
-    def fr_readline(&blk)
-      @reader = {:block => blk, :line => true}
-      check
-    end
-
-    def check
-      r = @reader
-      return if r.nil?
-
-      if r[:num] && @buf.length >= r[:num]
-        @reader = nil
-        r[:block].call(@buf.slice!(0, r[:num]))
-        return
-      end
-
-      if r[:line] && s = @buf.slice!(/.+\r\n/)
-        @reader = nil
-        r[:block].call(s)
-      end
-    end
-
-    def read_array_items(arrayLength, items, err, &blk)
-      if items.length >= arrayLength
-        blk.call(items, err)
+      if ! @cs
+        read_type
       else
-        parse do |item, err|
-          read_array_items(arrayLength, items << item, err, &blk)
+        @cs.call
+      end
+    end
+
+    def cs(&blk)
+      @cs = blk
+      @cs.call
+    end
+
+    def read_type
+      cs do
+        case @buf.slice!(0)
+        when nil
+          # Wait for next byte
+        when ?\r
+          finish do
+            read_type
+          end
+        when ?:
+          read_integer do |i|
+            emit(:part, i)
+            read_type
+          end
+        when ?$
+          read_string do |s|
+            emit(:part, s)
+            read_type
+          end
+        when ?+
+          read_line do |msg|
+            emit(:true, msg)
+            read_type
+          end
+        when ?-
+          read_line do |msg|
+            emit(:false, msg)
+            read_type
+          end
+        when ?*
+          read_integer do |count|
+            emit(:array, count)
+            read_type
+          end
+        else
+          raise Poisioned
         end
       end
     end
 
-    def parse(&blk)
-      fr_read(1) do |c|
-        if c == ':'
-          fr_readline do |line|
-            blk.call(line.to_i, nil)
+    def finish(&blk)
+      cs do
+        c = @buf.slice!(0)
+        case c
+        when nil
+          # Wait for next byte
+        when ?\n
+          blk.call
+        else
+          raise Poisioned
+        end
+      end
+    end
+
+    def read_integer(&blk)
+      @int = ""
+      cs do
+        while c = @buf.slice!(0)
+          case c
+          when ?0..?9
+            @int << c.chr
+          when ?\r
+            finish do
+              blk.call(Integer(@int))
+            end
+          else
+            raise Poisioned
           end
-        elsif c == '$'
-          fr_readline do |dataLength|
-            fr_read(dataLength.to_i + 2) do |data|
-              if data[dataLength.to_i, 2] != "\r\n"
-                raise StandardError, 'stream error'
+        end
+      end
+    end
+
+    def read_string(&blk)
+      read_integer do |count|
+        cs do
+          if @buf.length >= count
+            string = @buf.slice!(0, count)
+            cs do
+              case @buf.slice!(0)
+              when nil
+                # Wait for next byte
+              when ?\r
+                finish do
+                  blk.call(string)
+                end
               else
-                blk.call(data[0, dataLength.to_i], nil)
+                raise Poisioned
               end
             end
           end
-        elsif c == '*'
-          fr_readline do |arrayLength|
-            read_array_items(arrayLength.to_i, [], nil, &blk)
-          end
-        elsif c == '+'
-          fr_readline do |line|
-            blk.call(line, nil)
-          end
-        elsif c == '-'
-          fr_readline do |line|
-            blk.call(nil, line)
-          end
-        else
-          raise StandardError, 'stream error'
         end
       end
     end
-  end
 
-  class Connection < EM::Connection
-    def post_init
-      @opid = 0
-      @cbs  = Hash.new { Proc.new {} }
-      @parser = Parser.new do |value, err|
-        receive_value(value, err)
-      end
-    end
-
-    def receive_data(data)
-      @parser.receive_data(data)
-    end
-
-    def receive_value(response, err)
-      opid, flags, data = response
-      p [:response, opid, flags, data, err]
-      if flags&Closed == 0
-        @cbs[opid].call(data, err)
-      end
-      if flags&(Last|Closed) != 0
-        @cbs.delete(opid)
-      end
-    end
-
-    def call(verb, args, &blk)
-      @opid += 1
-      @cbs[@opid] = blk
-      send_data(encode([verb, @opid, args]))
-      @opid
-    end
-
-    def encode(arg)
-      case arg
-      when Array
-        "*%d\r\n%s" % [
-          arg.length,
-          arg.map {|x| encode(x) }
-        ]
-      when Integer
-        ":#{arg}\r\n"
-      else
-        str = arg.to_str
-        "$%d\r\n%s\r\n" % [str.length, str]
+    def read_line(&blk)
+      cs do
+        if line = @buf.slice!(/.*\r/)
+          finish do
+            blk.call(line.chomp)
+          end
+        end
       end
     end
 

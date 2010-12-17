@@ -1,97 +1,135 @@
-require 'test/unit'
-require 'stringio'
 require 'fraggel'
 
 class FraggelParserTest < Test::Unit::TestCase
-  def test_parse_integer
-    result = nil
-    parser = Fraggel::Parser.new do |item, err|
-      result = item
-    end
 
-    parser.receive_data(":5555\r\n")
+  class ParseLogger
+      include Fraggel::Parser
 
-    assert_equal(5555, result)
+      attr_reader :log
+
+      def initialize
+        @log = []
+      end
+
+      def emit(*args)
+        @log << args
+      end
   end
 
-  def test_parse_integer_partial
-    result = nil
-    parser = Fraggel::Parser.new do |item, err|
-      result = item
-    end
 
-    ":5555\r\n".each_char do |x|
-      assert_nil(result)
-      parser.receive_data(x)
-    end
+  attr_reader :parser
 
-    assert_equal(5555, result)
+  def setup
+    @parser = ParseLogger.new
   end
 
-  def test_parse_string_invalid_format
-    parser = Fraggel::Parser.new do |item, err|
-      assert false
-    end
+  def test_blank_line
+    parser.receive_data("\r\n")
+    parser.receive_data("\r")
+    parser.receive_data("\n")
 
-    assert_raise(StandardError) do
-      parser.receive_data("$3\r\nfooAA")
-    end
+    assert_equal [], parser.log
   end
 
-  def test_parse_string
-    result = nil
-    parser = Fraggel::Parser.new do |item, err|
-      result = item
-    end
-
-    "$3\r\nfoo\r\n".each_char do |x|
-      assert_nil(result)
-      parser.receive_data(x)
-    end
-
-    assert_equal("foo", result)
-  end
-
-  def test_parse_with_garbage_command_token
-    parser = Fraggel::Parser.new do |item, err|
-      assert false
-    end
-
-    assert_raise(StandardError) do
-      parser.receive_data("(")
+  def test_blank_poison
+    assert_raise(Fraggel::Parser::Poisioned) do
+      parser.receive_data("\n")
     end
   end
 
-  def test_parse_array
-    result = nil
-    parser = Fraggel::Parser.new do |item, err|
-      result = item
+  def test_read_integer
+    ":123".each_char do |c|
+      parser.receive_data(c)
     end
+    assert_equal [], parser.log
 
-    parser.receive_data("*3\r\n$1\r\na\r\n:1\r\n$1\r\n2\r\n")
+    parser.receive_data("\r")
+    assert_equal [], parser.log
 
-    assert_equal(["a", 1, "2"], result)
+    parser.receive_data("\n")
+    assert_equal [[:part, 123]], parser.log
   end
 
-  def test_parse_array_empty
-    result = nil
-    parser = Fraggel::Parser.new do |item, err|
-      result = item
+  def test_read_poisoned_integer
+    parser.receive_data(":1")
+    assert_raise(Fraggel::Parser::Poisioned) do
+      parser.receive_data("X")
     end
-
-    parser.receive_data("*0\r\n")
-
-    assert_equal([], result)
   end
 
-  def test_parse_nested_array
-    result = nil
-    parser = Fraggel::Parser.new do |item, err|
-      result = item
+  def test_read_string
+    "$4\r\nping".each_char do |c|
+      parser.receive_data(c)
+    end
+    assert_equal [], parser.log
+
+    parser.receive_data("\r")
+    assert_equal [], parser.log
+
+    parser.receive_data("\n")
+    assert_equal [[:part, "ping"]], parser.log
+  end
+
+  def test_read_poisoned_string
+    parser.receive_data("$1")
+    assert_raise(Fraggel::Parser::Poisioned) do
+      parser.receive_data("X")
+    end
+  end
+
+  def test_read_true
+    "+OK".each_char do |c|
+      parser.receive_data(c)
+    end
+    assert_equal [], parser.log
+
+    parser.receive_data("\r")
+    assert_equal [], parser.log
+
+    parser.receive_data("\n")
+    assert_equal [[:true, "OK"]], parser.log
+  end
+
+  def test_read_false
+    "-ERR".each_char do |c|
+      parser.receive_data(c)
+    end
+    assert_equal [], parser.log
+
+    parser.receive_data("\r")
+    assert_equal [], parser.log
+
+    parser.receive_data("\n")
+    assert_equal [[:false, "ERR"]], parser.log
+  end
+
+  def test_read_array
+    "*1".each_char do |c|
+      parser.receive_data(c)
+    end
+    assert_equal [], parser.log
+
+    parser.receive_data("\r")
+    assert_equal [], parser.log
+
+    parser.receive_data("\n")
+    assert_equal [[:array, 1]], parser.log
+  end
+
+  def test_all_types_together
+    "*2\r\n:1\r\n$3\r\nfoo\r\n+OK\r\n-ERR\r\n".each_char do |c|
+      parser.receive_data(c)
     end
 
-    parser.receive_data("*3\r\n$1\r\na\r\n*2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n$1\r\n2\r\n")
+    expected = [
+      [:array, 2],
+      [:part, 1],
+      [:part, "foo"],
+      [:true, "OK"],
+      [:false, "ERR"]
+    ]
 
-    assert_equal(["a", ["foo", "bar"], "2"], result)
+    assert_equal expected, parser.log
   end
+
 end
