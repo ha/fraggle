@@ -11,7 +11,7 @@ class Fraggel
 
 
   class Parser < EM::Connection
-    def initialize(&blk)
+    def initialize
       @buf = ''
       @pending_read = nil
       @pending_readline = nil
