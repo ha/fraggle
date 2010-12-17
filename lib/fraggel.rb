@@ -1,6 +1,92 @@
 require 'eventmachine'
 
 class Fraggel < EM::Connection
+  
+  
+  class Parser    
+    def initialize
+      @buf = ''
+      @pending_read = nil
+      @pending_readline = nil
+      @stream_error = false
+    end
+    
+    def receive_data(data)
+      raise Exception.new('stream error') if @stream_error
+      
+      @buf << data
+      
+      if not @pending_read.nil? and @buf.length >= @pending_read[:num]
+        pr = @pending_read
+        @pending_read = nil
+        fr_read(pr[:num], &pr[:block])
+      elsif not @pending_readline.nil?
+        prl = @pending_readline[:block]
+        @pending_readline = nil
+        fr_readline(&prl)
+      end
+    end
+    
+    def fr_read(n, &blk)
+      if @buf.length < n
+        @pending_read = {:num => n, :block => blk}
+      else
+        blk.call(@buf.slice!(0, n))
+      end
+    end
+    
+    def fr_readline(&blk)
+      line = @buf.slice!(/.+\r\n/)
+      if line.nil?
+        @pending_readline = {:block => blk}
+      else
+        blk.call(line)
+      end
+    end
+    
+    def read_array_items(arrayLength, &blk)
+      f = lambda { |items|
+        parse do |item|
+          if items.length < (arrayLength - 1)
+            f.call(items << item)
+          else
+            blk.call(items << item)
+          end
+        end
+      }
+      f.call([])
+    end
+    
+    def parse(&blk)
+      fr_read(1) do |c|
+        if c == ':'
+          fr_readline do |line|
+            blk.call(line.to_i)
+          end
+        elsif c == '$'
+          fr_readline do |dataLength|
+            fr_read(dataLength.to_i + 2) do |data|
+              if data[dataLength.to_i, 2] != "\r\n"
+                @stream_error = true
+                blk.call(:invalid_format)
+              else
+                blk.call(data[0, dataLength.to_i])
+              end
+            end
+          end
+        elsif c == '*'
+          fr_readline do |arrayLength|
+            read_array_items(arrayLength.to_i) do |items|
+              blk.call(items)
+            end
+          end
+        else
+          @stream_error = true
+          blk.call(:fatal_error)
+        end
+      end
+    end
+  end
 
   class Scanner
     unless defined?(Empty)
@@ -70,7 +156,7 @@ class Fraggel < EM::Connection
           @buf.slice!(0,2) # remove the tailing \r\n
           @cs = :line
           
-          puts "parts size: #{@parts.size}, count: #{@count}"
+          puts "#{@parts.inspect}, parts size: #{@parts.size}, count: #{@count}"
           if @parts.size == @count
             
             # may need to reset this explicitly

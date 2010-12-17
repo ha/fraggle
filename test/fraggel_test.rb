@@ -23,4 +23,11 @@ class FraggelTest < Test::Unit::TestCase
 
     assert_equal ["foo", ["bar"], "baz"], parts
   end
+  
+  def test_deep_nested_response
+    scanner = Fraggel::Scanner.new
+    parts   = scanner.next("*3\r\n$3\r\nfoo\r\n*2\r\n*1\r\n$3\r\nbar\r\n*1\r\n$4\r\ndeep\r\n$3\r\nbaz\r\n")
+
+    assert_equal ["foo", [["bar"], ["deep"]], "baz"], parts
+  end
 end
