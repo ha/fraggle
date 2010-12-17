@@ -57,17 +57,14 @@ class Fraggel
       end
     end
 
-    def read_array_items(arrayLength, &blk)
-      f = lambda { |items, err|
-        parse do |item, err|
-          if items.length < (arrayLength - 1)
-            f.call(items << item, err)
-          else
-            blk.call(items << item, err)
-          end
+    def read_array_items(arrayLength, items, err, &blk)
+      parse do |item, err|
+        if items.length < (arrayLength - 1)
+          read_array_items(arrayLength, items << item, err, &blk)
+        else
+          blk.call(items << item, err)
         end
-      }
-      f.call([], nil)
+      end
     end
 
     def parse(&blk)
@@ -88,7 +85,7 @@ class Fraggel
           end
         elsif c == '*'
           fr_readline do |arrayLength|
-            read_array_items(arrayLength.to_i, &blk)
+            read_array_items(arrayLength.to_i, [], nil, &blk)
           end
         elsif c == '+'
           fr_readline do |line|
