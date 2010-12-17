@@ -73,6 +73,17 @@ class FraggelParserTest < Test::Unit::TestCase
     assert_equal(["a", 1, "2"], result)
   end
 
+  def test_parse_array_empty
+    result = nil
+    parser = Fraggel::Parser.new do |item, err|
+      result = item
+    end
+
+    parser.receive_data("*0\r\n")
+
+    assert_equal([], result)
+  end
+
   def test_parse_nested_array
     result = nil
     parser = Fraggel::Parser.new do |item, err|

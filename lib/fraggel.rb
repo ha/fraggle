@@ -58,11 +58,11 @@ class Fraggel
     end
 
     def read_array_items(arrayLength, items, err, &blk)
-      parse do |item, err|
-        if items.length < (arrayLength - 1)
+      if items.length >= arrayLength
+        blk.call(items, err)
+      else
+        parse do |item, err|
           read_array_items(arrayLength, items << item, err, &blk)
-        else
-          blk.call(items << item, err)
         end
       end
     end
