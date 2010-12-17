@@ -13,8 +13,7 @@ class Fraggel
   class Parser
     def initialize(&blk)
       @buf = ''
-      @pending_read = nil
-      @pending_readline = nil
+      @reader = nil
       @stream_error = false
       main(&blk)
     end
@@ -28,34 +27,33 @@ class Fraggel
 
     def receive_data(data)
       raise if @stream_error
-
       @buf << data
-
-      if not @pending_read.nil? and @buf.length >= @pending_read[:num]
-        pr = @pending_read
-        @pending_read = nil
-        fr_read(pr[:num], &pr[:block])
-      elsif not @pending_readline.nil?
-        prl = @pending_readline[:block]
-        @pending_readline = nil
-        fr_readline(&prl)
-      end
+      check
     end
 
     def fr_read(n, &blk)
-      if @buf.length < n
-        @pending_read = {:num => n, :block => blk}
-      else
-        blk.call(@buf.slice!(0, n))
-      end
+      @reader = {:block => blk, :num => n}
+      check
     end
 
     def fr_readline(&blk)
-      line = @buf.slice!(/.+\r\n/)
-      if line.nil?
-        @pending_readline = {:block => blk}
-      else
-        blk.call(line)
+      @reader = {:block => blk, :line => true}
+      check
+    end
+
+    def check
+      r = @reader
+      return if r.nil?
+
+      if r[:num] && @buf.length >= r[:num]
+        @reader = nil
+        r[:block].call(@buf.slice!(0, r[:num]))
+        return
+      end
+
+      if r[:line] && s = @buf.slice!(/.+\r\n/)
+        @reader = nil
+        r[:block].call(s)
       end
     end
 
