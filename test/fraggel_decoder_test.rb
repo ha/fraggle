@@ -1,9 +1,9 @@
 require 'fraggel'
 
-class FraggelParserTest < Test::Unit::TestCase
+class FraggelDecoderTest < Test::Unit::TestCase
 
   class ParseLogger
-      include Fraggel::Parser
+      include Fraggel::Decoder
 
       attr_reader :log
 
@@ -11,7 +11,7 @@ class FraggelParserTest < Test::Unit::TestCase
         @log = []
       end
 
-      def emit(*args)
+      def receive_event(*args)
         @log << args
       end
   end
@@ -32,7 +32,7 @@ class FraggelParserTest < Test::Unit::TestCase
   end
 
   def test_blank_poison
-    assert_raise(Fraggel::Parser::Poisioned) do
+    assert_raise(Fraggel::Decoder::Poisioned) do
       parser.receive_data("\n")
     end
   end
@@ -52,7 +52,7 @@ class FraggelParserTest < Test::Unit::TestCase
 
   def test_read_poisoned_integer
     parser.receive_data(":1")
-    assert_raise(Fraggel::Parser::Poisioned) do
+    assert_raise(Fraggel::Decoder::Poisioned) do
       parser.receive_data("X")
     end
   end
@@ -72,7 +72,7 @@ class FraggelParserTest < Test::Unit::TestCase
 
   def test_read_poisoned_string
     parser.receive_data("$1")
-    assert_raise(Fraggel::Parser::Poisioned) do
+    assert_raise(Fraggel::Decoder::Poisioned) do
       parser.receive_data("X")
     end
   end

@@ -1,10 +1,10 @@
 module Fraggel
 
-  module Parser
+  module Decoder
 
     class Poisioned < StandardError ; end
 
-    def emit(msg, v) ; end
+    def receive_event(msg, v) ; end
 
     def receive_data(data)
       @buf ||= ""
@@ -33,27 +33,27 @@ module Fraggel
           end
         when ?:
           read_integer do |i|
-            emit(:part, i)
+            receive_event(:part, i)
             read_type
           end
         when ?$
           read_string do |s|
-            emit(:part, s)
+            receive_event(:part, s)
             read_type
           end
         when ?+
           read_line do |msg|
-            emit(:true, msg)
+            receive_event(:true, msg)
             read_type
           end
         when ?-
           read_line do |msg|
-            emit(:false, msg)
+            receive_event(:false, msg)
             read_type
           end
         when ?*
           read_integer do |count|
-            emit(:array, count)
+            receive_event(:array, count)
             read_type
           end
         else
@@ -124,6 +124,43 @@ module Fraggel
           end
         end
       end
+    end
+
+  end
+
+
+  module Responder
+
+    def receive_event(name, value)
+      receive_event! name, value do |x|
+        receive_response(x)
+      end
+    end
+
+    def receive_event!(name, value, &blk)
+      @cs ||= lambda {|x|
+        blk.call(x)
+        @cs = nil
+      }
+
+      case name
+      when :array
+        @cs = array!(value, [], &@cs)
+      else
+        @cs.call(value)
+      end
+    end
+
+    def array!(c, a, &blk)
+      lambda {|x|
+        a << x
+        if c == a.length
+          blk.call(a)
+          @cs = blk
+        else
+          array!(c, a, &blk)
+        end
+      }
     end
 
   end
