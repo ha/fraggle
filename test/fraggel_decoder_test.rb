@@ -2,7 +2,7 @@ require 'fraggel'
 
 class FraggelDecoderTest < Test::Unit::TestCase
 
-  class ParseLogger
+  class DecodeLogger
       include Fraggel::Decoder
 
       attr_reader :log
@@ -20,7 +20,7 @@ class FraggelDecoderTest < Test::Unit::TestCase
   attr_reader :parser
 
   def setup
-    @parser = ParseLogger.new
+    @parser = DecodeLogger.new
   end
 
   def test_blank_line
