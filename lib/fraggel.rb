@@ -4,8 +4,6 @@ module Fraggel
 
     class Poisioned < StandardError ; end
 
-    def receive_event(msg, v) ; end
-
     def receive_data(data)
       @buf ||= ""
       @buf << data
@@ -128,9 +126,8 @@ module Fraggel
 
   end
 
-  module Encoder
 
-    CRLF = "\r\n"
+  module Encoder
 
     def encode(value)
       case value
@@ -152,6 +149,7 @@ module Fraggel
       end
     end
   end
+
 
   module Responder
 
