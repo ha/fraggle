@@ -3,17 +3,17 @@ require 'fraggel'
 class FraggelDecoderTest < Test::Unit::TestCase
 
   class DecodeLogger
-      include Fraggel::Decoder
+    include Fraggel::Decoder
 
-      attr_reader :log
+    attr_reader :log
 
-      def initialize
-        @log = []
-      end
+    def initialize
+      @log = []
+    end
 
-      def receive_event(*args)
-        @log << args
-      end
+    def receive_event(*args)
+      @log << args
+    end
   end
 
 
