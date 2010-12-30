@@ -1,11 +1,9 @@
-require 'rubygems'
-require 'eventmachine'
-require 'lib/fraggel'
+require 'fraggel'
 
 EM.run do
-  client = Fraggel.connect "127.0.0.1", 8046
+  client = Fraggel.connect 8046
 
-  client.call "SET", ["/foo", "bar", "0"] do |cas, err|
-    p [:set, cas, err]
+  client.set "/foo", "bar", :missing do |cas, err|
+    p [:xrb, "boom!"]
   end
 end
