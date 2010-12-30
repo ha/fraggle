@@ -1,10 +1,14 @@
 module Fraggel
 
-  module Responder
+  class Responder
+
+    def initialize(&blk)
+      @receiver = blk
+    end
 
     def receive_event(name, value)
       receive_event! name, value do |x|
-        receive_response(x)
+        @receiver.call(x)
       end
     end
 
