@@ -31,12 +31,12 @@ module Fraggel
           end
         when ?:
           read_integer do |i|
-            receive_event(:part, i)
+            receive_event(:value, i)
             read_type
           end
         when ?$
           read_string do |s|
-            receive_event(:part, s)
+            receive_event(:value, s)
             read_type
           end
         when ?+

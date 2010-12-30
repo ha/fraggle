@@ -47,7 +47,7 @@ class FraggelDecoderTest < Test::Unit::TestCase
     assert_equal [], parser.log
 
     parser.receive_data("\n")
-    assert_equal [[:part, 123]], parser.log
+    assert_equal [[:value, 123]], parser.log
   end
 
   def test_read_poisoned_integer
@@ -67,7 +67,7 @@ class FraggelDecoderTest < Test::Unit::TestCase
     assert_equal [], parser.log
 
     parser.receive_data("\n")
-    assert_equal [[:part, "ping"]], parser.log
+    assert_equal [[:value, "ping"]], parser.log
   end
 
   def test_read_poisoned_string
@@ -123,8 +123,8 @@ class FraggelDecoderTest < Test::Unit::TestCase
 
     expected = [
       [:array, 2],
-      [:part, 1],
-      [:part, "foo"],
+      [:value, 1],
+      [:value, "foo"],
       [:status, "OK"],
       [:error, "ERR"]
     ]
