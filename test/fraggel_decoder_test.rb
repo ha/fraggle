@@ -87,7 +87,7 @@ class FraggelDecoderTest < Test::Unit::TestCase
     assert_equal [], parser.log
 
     parser.receive_data("\n")
-    assert_equal [[:true, "OK"]], parser.log
+    assert_equal [[:status, "OK"]], parser.log
   end
 
   def test_read_false
@@ -125,7 +125,7 @@ class FraggelDecoderTest < Test::Unit::TestCase
       [:array, 2],
       [:part, 1],
       [:part, "foo"],
-      [:true, "OK"],
+      [:status, "OK"],
       [:error, "ERR"]
     ]
 

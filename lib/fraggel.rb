@@ -41,7 +41,7 @@ module Fraggel
           end
         when ?+
           read_line do |msg|
-            receive_event(:true, msg)
+            receive_event(:status, msg)
             read_type
           end
         when ?-
