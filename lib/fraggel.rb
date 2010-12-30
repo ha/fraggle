@@ -146,6 +146,8 @@ module Fraggel
         "*%d\r\n%s" % [mapped.length, mapped]
       when StandardError, Exception
         "-ERR: %s\r\n" % [value.message]
+      when Symbol
+        "+%s\r\n" % [value]
       end
     end
 

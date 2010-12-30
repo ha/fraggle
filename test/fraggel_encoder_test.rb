@@ -36,4 +36,8 @@ class FraggelEncoderTest < Test::Unit::TestCase
     assert_equal "*1\r\n$3\r\nfoo\r\n", encode(["foo"])
   end
 
+  def test_status
+    assert_equal "+OK\r\n", encode(:OK)
+  end
+
 end
