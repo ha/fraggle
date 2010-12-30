@@ -2,25 +2,14 @@ require 'fraggel'
 
 class FraggelDecoderTest < Test::Unit::TestCase
 
-  class DecodeLogger
-    include Fraggel::Decoder
-
-    attr_reader :log
-
-    def initialize
-      @log = []
-    end
-
-    def receive_event(*args)
-      @log << args
-    end
-  end
-
-
+  attr_reader :log
   attr_reader :parser
 
   def setup
-    @parser = DecodeLogger.new
+    @log = []
+    @parser = Fraggel::Decoder.new do |name, value|
+      @log << [name, value]
+    end
   end
 
   def test_blank_line
@@ -28,7 +17,7 @@ class FraggelDecoderTest < Test::Unit::TestCase
     parser.receive_data("\r")
     parser.receive_data("\n")
 
-    assert_equal [], parser.log
+    assert_equal [], log
   end
 
   def test_blank_poison
@@ -41,13 +30,13 @@ class FraggelDecoderTest < Test::Unit::TestCase
     ":123".each_char do |c|
       parser.receive_data(c)
     end
-    assert_equal [], parser.log
+    assert_equal [], log
 
     parser.receive_data("\r")
-    assert_equal [], parser.log
+    assert_equal [], log
 
     parser.receive_data("\n")
-    assert_equal [[:value, 123]], parser.log
+    assert_equal [[:value, 123]], log
   end
 
   def test_read_poisoned_integer
@@ -61,13 +50,13 @@ class FraggelDecoderTest < Test::Unit::TestCase
     "$4\r\nping".each_char do |c|
       parser.receive_data(c)
     end
-    assert_equal [], parser.log
+    assert_equal [], log
 
     parser.receive_data("\r")
-    assert_equal [], parser.log
+    assert_equal [], log
 
     parser.receive_data("\n")
-    assert_equal [[:value, "ping"]], parser.log
+    assert_equal [[:value, "ping"]], log
   end
 
   def test_read_poisoned_string
@@ -81,39 +70,39 @@ class FraggelDecoderTest < Test::Unit::TestCase
     "+OK".each_char do |c|
       parser.receive_data(c)
     end
-    assert_equal [], parser.log
+    assert_equal [], log
 
     parser.receive_data("\r")
-    assert_equal [], parser.log
+    assert_equal [], log
 
     parser.receive_data("\n")
-    assert_equal [[:status, "OK"]], parser.log
+    assert_equal [[:status, "OK"]], log
   end
 
   def test_read_false
     "-ERR".each_char do |c|
       parser.receive_data(c)
     end
-    assert_equal [], parser.log
+    assert_equal [], log
 
     parser.receive_data("\r")
-    assert_equal [], parser.log
+    assert_equal [], log
 
     parser.receive_data("\n")
-    assert_equal [[:error, "ERR"]], parser.log
+    assert_equal [[:error, "ERR"]], log
   end
 
   def test_read_array
     "*1".each_char do |c|
       parser.receive_data(c)
     end
-    assert_equal [], parser.log
+    assert_equal [], log
 
     parser.receive_data("\r")
-    assert_equal [], parser.log
+    assert_equal [], log
 
     parser.receive_data("\n")
-    assert_equal [[:array, 1]], parser.log
+    assert_equal [[:array, 1]], log
   end
 
   def test_all_types_together
@@ -129,7 +118,7 @@ class FraggelDecoderTest < Test::Unit::TestCase
       [:error, "ERR"]
     ]
 
-    assert_equal expected, parser.log
+    assert_equal expected, log
   end
 
 end

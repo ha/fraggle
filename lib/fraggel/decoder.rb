@@ -1,8 +1,12 @@
 module Fraggel
 
-  module Decoder
+  class Decoder
 
     class Poisioned < StandardError ; end
+
+    def initialize(&blk)
+      @receiver = blk
+    end
 
     def receive_data(data)
       @buf ||= ""
@@ -31,27 +35,27 @@ module Fraggel
           end
         when ?:
           read_integer do |i|
-            receive_event(:value, i)
+            @receiver.call(:value, i)
             read_type
           end
         when ?$
           read_string do |s|
-            receive_event(:value, s)
+            @receiver.call(:value, s)
             read_type
           end
         when ?+
           read_line do |msg|
-            receive_event(:status, msg)
+            @receiver.call(:status, msg)
             read_type
           end
         when ?-
           read_line do |msg|
-            receive_event(:error, msg)
+            @receiver.call(:error, msg)
             read_type
           end
         when ?*
           read_integer do |count|
-            receive_event(:array, count)
+            @receiver.call(:array, count)
             read_type
           end
         else
