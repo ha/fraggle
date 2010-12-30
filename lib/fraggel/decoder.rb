@@ -8,20 +8,20 @@ module Fraggel
       @buf ||= ""
       @buf << data
 
-      if ! @cs
+      if ! @dcs
         read_type
       else
-        @cs.call
+        @dcs.call
       end
     end
 
-    def cs(&blk)
-      @cs = blk
-      @cs.call
+    def dcs(&blk)
+      @dcs = blk
+      @dcs.call
     end
 
     def read_type
-      cs do
+      dcs do
         case @buf.slice!(0)
         when nil
           # Wait for next byte
@@ -61,7 +61,7 @@ module Fraggel
     end
 
     def finish(&blk)
-      cs do
+      dcs do
         c = @buf.slice!(0)
         case c
         when nil
@@ -76,7 +76,7 @@ module Fraggel
 
     def read_integer(&blk)
       @int = ""
-      cs do
+      dcs do
         while c = @buf.slice!(0)
           case c
           when ?0..?9
@@ -94,10 +94,10 @@ module Fraggel
 
     def read_string(&blk)
       read_integer do |count|
-        cs do
+        dcs do
           if @buf.length >= count
             string = @buf.slice!(0, count)
-            cs do
+            dcs do
               case @buf.slice!(0)
               when nil
                 # Wait for next byte
@@ -115,7 +115,7 @@ module Fraggel
     end
 
     def read_line(&blk)
-      cs do
+      dcs do
         if line = @buf.slice!(/.*\r/)
           finish do
             blk.call(line.chomp)
