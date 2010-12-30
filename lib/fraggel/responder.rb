@@ -9,16 +9,16 @@ module Fraggel
     end
 
     def receive_event!(name, value, &blk)
-      @cs ||= lambda {|x|
+      @rcs ||= lambda {|x|
         blk.call(x)
-        @cs = nil
+        @rcs = nil
       }
 
       case name
       when :array
-        @cs = array!(value, [], &@cs)
+        @rcs = array!(value, [], &@rcs)
       else
-        @cs.call(value)
+        @rcs.call(value)
       end
     end
 
@@ -27,7 +27,7 @@ module Fraggel
         a << x
         if c == a.length
           blk.call(a)
-          @cs = blk
+          @rcs = blk
         else
           array!(c, a, &blk)
         end
