@@ -148,6 +148,7 @@ module Fraggel
         "-ERR: %s\r\n" % [value.message]
       end
     end
+
   end
 
 
