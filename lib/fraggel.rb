@@ -96,7 +96,7 @@ module Fraggel
   end
 
   def set(path, body, cas, &blk)
-    call :SET, [path, body, cas] do |res|
+    call :SET, [path, body, casify(cas)] do |res|
       case res
       when StandardError
         blk.call(nil, res)
@@ -108,5 +108,29 @@ module Fraggel
       end
     end
   end
+
+  def sett(path, i, cas, &blk)
+    call :SETT, [path, i, casify(cas)] do |res|
+      case res
+      when StandardError
+        blk.call(nil, nil, res)
+      when :done
+        # Do nothing
+      else
+        res[1].extend Cas
+        blk.call(*res)
+      end
+    end
+  end
+
+  private
+
+    def casify(cas)
+      case cas
+      when :missing: "0"
+      when :clobber: ""
+      else cas
+      end
+    end
 
 end

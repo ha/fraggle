@@ -143,13 +143,22 @@ class FraggelTest < Test::Unit::TestCase
     respond [opid, Fraggel::Valid | Fraggel::Done, [entries, Fraggel::Dir]]
     body, cas, err = response
 
-    # Check err and body
     assert_nil err
     assert_equal entries, body
-
-    # Cas
     assert_equal Fraggel::Dir, cas
     assert cas.dir?
+  end
+
+  def test_set_call
+    client.set("/foo", "bar", "99") {}
+    client.set("/foo", "bar", :missing) {}
+    client.set("/foo", "bar", :clobber) {}
+    expected = [
+      [:SET, ["/foo", "bar", "99"]],
+      [:SET, ["/foo", "bar", "0"]],
+      [:SET, ["/foo", "bar", ""]]
+    ]
+    assert_equal expected, client.called
   end
 
   def test_set
@@ -163,8 +172,6 @@ class FraggelTest < Test::Unit::TestCase
     # Check err and body
     assert_nil err
     assert_equal "99", cas
-
-    # Cas
     assert ! cas.dir?
   end
 
@@ -173,12 +180,52 @@ class FraggelTest < Test::Unit::TestCase
       @response = [cas, err]
     end
 
-    respond [opid, Fraggel::Valid, StandardError.new("cas mismatch")]
+    respond [opid, Fraggel::Valid | Fraggel::Done, StandardError.new("cas mismatch")]
     cas, err = response
 
-    assert_nil cas
     assert_equal StandardError, err.class
     assert_equal "ERR: cas mismatch", err.message
+    assert_nil cas
+  end
+
+  def test_sett_call
+    client.sett("/foo", 100, "99") {}
+    client.sett("/foo", 100, :missing) {}
+    client.sett("/foo", 100, :clobber) {}
+    expected = [
+      [:SETT, ["/foo", 100, "99"]],
+      [:SETT, ["/foo", 100, "0"]],
+      [:SETT, ["/foo", 100, ""]]
+    ]
+    assert_equal expected, client.called
+  end
+
+  def test_sett
+    opid = client.sett "/timer/a", 100, "99" do |t, cas, err|
+      @response = [t, cas, err]
+    end
+
+    respond [opid, Fraggel::Valid | Fraggel::Done, [1000, "99"]]
+    t, cas, err = response
+
+    assert_nil err
+    assert_equal 1000, t
+    assert_equal "99", cas
+    assert ! cas.dir?
+  end
+
+  def test_sett_error
+    opid = client.sett "/timer/a", 100, "99" do |t, cas, err|
+      @response = [t, cas, err]
+    end
+
+    respond [opid, Fraggel::Valid | Fraggel::Done, StandardError.new("test")]
+    t, cas, err = response
+
+    assert_equal StandardError, err.class
+    assert_equal "ERR: test", err.message
+    assert_nil t
+    assert_nil cas
   end
 
 end
