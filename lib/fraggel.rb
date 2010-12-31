@@ -6,12 +6,24 @@ require 'fraggel/responder'
 module Fraggel
   include Encoder
 
+  # Flags
   Valid = 1
   Done  = 2
+
+  # Cas
+  Dir     = "dir"
+  Missing = "0"
+  Clobber = ""
 
   # Create an unique object to test for
   # set or not-set
   None  = Object.new
+
+  module Cas
+    def dir?
+      self == Dir
+    end
+  end
 
   def self.connect(port, host="127.0.0.1")
     EM.connect(host, port, self)
@@ -76,6 +88,8 @@ module Fraggel
       when :done
         # Do nothing
       else
+        # Add sugar to the CAS token
+        res[1].extend Cas
         blk.call(*res)
       end
     end

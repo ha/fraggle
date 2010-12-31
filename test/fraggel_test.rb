@@ -115,4 +115,22 @@ class FraggelTest < Test::Unit::TestCase
     assert_equal "ERR: test", response[2].message
   end
 
+  def test_get_directory
+    opid = client.get "/letters" do |body, cas, err|
+      @response = [body, cas, err]
+    end
+
+    entries = ["a", "b", "c"]
+    respond [opid, Fraggel::Valid | Fraggel::Done, [entries, Fraggel::Dir]]
+    body, cas, err = response
+
+    # Check err and body
+    assert_nil err
+    assert_equal entries, body
+
+    # Cas
+    assert_equal Fraggel::Dir, cas
+    assert cas.dir?
+  end
+
 end
