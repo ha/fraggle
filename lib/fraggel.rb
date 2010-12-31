@@ -95,4 +95,18 @@ module Fraggel
     end
   end
 
+  def set(path, body, cas, &blk)
+    call :SET, [path, body, cas] do |res|
+      case res
+      when StandardError
+        blk.call(nil, res)
+      when :done
+        # Do nothing
+      else
+        res.extend Cas
+        blk.call(res)
+      end
+    end
+  end
+
 end

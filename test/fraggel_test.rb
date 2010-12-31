@@ -147,4 +147,31 @@ class FraggelTest < Test::Unit::TestCase
     assert cas.dir?
   end
 
+  def test_set
+    opid = client.set "/letters/a", "1", "99" do |cas, err|
+      @response = [cas, err]
+    end
+
+    respond [opid, Fraggel::Valid | Fraggel::Done, "99"]
+    cas, err = response
+
+    # Check err and body
+    assert_nil err
+    assert_equal "99", cas
+
+    # Cas
+    assert ! cas.dir?
+  end
+
+  def test_set_error
+    opid = client.set "/letters/a", "1", "99" do |cas, err|
+      @response = [cas, err]
+    end
+
+    respond [opid, Fraggel::Valid, StandardError.new("cas mismatch")]
+    assert_equal nil, response[0]
+    assert_equal StandardError, response[1].class
+    assert_equal "ERR: cas mismatch", response[1].message
+  end
+
 end
