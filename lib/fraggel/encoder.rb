@@ -2,6 +2,8 @@ module Fraggel
 
   module Encoder
 
+    class UnknownType < StandardError ; end
+
     def encode(value)
       case value
       when nil
@@ -21,6 +23,8 @@ module Fraggel
         "-ERR: %s\r\n" % [value.message]
       when Symbol
         "+%s\r\n" % [value]
+      else
+        raise UnknownType, value
       end
     end
 

@@ -40,4 +40,10 @@ class FraggelEncoderTest < Test::Unit::TestCase
     assert_equal "+OK\r\n", encode(:OK)
   end
 
+  def test_unknown
+    assert_raise Fraggel::Encoder::UnknownType do
+      encode Class
+    end
+  end
+
 end
