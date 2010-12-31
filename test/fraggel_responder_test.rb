@@ -22,6 +22,19 @@ class FraggelResponderTest < Test::Unit::TestCase
     assert_equal ["foo"], log
   end
 
+  def test_error
+    responder.receive_event(:error, "ERR: test")
+    # TODO: Find a better way to assert this
+    assert_equal 1, log.length
+    assert_equal StandardError, log[0].class
+    assert_equal "ERR: test", log[0].message
+  end
+
+  def test_status
+    responder.receive_event(:status, "OK")
+    assert_equal [:OK], log
+  end
+
   def test_array
     responder.receive_event(:array, 1)
     responder.receive_event(:value, 2)

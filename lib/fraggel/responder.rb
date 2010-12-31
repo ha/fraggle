@@ -21,8 +21,17 @@ module Fraggel
       case name
       when :array
         @rcs = array!(value, [], &@rcs)
-      else
+      when :value
         @rcs.call(value)
+      when :error
+        @rcs.call(StandardError.new(value))
+      when :status
+        # I'm not sure if this is a good idea.  Symbols are not garbage
+        # collected.  If there server sends and arbitrary number of status
+        # messages, this could get ugly.  I'm not sure that's a problem yet.
+        @rcs.call(value.to_sym)
+      else
+        fail "Unknown Type #{name.inspect}"
       end
     end
 
