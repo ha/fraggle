@@ -3,7 +3,7 @@ require 'fraggel'
 EM.run do
   client = Fraggel.connect 8046
 
-  client.call :SET, ["/foo", "bar", "0"] do |res|
-    p [:xrb, res]
+  client.get "/foo" do |body, cas, err|
+    p [:got, body, cas, err]
   end
 end

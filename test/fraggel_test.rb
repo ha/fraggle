@@ -8,13 +8,19 @@ class FraggelTest < Test::Unit::TestCase
   class FakeFraggel
     include Fraggel
 
-    attr_reader :sent
+    attr_reader :sent, :called
 
     ## Expose @callbacks for tests
     attr_reader :callbacks
 
     def initialize
-      @sent = ""
+      @sent   = ""
+      @called = []
+    end
+
+    def call(*args)
+      @called << args
+      super(*args)
     end
 
     def send_data(data)
@@ -77,6 +83,16 @@ class FraggelTest < Test::Unit::TestCase
     respond [opid, Fraggel::Valid | Fraggel::Done]
     assert_equal [nil, :done], response
     assert_nil client.callbacks[opid]
+  end
+
+  def test_get_call
+    client.get("/ping") {}
+    client.get("/ping", 123) {}
+    expected = [
+      [:GET, ["/ping", 0]],
+      [:GET, ["/ping", 123]],
+    ]
+    assert_equal expected, client.called
   end
 
   def test_get_entry

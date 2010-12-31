@@ -68,8 +68,8 @@ module Fraggel
     @opid
   end
 
-  def get(path, &blk)
-    call :GET, path do |res|
+  def get(path, snap_id=0, &blk)
+    call :GET, [path, snap_id] do |res|
       case res
       when StandardError
         blk.call(nil, nil, res)
