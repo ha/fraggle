@@ -100,8 +100,8 @@ class FraggelTest < Test::Unit::TestCase
       @response = [body, cas, err]
     end
 
-    respond [opid, Fraggel::Valid | Fraggel::Done, ["pong", "99"]]
-    assert_equal ["pong", "99", nil], response
+    respond [opid, Fraggel::Valid | Fraggel::Done, [["pong"], "99"]]
+    assert_equal [["pong"], "99", nil], response
   end
 
   def test_get_error
