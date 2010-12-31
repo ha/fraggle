@@ -79,6 +79,7 @@ class FraggelTest < Test::Unit::TestCase
     end
 
     respond [opid, Fraggel::Done]
+
     assert_equal [:done], response
     assert_nil client.callbacks[opid]
   end
@@ -90,6 +91,7 @@ class FraggelTest < Test::Unit::TestCase
     end
 
     respond [opid, Fraggel::Valid | Fraggel::Done]
+
     assert_equal [nil, :done], response
     assert_nil client.callbacks[opid]
   end
@@ -110,8 +112,8 @@ class FraggelTest < Test::Unit::TestCase
     end
 
     respond [opid, Fraggel::Valid | Fraggel::Done, [["pong"], "99"]]
-
     body, cas, err = response
+
     assert_nil   err
     assert_equal ["pong"], body
     assert_equal "99", cas
@@ -124,9 +126,12 @@ class FraggelTest < Test::Unit::TestCase
     end
 
     respond [opid, Fraggel::Valid, StandardError.new("test")]
-    assert_equal [nil, nil], response[0..1]
-    assert_equal StandardError, response[2].class
-    assert_equal "ERR: test", response[2].message
+    body, cas, err = response
+
+    assert_nil body
+    assert_nil cas
+    assert_equal StandardError, err.class
+    assert_equal "ERR: test", err.message
   end
 
   def test_get_directory
@@ -169,9 +174,11 @@ class FraggelTest < Test::Unit::TestCase
     end
 
     respond [opid, Fraggel::Valid, StandardError.new("cas mismatch")]
-    assert_equal nil, response[0]
-    assert_equal StandardError, response[1].class
-    assert_equal "ERR: cas mismatch", response[1].message
+    cas, err = response
+
+    assert_nil cas
+    assert_equal StandardError, err.class
+    assert_equal "ERR: cas mismatch", err.message
   end
 
 end
