@@ -12,7 +12,7 @@
     require 'fraggel'
 
     EM.start do
-      client = Fraggel.connect :local, "127.0.0.1", 8046
+      client = Fraggel.connect "127.0.0.1", 8046
 
       ## Setting a key
       client.set "/foo", "bar", :missing do |cas, err|
