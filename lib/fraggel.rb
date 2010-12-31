@@ -70,8 +70,11 @@ module Fraggel
 
   def get(path, &blk)
     call :GET, path do |res|
-      if res.kind_of?(StandardError)
+      case res
+      when StandardError
         blk.call(nil, nil, res)
+      when :done
+        # Do nothing
       else
         blk.call(*res)
       end
