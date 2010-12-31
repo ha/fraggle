@@ -49,16 +49,25 @@ class FraggelTest < Test::Unit::TestCase
   end
 
   def test_call_calls_callback
-    callback = Proc.new do |x|
+    opid = client.call :TEST do |x|
       @response = x
+    end
+
+    respond [opid, Fraggel::Valid, :CALLED]
+
+    # Make sure the callback is called
+    assert_equal :CALLED, response
+  end
+
+  def test_call_holds_undone_callback
+    callback = Proc.new do |x|
+      # Do nothing
     end
 
     opid = client.call :TEST, &callback
 
     respond [opid, Fraggel::Valid, :CALLED]
 
-    # Make sure the callback is called
-    assert_equal :CALLED, response
     # Make sure the callback is held
     assert_equal callback, client.callbacks[opid]
   end
