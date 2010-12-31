@@ -57,6 +57,16 @@ class FraggelTest < Test::Unit::TestCase
     assert_equal callback, client.callbacks[opid]
   end
 
+  def test_done
+    opid = client.call :TEST do |err|
+      @response = err
+    end
+
+    respond [opid, Fraggel::Done]
+    assert_equal :done, response
+    assert_nil client.callbacks[opid]
+  end
+
   def test_get_entry
     opid = client.get "/ping" do |body, cas, err|
       @response = [body, cas, err]

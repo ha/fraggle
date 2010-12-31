@@ -6,14 +6,12 @@ require 'fraggel/responder'
 module Fraggel
   include Encoder
 
-  Closed = 1
-  Last   = 2
-
-  Chunk  = 1024
+  Valid = 1
+  Done  = 2
 
   # Create an unique object to test for
   # set or not-set
-  None   = Object.new
+  None  = Object.new
 
   def self.connect(port, host="127.0.0.1")
     EM.connect(host, port, self)
@@ -41,6 +39,11 @@ module Fraggel
 
     if blk = @callbacks[opid]
       blk.call(value)
+
+      if (flags & Done) > 0
+        blk.call(:done)
+        @callbacks.delete(opid)
+      end
     else
       # TODO: Log something?  Raise error?
     end
