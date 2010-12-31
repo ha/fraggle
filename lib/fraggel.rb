@@ -38,7 +38,9 @@ module Fraggel
     opid, flags, value = response
 
     if blk = @callbacks[opid]
-      blk.call(value)
+      if (flags & Valid) > 0
+        blk.call(value)
+      end
 
       if (flags & Done) > 0
         blk.call(:done)

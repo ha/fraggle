@@ -49,7 +49,7 @@ class FraggelTest < Test::Unit::TestCase
 
     opid = client.call :TEST, &callback
 
-    respond [opid, 0, :CALLED]
+    respond [opid, Fraggel::Valid, :CALLED]
 
     # Make sure the callback is called
     assert_equal :CALLED, response
@@ -58,12 +58,24 @@ class FraggelTest < Test::Unit::TestCase
   end
 
   def test_done
+    @response = []
     opid = client.call :TEST do |err|
-      @response = err
+      @response << err
     end
 
     respond [opid, Fraggel::Done]
-    assert_equal :done, response
+    assert_equal [:done], response
+    assert_nil client.callbacks[opid]
+  end
+
+  def test_valid_and_done
+    @response = []
+    opid = client.call :TEST do |err|
+      @response << err
+    end
+
+    respond [opid, Fraggel::Valid | Fraggel::Done]
+    assert_equal [nil, :done], response
     assert_nil client.callbacks[opid]
   end
 
@@ -72,7 +84,7 @@ class FraggelTest < Test::Unit::TestCase
       @response = [body, cas, err]
     end
 
-    respond [opid, 0, ["pong", "99"]]
+    respond [opid, Fraggel::Valid, ["pong", "99"]]
     assert_equal ["pong", "99", nil], response
   end
 
@@ -81,9 +93,10 @@ class FraggelTest < Test::Unit::TestCase
       @response = [body, cas, err]
     end
 
-    respond [opid, 0, StandardError.new("test")]
+    respond [opid, Fraggel::Valid, StandardError.new("test")]
     assert_equal [nil, nil], response[0..1]
     assert_equal StandardError, response[2].class
     assert_equal "ERR: test", response[2].message
   end
+
 end
