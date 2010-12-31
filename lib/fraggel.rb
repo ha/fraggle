@@ -11,6 +11,10 @@ module Fraggel
 
   Chunk  = 1024
 
+  # Create an unique object to test for
+  # set or not-set
+  None   = Object.new
+
   def self.connect(port, host="127.0.0.1")
     EM.connect(host, port, self)
   end
@@ -33,40 +37,42 @@ module Fraggel
   end
 
   def last?(flags)
-    flags | Last > 0
+    flags & Last > 0
   end
 
   def closed?(flags)
-    flags | Closed > 0
+    flags & Closed > 0
   end
 
   def receive_response(response)
     opid, flags, value = response
 
     if blk = @callbacks[opid]
-      if last?(flags) || closed?(flags)
-        @callbacks.delete(opid)
-      end
-
-      if last?(flags)
-        blk.call(value)
-      end
+      blk.call(value)
     else
       # TODO: Log something?  Raise error?
     end
   end
 
-  def call(verb, args, &blk)
+  def call(verb, args=None, &blk)
     @opid += 1
     @callbacks[@opid] = blk
-    request = [@opid, verb.to_s, args]
+
+    request = [@opid, verb.to_s]
+    if args != None
+      request << args
+    end
+
     encoded = encode(request)
+
     # TODO: Chunk with next_tick
     send_data(encoded)
+
+    @opid
   end
 
-  def set(path, body, cas, &blk)
-    call :SET, [path, body, casify(cas)] do |response|
+  def get(path, body, cas, &blk)
+    call :GET, [path, body, casify(cas)] do |response|
       if response === StandardError
         blk.call(cas, response)
       else
