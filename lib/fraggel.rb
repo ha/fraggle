@@ -76,12 +76,4 @@ module Fraggel
     end
   end
 
-  def casify(cas)
-    case cas
-    when :missing: "0"
-    when :clobber: ""
-    else cas
-    end
-  end
-
 end
