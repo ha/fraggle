@@ -36,14 +36,6 @@ module Fraggel
     @decoder.receive_data(data)
   end
 
-  def last?(flags)
-    flags & Last > 0
-  end
-
-  def closed?(flags)
-    flags & Closed > 0
-  end
-
   def receive_response(response)
     opid, flags, value = response
 
@@ -71,12 +63,12 @@ module Fraggel
     @opid
   end
 
-  def get(path, body, cas, &blk)
-    call :GET, [path, body, casify(cas)] do |response|
-      if response === StandardError
-        blk.call(cas, response)
+  def get(path, &blk)
+    call :GET, path do |res|
+      if res.kind_of?(StandardError)
+        blk.call(nil, nil, res)
       else
-        blk.call(cas, nil)
+        blk.call(*res)
       end
     end
   end
