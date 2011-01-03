@@ -130,7 +130,7 @@ module Fraggel
         blk.call(res)
       when :done
         # Do nothing
-      when
+      else
         blk.call(nil)
       end
     end
@@ -143,7 +143,7 @@ module Fraggel
         blk.call(res)
       when :done
         # Do nothing
-      when
+      else
         blk.call(nil)
       end
     end
@@ -156,7 +156,7 @@ module Fraggel
         blk.call(res)
       when :done
         # Do nothing
-      when
+      else
         blk.call(nil)
       end
     end
@@ -169,7 +169,7 @@ module Fraggel
         blk.call(nil, res)
       when :done
         # Do nothing
-      when
+      else
         blk.call(res, nil)
       end
     end
@@ -182,7 +182,7 @@ module Fraggel
         blk.call(nil, res)
       when :done
         # Do nothing
-      when
+      else
         blk.call(res, nil)
       end
     end
