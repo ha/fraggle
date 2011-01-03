@@ -228,4 +228,31 @@ class FraggelTest < Test::Unit::TestCase
     assert_nil cas
   end
 
+  def test_close_call
+    client.close(99) {}
+    expected = [
+      [:CLOSE, 99]
+    ]
+    assert_equal expected, client.called
+  end
+
+  def test_close
+    opid = client.close 99 do |err|
+      @response = err
+    end
+
+    respond [opid, Fraggel::Valid | Fraggel::Done, :OK]
+    assert_nil response
+  end
+
+  def test_close_error
+    opid = client.close 99 do |err|
+      @response = err
+    end
+
+    respond [opid, Fraggel::Valid | Fraggel::Done, StandardError.new("test")]
+    assert_equal StandardError, response.class
+    assert_equal "ERR: test", response.message
+  end
+
 end

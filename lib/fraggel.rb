@@ -123,6 +123,19 @@ module Fraggel
     end
   end
 
+  def close(opid, &blk)
+    call :CLOSE, opid do |res|
+      case res
+      when StandardError
+        blk.call(res)
+      when :done
+        # Do nothing
+      when
+        blk.call(nil)
+      end
+    end
+  end
+
   private
 
     def casify(cas)
