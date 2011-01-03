@@ -300,4 +300,35 @@ class FraggelTest < Test::Unit::TestCase
     assert_equal StandardError, response.class
     assert_equal "ERR: test", response.message
   end
+
+  ##
+  # NOOP
+  #
+  def test_del_call
+    client.noop() {}
+    expected = [
+      [:NOOP]
+    ]
+    assert_equal expected, client.called
+  end
+
+  def test_noop
+    opid = client.noop do |err|
+      @response = err
+    end
+
+    respond [opid, Fraggel::Valid | Fraggel::Done, :OK]
+    assert_nil response
+  end
+
+  def test_noop_error
+    opid = client.noop do |err|
+      @response = err
+    end
+
+    respond [opid, Fraggel::Valid | Fraggel::Done, StandardError.new("test")]
+    assert_equal StandardError, response.class
+    assert_equal "ERR: test", response.message
+  end
+
 end
