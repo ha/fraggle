@@ -304,7 +304,7 @@ class FraggelTest < Test::Unit::TestCase
   ##
   # NOOP
   #
-  def test_del_call
+  def test_noop_call
     client.noop() {}
     expected = [
       [:NOOP]
