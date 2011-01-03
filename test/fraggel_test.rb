@@ -331,4 +331,40 @@ class FraggelTest < Test::Unit::TestCase
     assert_equal "ERR: test", response.message
   end
 
+  ##
+  # SNAP
+  #
+  def test_snap_call
+    client.snap() {}
+    expected = [
+      [:SNAP]
+    ]
+    assert_equal expected, client.called
+  end
+
+  def test_snap
+    opid = client.snap do |sid, err|
+      @response = [sid, err]
+    end
+
+    respond [opid, Fraggel::Valid | Fraggel::Done, 123]
+    sid, err = response
+
+    assert_nil err
+    assert_equal 123, sid
+  end
+
+  def test_snap_error
+    opid = client.snap do |sid, err|
+      @response = [sid, err]
+    end
+
+    respond [opid, Fraggel::Valid | Fraggel::Done, StandardError.new("test")]
+    sid, err = response
+
+    assert_equal StandardError, err.class
+    assert_equal "ERR: test", err.message
+    assert_nil sid
+  end
+
 end
