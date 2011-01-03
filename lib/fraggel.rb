@@ -188,6 +188,20 @@ module Fraggel
     end
   end
 
+  def walk(glob, sid=0, &blk)
+    call :WALK, [glob, sid] do |res|
+      case res
+      when StandardError
+        blk.call(nil, nil, nil, res)
+      when :done
+        # Do nothing
+      else
+        res[2].extend Cas
+        blk.call(*res)
+      end
+    end
+  end
+
   private
 
     def casify(cas)

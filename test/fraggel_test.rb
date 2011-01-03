@@ -400,4 +400,48 @@ class FraggelTest < Test::Unit::TestCase
     assert_equal StandardError, err.class
     assert_equal "ERR: test", err.message
   end
+
+  ##
+  # WALK
+  #
+  def test_walk_call
+    client.walk("/test/**") {}
+    client.walk("/test/*", 123) {}
+    expected = [
+      [:WALK, ["/test/**", 0]],
+      [:WALK, ["/test/*", 123]],
+    ]
+    assert_equal expected, client.called
+  end
+
+  def test_walk
+    opid = client.walk "/test/**" do |path, body, cas, err|
+      @response = [path, body, cas, err]
+    end
+
+    respond [opid, Fraggel::Valid, ["/test/a", "1", "99"]]
+    path, body, cas, err = response
+
+    assert_nil   err
+    assert_equal "/test/a", path
+    assert_equal "1", body
+    assert_equal "99", cas
+    assert ! cas.dir?
+  end
+
+  def test_walk_error
+    opid = client.walk "/test/**" do |path, body, cas, err|
+      @response = [path, body, cas, err]
+    end
+
+    respond [opid, Fraggel::Valid, StandardError.new("test")]
+    path, body, cas, err = response
+
+    assert_equal StandardError, err.class
+    assert_equal "ERR: test", err.message
+    assert_nil path
+    assert_nil body
+    assert_nil cas
+  end
+
 end
