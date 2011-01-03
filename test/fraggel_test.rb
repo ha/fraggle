@@ -40,6 +40,10 @@ class FraggelTest < Test::Unit::TestCase
     client.receive_data(encode(response))
   end
 
+
+  ##
+  # call
+  #
   def test_call_sends_data
     client.call :TEST do
       # Do nothing
@@ -96,6 +100,9 @@ class FraggelTest < Test::Unit::TestCase
     assert_nil client.callbacks[opid]
   end
 
+  ##
+  # GET
+  #
   def test_get_call
     client.get("/ping") {}
     client.get("/ping", 123) {}
@@ -149,6 +156,9 @@ class FraggelTest < Test::Unit::TestCase
     assert cas.dir?
   end
 
+  ##
+  # SET
+  #
   def test_set_call
     client.set("/foo", "bar", "99") {}
     client.set("/foo", "bar", :missing) {}
@@ -188,6 +198,9 @@ class FraggelTest < Test::Unit::TestCase
     assert_nil cas
   end
 
+  ##
+  # SETT
+  #
   def test_sett_call
     client.sett("/foo", 100, "99") {}
     client.sett("/foo", 100, :missing) {}
@@ -228,6 +241,9 @@ class FraggelTest < Test::Unit::TestCase
     assert_nil cas
   end
 
+  ##
+  # CLOSE
+  #
   def test_close_call
     client.close(99) {}
     expected = [
@@ -255,4 +271,33 @@ class FraggelTest < Test::Unit::TestCase
     assert_equal "ERR: test", response.message
   end
 
+  ##
+  # DEL
+  #
+  def test_del_call
+    client.del("/foo", "68") {}
+    expected = [
+      [:DEL, ["/foo", "68"]]
+    ]
+    assert_equal expected, client.called
+  end
+
+  def test_del
+    opid = client.del "/foo", "68" do |err|
+      @response = err
+    end
+
+    respond [opid, Fraggel::Valid | Fraggel::Done, :OK]
+    assert_nil response
+  end
+
+  def test_del_error
+    opid = client.del "/foo", "123" do |err|
+      @response = err
+    end
+
+    respond [opid, Fraggel::Valid | Fraggel::Done, StandardError.new("test")]
+    assert_equal StandardError, response.class
+    assert_equal "ERR: test", response.message
+  end
 end

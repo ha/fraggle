@@ -136,6 +136,19 @@ module Fraggel
     end
   end
 
+  def del(path, cas, &blk)
+    call :DEL, [path, cas] do |res|
+      case res
+      when StandardError
+        blk.call(res)
+      when :done
+        # Do nothing
+      when
+        blk.call(nil)
+      end
+    end
+  end
+
   private
 
     def casify(cas)
