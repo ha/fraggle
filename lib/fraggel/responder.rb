@@ -13,23 +13,23 @@ module Fraggel
     end
 
     def receive_event!(name, value, &blk)
-      @rcs ||= lambda {|x|
+      @cs ||= lambda {|x|
         blk.call(x)
-        @rcs = nil
+        @cs = nil
       }
 
       case name
       when :array
-        @rcs = array!(value, [], &@rcs)
+        @cs = array!(value, [], &@cs)
       when :value
-        @rcs.call(value)
+        @cs.call(value)
       when :error
-        @rcs.call(StandardError.new(value))
+        @cs.call(StandardError.new(value))
       when :status
         # I'm not sure if this is a good idea.  Symbols are not garbage
         # collected.  If there server sends and arbitrary number of status
         # messages, this could get ugly.  I'm not sure that's a problem yet.
-        @rcs.call(value.to_sym)
+        @cs.call(value.to_sym)
       else
         fail "Unknown Type #{name.inspect}"
       end
@@ -40,7 +40,7 @@ module Fraggel
         a << x
         if c == a.length
           blk.call(a)
-          @rcs = blk
+          @cs = blk
         else
           array!(c, a, &blk)
         end
