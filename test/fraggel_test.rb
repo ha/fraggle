@@ -367,4 +367,37 @@ class FraggelTest < Test::Unit::TestCase
     assert_nil sid
   end
 
+  ##
+  # DELSNAP
+  #
+  def test_delsnap_call
+    client.delsnap() {}
+    expected = [
+      [:DELSNAP]
+    ]
+    assert_equal expected, client.called
+  end
+
+  def test_delsnap
+    opid = client.delsnap do |err|
+      @response = err
+    end
+
+    respond [opid, Fraggel::Valid | Fraggel::Done, 123]
+    sid, err = response
+
+    assert_nil err
+  end
+
+  def test_delsnap_error
+    opid = client.delsnap do |err|
+      @response = err
+    end
+
+    respond [opid, Fraggel::Valid | Fraggel::Done, StandardError.new("test")]
+    sid, err = response
+
+    assert_equal StandardError, err.class
+    assert_equal "ERR: test", err.message
+  end
 end

@@ -175,6 +175,19 @@ module Fraggel
     end
   end
 
+  def delsnap(&blk)
+    call :DELSNAP do |res|
+      case res
+      when StandardError
+        blk.call(nil, res)
+      when :done
+        # Do nothing
+      when
+        blk.call(res, nil)
+      end
+    end
+  end
+
   private
 
     def casify(cas)
