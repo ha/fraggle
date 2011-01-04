@@ -23,6 +23,19 @@ module Fraggel
     def dir?
       self == Dir
     end
+
+    def del?
+      self == "0"
+    end
+
+    def dummy?
+      empty?
+    end
+
+    def set?
+      ! del? && ! dummy?
+    end
+
   end
 
   def self.connect(port, host="127.0.0.1")
