@@ -461,4 +461,62 @@ class FraggelTest < Test::Unit::TestCase
     assert_nil cas
   end
 
+  ##
+  # WATCH
+  #
+  def test_watch_call
+    client.watch("/test/**") {}
+    expected = [
+      [:WATCH, ["/test/**"]],
+    ]
+    assert_equal expected, client.called
+  end
+
+  def test_watch
+    opid = client.watch "/test/**" do |path, body, cas, err|
+      @response = [path, body, cas, err]
+    end
+
+    respond [opid, Fraggel::Valid, ["/test/a", "1", "99"]]
+    path, body, cas, err = response
+
+    assert_nil   err
+    assert_equal "/test/a", path
+    assert_equal "1", body
+    assert_equal "99", cas
+    assert ! cas.dir?
+
+    respond [opid, Fraggel::Valid, ["/test/b", "2", "123"]]
+    path, body, cas, err = response
+
+    assert_nil   err
+    assert_equal "/test/b", path
+    assert_equal "2", body
+    assert_equal "123", cas
+    assert ! cas.dir?
+
+    respond [opid, Fraggel::Done]
+    path, body, cas, err = response
+
+    assert_equal :done, err
+    assert_nil path
+    assert_nil body
+    assert_nil cas
+  end
+
+  def test_watch_error
+    opid = client.watch "/test/**" do |path, body, cas, err|
+      @response = [path, body, cas, err]
+    end
+
+    respond [opid, Fraggel::Valid, StandardError.new("test")]
+    path, body, cas, err = response
+
+    assert_equal StandardError, err.class
+    assert_equal "ERR: test", err.message
+    assert_nil path
+    assert_nil body
+    assert_nil cas
+  end
+
 end

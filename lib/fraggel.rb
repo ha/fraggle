@@ -200,6 +200,18 @@ module Fraggel
     end
   end
 
+  def watch(glob, &blk)
+    call :WATCH, [glob] do |res|
+      case res
+      when StandardError, :done
+        blk.call(nil, nil, nil, res)
+      else
+        res[2].extend Cas
+        blk.call(*res)
+      end
+    end
+  end
+
   private
 
     def casify(cas)
