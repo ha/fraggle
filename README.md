@@ -42,6 +42,10 @@
         # cas.del?  # => false
         # ------------------------
 
+        if err == :done
+          # This watch was closed, do something if you wish.
+        end
+
         # Phoney check for example
         if can_stop_watching?(path)
           client.close(watch)
