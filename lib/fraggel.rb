@@ -191,10 +191,8 @@ module Fraggel
   def walk(glob, sid=0, &blk)
     call :WALK, [glob, sid] do |res|
       case res
-      when StandardError
+      when StandardError, :done
         blk.call(nil, nil, nil, res)
-      when :done
-        # Do nothing
       else
         res[2].extend Cas
         blk.call(*res)

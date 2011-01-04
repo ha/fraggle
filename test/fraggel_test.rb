@@ -427,6 +427,23 @@ class FraggelTest < Test::Unit::TestCase
     assert_equal "1", body
     assert_equal "99", cas
     assert ! cas.dir?
+
+    respond [opid, Fraggel::Valid, ["/test/b", "2", "123"]]
+    path, body, cas, err = response
+
+    assert_nil   err
+    assert_equal "/test/b", path
+    assert_equal "2", body
+    assert_equal "123", cas
+    assert ! cas.dir?
+
+    respond [opid, Fraggel::Done]
+    path, body, cas, err = response
+
+    assert_equal :done, err
+    assert_nil path
+    assert_nil body
+    assert_nil cas
   end
 
   def test_walk_error
