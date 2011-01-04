@@ -7,14 +7,8 @@ module Fraggel
     end
 
     def receive_event(name, value)
-      receive_event! name, value do |x|
-        @receiver.call(x)
-      end
-    end
-
-    def receive_event!(name, value, &blk)
       @cs ||= lambda {|x|
-        blk.call(x)
+        @receiver.call(x)
         @cs = nil
       }
 
@@ -39,8 +33,8 @@ module Fraggel
       lambda {|x|
         a << x
         if c == a.length
-          blk.call(a)
           @cs = blk
+          blk.call(a)
         else
           array!(c, a, &blk)
         end

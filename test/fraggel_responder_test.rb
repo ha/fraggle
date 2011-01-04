@@ -1,4 +1,4 @@
-require 'fraggel'
+require 'fraggel/responder'
 
 class FraggelResponderTest < Test::Unit::TestCase
 
@@ -63,5 +63,29 @@ class FraggelResponderTest < Test::Unit::TestCase
 
     assert_equal [1, ["a", ["b"], "c"], 2], log
   end
+
+  def test_real
+    responder.receive_event(:array, 3)
+      responder.receive_event(:value, 1)
+      responder.receive_event(:value, 1)
+      responder.receive_event(:array, 3)
+        responder.receive_event(:value, "/test/a")
+        responder.receive_event(:value, "1")
+        responder.receive_event(:value, "99")
+
+    responder.receive_event(:array, 3)
+      responder.receive_event(:value, 1)
+      responder.receive_event(:value, 1)
+      responder.receive_event(:array, 3)
+        responder.receive_event(:value, "/test/b")
+        responder.receive_event(:value, "2")
+        responder.receive_event(:value, "123")
+
+    assert_equal [
+      [1, 1, ["/test/a", "1", "99"]],
+      [1, 1, ["/test/b", "2", "123"]]
+    ], log
+  end
+
 
 end
