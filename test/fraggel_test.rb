@@ -467,7 +467,7 @@ class FraggelTest < Test::Unit::TestCase
   def test_watch_call
     client.watch("/test/**") {}
     expected = [
-      [:WATCH, ["/test/**"]],
+      [:WATCH, "/test/**"],
     ]
     assert_equal expected, client.called
   end

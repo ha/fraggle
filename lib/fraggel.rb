@@ -214,7 +214,7 @@ module Fraggel
   end
 
   def watch(glob, &blk)
-    call :WATCH, [glob] do |res|
+    call :WATCH, glob do |res|
       case res
       when StandardError, :done
         blk.call(nil, nil, nil, res)
