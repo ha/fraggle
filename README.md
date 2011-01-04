@@ -55,6 +55,9 @@
     end
 
 
+A full list of commands can be found here:
+http://github.com/bmizerany/doozer/tree/master/doc/proto.md
+
 ## Develop
 
 **Clone**
