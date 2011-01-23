@@ -37,6 +37,32 @@ class CoreTest < Test::Unit::TestCase
     assert_equal pre+buf, c.sent
   end
 
+  def test_receive_buffered_data
+    count = 0
+    c = FakeConn.new
+
+    tag = c.call(Fraggel::Request::Verb::WATCH, :path => "**") do |e|
+      count += 1
+    end
+
+    res = Fraggel::Response.new(
+      :tag   => tag,
+      :flags => Fraggel::Response::Flag::VALID
+    )
+
+    exp   = 10
+    buf   = res.encode
+    pre   = [buf.length].pack("N")
+    bytes = (pre+buf)*exp
+
+    # Chunk bytes to receive_data in some arbitrary size
+    0.step(bytes.length, 3) do |n|
+      c.receive_data(bytes.slice!(0, n))
+    end
+
+    assert_equal 10, count
+  end
+
   def test_callback_without_done
     c = FakeConn.new
 
@@ -164,9 +190,6 @@ class CoreTest < Test::Unit::TestCase
     c.call(Fraggel::Request::Verb::NOOP)
 
     assert_equal  Fraggel::MinInt32, c.tag
-  end
-
-  def test_buffered_data
   end
 
 end

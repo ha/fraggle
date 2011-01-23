@@ -33,12 +33,22 @@ module Fraggel
     @buf = ""
     @tag = 0
     @cbx = {}
+    @len = nil
   end
 
   def receive_data(data)
-    # TODO: stream
-    res = Response.decode(data)
-    receive_response(res)
+    @buf << data
+
+    if ! @len && @buf.length >= 4
+      @len = @buf.slice!(0, 4).unpack("N").first
+    end
+
+    if @len && @buf.length >= @len
+      bytes = @buf.slice!(0, @len)
+      res   = Response.decode(bytes)
+      receive_response(res)
+      @len = nil
+    end
   end
 
   def receive_response(res)
