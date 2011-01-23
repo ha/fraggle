@@ -122,4 +122,18 @@ class FraggelTest < Test::Unit::TestCase
     assert_equal 1, c.call(Fraggel::Request::Verb::NOOP)
   end
 
+  def test_call_increments_tag
+    c = FakeConn.new
+    assert_equal  1, c.call(Fraggel::Request::Verb::NOOP)
+    assert_equal  2, c.call(Fraggel::Request::Verb::NOOP)
+    assert_equal  3, c.call(Fraggel::Request::Verb::NOOP)
+    assert_equal  4, c.call(Fraggel::Request::Verb::NOOP)
+    assert_equal  5, c.call(Fraggel::Request::Verb::NOOP)
+    assert_equal  6, c.call(Fraggel::Request::Verb::NOOP)
+    assert_equal  7, c.call(Fraggel::Request::Verb::NOOP)
+    assert_equal  8, c.call(Fraggel::Request::Verb::NOOP)
+    assert_equal  9, c.call(Fraggel::Request::Verb::NOOP)
+    assert_equal 10, c.call(Fraggel::Request::Verb::NOOP)
+  end
+
 end
