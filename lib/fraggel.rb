@@ -68,7 +68,7 @@ module Fraggel
 
     attrs[:verb] = verb
     attrs[:tag]  = @tag
-    @cbx[tag]    = blk
+    @cbx[@tag]   = blk
 
     send_request(Request.new(attrs))
 
