@@ -103,4 +103,18 @@ class FraggelTest < Test::Unit::TestCase
     end
   end
 
+  def test_no_callback_gc
+    c = FakeConn.new
+    c.call(Fraggel::Request::Verb::NOOP)
+
+    res = Fraggel::Response.new(
+      :tag   => 1,
+      :flags => Fraggel::Response::Flag::VALID | Fraggel::Response::Flag::DONE
+    )
+
+    c.receive_response(res)
+
+    assert ! c.cbx.has_key?(1)
+  end
+
 end
