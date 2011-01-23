@@ -117,4 +117,9 @@ class FraggelTest < Test::Unit::TestCase
     assert ! c.cbx.has_key?(1)
   end
 
+  def test_call_returns_tag
+    c = FakeConn.new
+    assert_equal 1, c.call(Fraggel::Request::Verb::NOOP)
+  end
+
 end

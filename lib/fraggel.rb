@@ -62,6 +62,8 @@ module Fraggel
     @cbx[tag]    = blk
 
     send_request(Request.new(attrs))
+
+    tag
   end
 
   def send_request(req)
