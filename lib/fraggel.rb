@@ -56,9 +56,6 @@ module Fraggel
     end
   end
 
-  def get(path, sid=0, &blk)
-  end
-
   def call(verb, attrs={}, &blk)
     if @tag == MaxInt32
       @tag = MinInt32
