@@ -125,16 +125,26 @@ class FraggelTest < Test::Unit::TestCase
 
   def test_call_increments_tag
     c = FakeConn.new
-    assert_equal  1, c.call(Fraggel::Request::Verb::NOOP)
-    assert_equal  2, c.call(Fraggel::Request::Verb::NOOP)
-    assert_equal  3, c.call(Fraggel::Request::Verb::NOOP)
-    assert_equal  4, c.call(Fraggel::Request::Verb::NOOP)
-    assert_equal  5, c.call(Fraggel::Request::Verb::NOOP)
-    assert_equal  6, c.call(Fraggel::Request::Verb::NOOP)
-    assert_equal  7, c.call(Fraggel::Request::Verb::NOOP)
-    assert_equal  8, c.call(Fraggel::Request::Verb::NOOP)
-    assert_equal  9, c.call(Fraggel::Request::Verb::NOOP)
-    assert_equal 10, c.call(Fraggel::Request::Verb::NOOP)
+    c.call(Fraggel::Request::Verb::NOOP)
+    assert_equal  1, c.tag
+    c.call(Fraggel::Request::Verb::NOOP)
+    assert_equal  2, c.tag
+    c.call(Fraggel::Request::Verb::NOOP)
+    assert_equal  3, c.tag
+    c.call(Fraggel::Request::Verb::NOOP)
+    assert_equal  4, c.tag
+    c.call(Fraggel::Request::Verb::NOOP)
+    assert_equal  5, c.tag
+    c.call(Fraggel::Request::Verb::NOOP)
+    assert_equal  6, c.tag
+    c.call(Fraggel::Request::Verb::NOOP)
+    assert_equal  7, c.tag
+    c.call(Fraggel::Request::Verb::NOOP)
+    assert_equal  8, c.tag
+    c.call(Fraggel::Request::Verb::NOOP)
+    assert_equal  9, c.tag
+    c.call(Fraggel::Request::Verb::NOOP)
+    assert_equal 10, c.tag
   end
 
   def test_no_overlap_in_tags
