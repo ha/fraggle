@@ -57,13 +57,18 @@ module Fraggel
   end
 
   def call(verb, attrs={}, &blk)
+    while true
+      @tag += 1
+      break if ! @cbx.has_key?(@tag)
+    end
+
     attrs[:verb] = verb
-    attrs[:tag]  = tag = @tag += 1
+    attrs[:tag]  = @tag
     @cbx[tag]    = blk
 
     send_request(Request.new(attrs))
 
-    tag
+    @tag
   end
 
   def send_request(req)

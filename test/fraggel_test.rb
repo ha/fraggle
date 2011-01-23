@@ -3,7 +3,8 @@ require 'fraggel'
 class FakeConn
   include Fraggel
 
-  attr_reader :sent, :cbx
+  attr_reader   :sent, :cbx
+  attr_accessor :tag
 
   def initialize
     @sent = ""
@@ -134,6 +135,13 @@ class FraggelTest < Test::Unit::TestCase
     assert_equal  8, c.call(Fraggel::Request::Verb::NOOP)
     assert_equal  9, c.call(Fraggel::Request::Verb::NOOP)
     assert_equal 10, c.call(Fraggel::Request::Verb::NOOP)
+  end
+
+  def test_no_overlap_in_tags
+    c = FakeConn.new
+
+    c.cbx[1] = Proc.new {}
+    assert_equal 2, c.call(Fraggel::Request::Verb::NOOP)
   end
 
 end
