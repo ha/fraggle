@@ -54,8 +54,12 @@ module Fraggel
   def receive_response(res)
     blk = @cbx[res.tag]
 
-    if res.valid?
-      blk.call(res, false) if blk
+    if blk && res.valid?
+      if blk.arity == 2
+        blk.call(res, false)
+      else
+        blk.call(res)
+      end
     end
 
     if res.done?
