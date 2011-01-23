@@ -6,7 +6,7 @@ class LiveTest < Test::Unit::TestCase
       c = Fraggel.connect
 
       c.get "/ping" do |e|
-        assert_equal nil, e
+        assert_equal "pong", e.value
         EM.stop
       end
     end

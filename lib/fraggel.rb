@@ -96,4 +96,12 @@ module Fraggel
     send_data(buf)
   end
 
+
+
+  ##
+  # Sugar
+  def get(path, sid=0, &blk)
+    call(Request::Verb::GET, :path => path, :id => sid, &blk)
+  end
+
 end
