@@ -1,5 +1,8 @@
 require 'fraggel'
 
+##
+# This is used to test core functionality that the live integration tests will
+# rely on.
 class FakeConn
   include Fraggel
 
@@ -16,7 +19,7 @@ class FakeConn
   end
 end
 
-class FraggelTest < Test::Unit::TestCase
+class CoreTest < Test::Unit::TestCase
 
   def test_sending_data
     c = FakeConn.new
