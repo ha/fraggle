@@ -89,4 +89,18 @@ class FraggelTest < Test::Unit::TestCase
     assert tests.empty?
   end
 
+  def test_no_callback
+    c = FakeConn.new
+    c.call(Fraggel::Request::Verb::NOOP)
+
+    res = Fraggel::Response.new(
+      :tag   => 1,
+      :flags => Fraggel::Response::Flag::VALID | Fraggel::Response::Flag::DONE
+    )
+
+    assert_nothing_raised do
+      c.receive_response(res)
+    end
+  end
+
 end
