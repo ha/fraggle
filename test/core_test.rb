@@ -67,7 +67,7 @@ class CoreTest < Test::Unit::TestCase
     c = FakeConn.new
 
     valid = lambda do |e|
-      assert_not_nil e
+      assert_kind_of Fraggel::Response, e
     end
 
     done = lambda do |e|
@@ -77,7 +77,7 @@ class CoreTest < Test::Unit::TestCase
     tests = [valid, done]
 
     c.call(Fraggel::Request::Verb::NOOP) do |e|
-      tests.shift.call(e, false)
+      tests.shift.call(e)
     end
 
     res = Fraggel::Response.new(
@@ -94,13 +94,13 @@ class CoreTest < Test::Unit::TestCase
     c = FakeConn.new
 
     valid = lambda do |e, done|
-      assert_not_nil e
-      assert ! done
+      assert_kind_of Fraggel::Response, e
+      assert_equal false, done
     end
 
     done = lambda do |e, done|
       assert_nil e
-      assert done
+      assert_equal true, done
     end
 
     tests = [valid, done]
