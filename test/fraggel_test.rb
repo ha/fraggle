@@ -144,4 +144,15 @@ class FraggelTest < Test::Unit::TestCase
     assert_equal 2, c.call(Fraggel::Request::Verb::NOOP)
   end
 
+  def test_rollover_tag_when_maxed_out
+    c = FakeConn.new
+    c.tag = Fraggel::MaxInt32
+    c.call(Fraggel::Request::Verb::NOOP)
+
+    assert_equal  Fraggel::MinInt32, c.tag
+  end
+
+  def test_buffered_data
+  end
+
 end

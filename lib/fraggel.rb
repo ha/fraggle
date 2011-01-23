@@ -4,6 +4,9 @@ require 'fraggel/proto'
 
 module Fraggel
 
+  MaxInt32 = (1<<31)-1
+  MinInt32 = -(1<<31)
+
   ##
   # Response extensions
   class Response
@@ -28,7 +31,7 @@ module Fraggel
 
   def post_init
     @buf = ""
-    @tag = 0
+    @tag = 1
     @cbx = {}
   end
 
@@ -57,9 +60,13 @@ module Fraggel
   end
 
   def call(verb, attrs={}, &blk)
+    if @tag == MaxInt32
+      @tag = MinInt32
+    end
+
     while true
-      @tag += 1
       break if ! @cbx.has_key?(@tag)
+      @tag += 1
     end
 
     attrs[:verb] = verb
