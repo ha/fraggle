@@ -24,7 +24,7 @@ class FraggelTest < Test::Unit::TestCase
     c.call(Fraggel::Request::Verb::NOOP)
 
     req = Fraggel::Request.new(
-      :tag   => 1,
+      :tag   => c.tag,
       :verb  => Fraggel::Request::Verb::NOOP
     )
 
@@ -52,7 +52,7 @@ class FraggelTest < Test::Unit::TestCase
     end
 
     res = Fraggel::Response.new(
-      :tag   => 1,
+      :tag   => c.tag,
       :flags => Fraggel::Response::Flag::VALID | Fraggel::Response::Flag::DONE
     )
 
@@ -81,7 +81,7 @@ class FraggelTest < Test::Unit::TestCase
     end
 
     res = Fraggel::Response.new(
-      :tag   => 1,
+      :tag   => c.tag,
       :flags => Fraggel::Response::Flag::VALID | Fraggel::Response::Flag::DONE
     )
 
@@ -95,7 +95,7 @@ class FraggelTest < Test::Unit::TestCase
     c.call(Fraggel::Request::Verb::NOOP)
 
     res = Fraggel::Response.new(
-      :tag   => 1,
+      :tag   => c.tag,
       :flags => Fraggel::Response::Flag::VALID | Fraggel::Response::Flag::DONE
     )
 
@@ -109,7 +109,7 @@ class FraggelTest < Test::Unit::TestCase
     c.call(Fraggel::Request::Verb::NOOP)
 
     res = Fraggel::Response.new(
-      :tag   => 1,
+      :tag   => c.tag,
       :flags => Fraggel::Response::Flag::VALID | Fraggel::Response::Flag::DONE
     )
 
@@ -120,38 +120,39 @@ class FraggelTest < Test::Unit::TestCase
 
   def test_call_returns_tag
     c = FakeConn.new
+    assert_equal 0, c.call(Fraggel::Request::Verb::NOOP)
     assert_equal 1, c.call(Fraggel::Request::Verb::NOOP)
   end
 
   def test_call_increments_tag
     c = FakeConn.new
     c.call(Fraggel::Request::Verb::NOOP)
-    assert_equal  1, c.tag
+    assert_equal 0, c.tag
     c.call(Fraggel::Request::Verb::NOOP)
-    assert_equal  2, c.tag
+    assert_equal 1, c.tag
     c.call(Fraggel::Request::Verb::NOOP)
-    assert_equal  3, c.tag
+    assert_equal 2, c.tag
     c.call(Fraggel::Request::Verb::NOOP)
-    assert_equal  4, c.tag
+    assert_equal 3, c.tag
     c.call(Fraggel::Request::Verb::NOOP)
-    assert_equal  5, c.tag
+    assert_equal 4, c.tag
     c.call(Fraggel::Request::Verb::NOOP)
-    assert_equal  6, c.tag
+    assert_equal 5, c.tag
     c.call(Fraggel::Request::Verb::NOOP)
-    assert_equal  7, c.tag
+    assert_equal 6, c.tag
     c.call(Fraggel::Request::Verb::NOOP)
-    assert_equal  8, c.tag
+    assert_equal 7, c.tag
     c.call(Fraggel::Request::Verb::NOOP)
-    assert_equal  9, c.tag
+    assert_equal 8, c.tag
     c.call(Fraggel::Request::Verb::NOOP)
-    assert_equal 10, c.tag
+    assert_equal 9, c.tag
   end
 
   def test_no_overlap_in_tags
     c = FakeConn.new
 
-    c.cbx[1] = Proc.new {}
-    assert_equal 2, c.call(Fraggel::Request::Verb::NOOP)
+    c.cbx[0] = Proc.new {}
+    assert_equal 1, c.call(Fraggel::Request::Verb::NOOP)
   end
 
   def test_rollover_tag_when_maxed_out

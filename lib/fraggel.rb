@@ -31,7 +31,7 @@ module Fraggel
 
   def post_init
     @buf = ""
-    @tag = 1
+    @tag = 0
     @cbx = {}
   end
 
