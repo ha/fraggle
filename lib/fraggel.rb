@@ -142,6 +142,15 @@ module Fraggel
     )
   end
 
+  def del(path, cas, &blk)
+    call(
+      Request::Verb::DEL,
+      :path => path,
+      :cas  => cas,
+      &blk
+    )
+  end
+
   def watch(glob, &blk)
     call(
       Request::Verb::WALK,

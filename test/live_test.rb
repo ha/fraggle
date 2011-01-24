@@ -42,6 +42,19 @@ class LiveTest < Test::Unit::TestCase
     end
   end
 
+  def test_del
+    start do |c|
+      c.set "/test-del", "a", :clobber do |e|
+        assert e.ok?, e.err_detail
+
+        c.del("/test-del", e.cas) do |de|
+          assert de.ok?, de.err_detail
+          stop
+        end
+      end
+    end
+  end
+
   def test_error
     start do |c|
       c.set "/test-error", "a", :clobber do |ea|
