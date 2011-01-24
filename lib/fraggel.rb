@@ -101,7 +101,30 @@ module Fraggel
   ##
   # Sugar
   def get(path, sid=0, &blk)
-    call(Request::Verb::GET, :path => path, :id => sid, &blk)
+    call(
+      Request::Verb::GET,
+      :path => path,
+      :id => sid,
+      &blk
+    )
+  end
+
+  def set(path, body, cas, &blk)
+    call(
+      Request::Verb::SET,
+      :path => path,
+      :body => body,
+      :cas => casify(cas),
+      &blk
+    )
+  end
+
+  def casify(cas)
+    case cas
+    when :missing then 0
+    when :clobber then -1
+    else cas
+    end
   end
 
 end
