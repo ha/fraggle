@@ -147,6 +147,25 @@ class CoreTest < Test::Unit::TestCase
     assert ! c.cbx.has_key?(1)
   end
 
+  def test_callback_gc
+    c = FakeConn.new
+    c.call(Fraggel::Request::Verb::NOOP) {}
+
+    res = Fraggel::Response.new(
+      :tag   => c.tag,
+      :flags => Fraggel::Response::Flag::VALID
+    )
+
+    c.receive_response(res)
+
+    assert c.cbx.has_key?(c.tag)
+
+    res.flags = Fraggel::Response::Flag::DONE
+    c.receive_response(res)
+
+    assert ! c.cbx.has_key?(c.tag)
+  end
+
   def test_call_returns_tag
     c = FakeConn.new
     assert_equal 0, c.call(Fraggel::Request::Verb::NOOP)

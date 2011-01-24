@@ -62,7 +62,7 @@ module Fraggel
   def receive_data(data)
     @buf << data
 
-    if ! @len && @buf.length >= 4
+    if @len.nil? && @buf.length >= 4
       @len = @buf.slice!(0, 4).unpack("N").first
     end
 
