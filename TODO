@@ -3,19 +3,19 @@
   [ ] Better id gen
 [X] GET      = 1;  # path, id         => cas, value
 [X] SET      = 2;  # cas, path, value => cas
-[?] DEL      = 3;  # cas, path        => {}
+[X] DEL      = 3;  # cas, path        => {}
 [?] ESET     = 4;  # cas, path        => {}
 [X] SNAP     = 5;  # {}               => seqn, id
 [X] DELSNAP  = 6;  # id               => {}
 [X] NOOP     = 7;  # {}               => {}
 [X] WATCH    = 8;  # path             => {cas, path, value}+
 [X] CANCEL   = 10; # id               => {}
+[X] WALK     = 9;  # path, id         => {cas, path, value}+
+[ ] SYNCPATH = 12; # path             => cas, value
 
 [ ] # future
 [ ] GETDIR   = 14; # path             => {cas, value}+
 [ ] MONITOR  = 11; # path             => {cas, path, value}+
-[ ] SYNCPATH = 12; # path             => cas, value
-[X] WALK     = 9;  # path, id         => {cas, path, value}+
 
 [ ] # deprecated
 [ ] JOIN     = 13;
