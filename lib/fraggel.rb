@@ -151,6 +151,14 @@ module Fraggel
     )
   end
 
+  def cancel(id, &blk)
+    call(
+      Request::Verb::NOOP,
+      :id => id,
+      &blk
+    )
+  end
+
   private
 
   def casify(cas)

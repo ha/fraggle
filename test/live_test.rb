@@ -122,4 +122,22 @@ class LiveTest < Test::Unit::TestCase
     end
   end
 
+  def test_cancel
+    start do |c|
+      tag = c.watch("/**") do |e, done|
+        if ! done
+          assert e.ok?, e.err_detail
+        end
+
+        if done
+          stop
+        end
+
+        c.cancel(tag)
+      end
+
+      c.set("/test-cancel", "a", :clobber)
+    end
+  end
+
 end
