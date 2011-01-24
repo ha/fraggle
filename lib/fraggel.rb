@@ -64,11 +64,10 @@ module Fraggel
 
     got = true
     while got
+      got = false
+
       if @len.nil? && @buf.length >= 4
         @len = @buf.slice!(0, 4).unpack("N").first
-        got = true
-      else
-        got = false
       end
 
       if @len && @buf.length >= @len
@@ -77,8 +76,6 @@ module Fraggel
         receive_response(res)
         @len = nil
         got = true
-      else
-        got = false
       end
     end
   end
