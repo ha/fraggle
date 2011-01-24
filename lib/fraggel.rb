@@ -168,6 +168,7 @@ module Fraggel
   def delsnap(id, &blk)
     call(
       Request::Verb::DELSNAP,
+      :id => id,
       &blk
     )
   end

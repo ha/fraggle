@@ -108,7 +108,7 @@ class LiveTest < Test::Unit::TestCase
           assert de.ok?, de.err_detail
 
           c.get "/ping", se.id do |ge|
-            assert ge.ok?, ge.err_detail
+            assert ! ge.ok?, ge.err_detail
             stop
           end
         end
