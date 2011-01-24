@@ -140,4 +140,28 @@ class LiveTest < Test::Unit::TestCase
     end
   end
 
+  def test_walk
+    start do |c|
+      exp = [
+        ["/test-walk/1", "a"],
+        ["/test-walk/2", "b"],
+        ["/test-walk/3", "c"]
+      ]
+
+      exp.each do |path, val|
+        c.set path, val, :clobber
+      end
+
+      items = []
+      c.walk "/test-walk/*" do |e, done|
+        if done
+          assert_equal exp, items
+          stop
+        else
+          items << [e.path, e.value]
+        end
+      end
+    end
+  end
+
 end

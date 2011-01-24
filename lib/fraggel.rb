@@ -130,6 +130,14 @@ module Fraggel
     )
   end
 
+  def walk(glob, &blk)
+    call(
+      Request::Verb::WALK,
+      :path => glob,
+      &blk
+    )
+  end
+
   def snap(&blk)
     call(
       Request::Verb::SNAP,
