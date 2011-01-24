@@ -80,6 +80,7 @@ class LiveTest < Test::Unit::TestCase
 
         c.snap do |se|
           assert se.ok?, se.err_detail
+          assert_not_equal 0, se.id
 
           c.set "/test-snap", "b", :clobber do |e|
             assert e.ok?, e.err_detail
@@ -100,12 +101,14 @@ class LiveTest < Test::Unit::TestCase
     start do |c|
       c.snap do |se|
         assert se.ok?, se.err_detail
+        assert_not_equal 0, se.id
+
 
         c.delsnap se.id do |de|
           assert de.ok?, de.err_detail
 
           c.get "/ping", se.id do |ge|
-            assert ge.ok?, se.err_detail
+            assert ge.ok?, ge.err_detail
             stop
           end
         end
