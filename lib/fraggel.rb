@@ -40,27 +40,27 @@ module Fraggel
   def session(name="fraggel", &blk)
     raise ArgumentError, "no block given" if ! blk
 
-    @id = gen_key(name)
+    id = gen_key(name)
 
     fun = lambda do |e|
       raise e.err_detail if ! e.ok?
-      checkin(e.cas, @id, &fun)
+      checkin(e.cas, id, &fun)
     end
 
     established = lambda do |e|
       case true
       when e.mismatch?
-        @id = gen_key(name)
-        checkin(0, @id, &established)
+        id = gen_key(name)
+        checkin(0, id, &established)
       when ! e.ok?
         raise e.err_detail
       else
         blk.call
-        checkin(e.cas, @id, &fun)
+        checkin(e.cas, id, &fun)
       end
     end
 
-    checkin(0, @id, &established)
+    checkin(0, id, &established)
   end
 
   def checkin(cas, id, &blk)
