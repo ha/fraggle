@@ -32,11 +32,26 @@ module Fraggel
     EM.connect(host, port, self)
   end
 
+  def session!
+    blk = lambda { |e| checkin(e.cas, @id, &blk) }
+    checkin(0, @id, &blk)
+  end
+
+  def checkin(cas, id, &blk)
+    call(
+      Request::Verb::CHECKIN,
+      :cas => cas,
+      :id => id,
+      &blk
+    )
+  end
+
   def post_init
     @buf = ""
     @tag = 0
     @cbx = {}
     @len = nil
+    @id = gen_id
   end
 
   def receive_data(data)
@@ -175,6 +190,19 @@ module Fraggel
     when :clobber then -1
     else cas
     end
+  end
+
+  def gen_id(size=32)
+    s = ""
+    size.times do
+      s << (
+        i = Kernel.rand(62)
+        i += (
+          (i < 10) ? 48 : ((i < 36) ? 55 : 61 )
+        )
+      ).chr
+    end
+    s
   end
 
 end
