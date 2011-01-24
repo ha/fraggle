@@ -34,10 +34,15 @@ module Fraggel
 
   def session!
     blk = lambda do |e|
-      if ! e.ok?
+      case true
+      when e.mismatch?
+        @id = gen_id
+        checkin(0, @id, &blk)
+      when ! e.ok?
         raise e.err_detail
+      else
+        checkin(e.cas, @id, &blk)
       end
-      checkin(e.cas, @id, &blk)
     end
     checkin(0, @id, &blk)
   end
