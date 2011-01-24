@@ -149,7 +149,9 @@ class LiveTest < Test::Unit::TestCase
       ]
 
       exp.each do |path, val|
-        c.set path, val, :clobber
+        c.set path, val, :clobber do |e|
+          assert e.ok?, e.err_detail
+        end
       end
 
       items = []
