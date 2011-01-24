@@ -33,7 +33,12 @@ module Fraggel
   end
 
   def session!
-    blk = lambda { |e| checkin(e.cas, @id, &blk) }
+    blk = lambda do |e|
+      if ! e.ok?
+        raise e.err_detail
+      end
+      checkin(e.cas, @id, &blk)
+    end
     checkin(0, @id, &blk)
   end
 
@@ -41,7 +46,7 @@ module Fraggel
     call(
       Request::Verb::CHECKIN,
       :cas => cas,
-      :id => id,
+      :path => id.to_s,
       &blk
     )
   end
@@ -192,17 +197,8 @@ module Fraggel
     end
   end
 
-  def gen_id(size=32)
-    s = ""
-    size.times do
-      s << (
-        i = Kernel.rand(62)
-        i += (
-          (i < 10) ? 48 : ((i < 36) ? 55 : 61 )
-        )
-      ).chr
-    end
-    s
+  def gen_id
+    rand(MaxInt32)
   end
 
 end
