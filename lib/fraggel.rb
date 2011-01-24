@@ -130,6 +130,13 @@ module Fraggel
     )
   end
 
+  def snap(&blk)
+    call(
+      Request::Verb::SNAP,
+      &blk
+    )
+  end
+
   private
 
   def casify(cas)

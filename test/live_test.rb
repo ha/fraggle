@@ -72,4 +72,27 @@ class LiveTest < Test::Unit::TestCase
       end
     end
   end
+
+  def test_snap
+    start do |c|
+      c.set "/test-snap", "a", :clobber do |e|
+        assert e.ok?, e.err_detail
+
+        c.snap do |se|
+          assert se.ok?, se.err_detail
+
+          c.set "/test-snap", "b", :clobber do |e|
+            assert e.ok?, e.err_detail
+
+            c.get "/test-snap", se.id do |ge|
+              assert ge.ok?, ge.err_detail
+              assert_equal "a", ge.value
+              stop
+            end
+          end
+        end
+      end
+    end
+  end
+
 end
