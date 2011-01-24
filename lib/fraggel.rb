@@ -32,19 +32,28 @@ module Fraggel
     EM.connect(host, port, self)
   end
 
-  def session!
-    blk = lambda do |e|
+  def session(&blk)
+    raise ArgumentError, "no block given" if ! blk
+
+    fun = lambda do |e|
+      raise e.err_detail if ! e.ok?
+      checkin(e.cas, @id, &fun)
+    end
+
+    established = lambda do |e|
       case true
       when e.mismatch?
         @id = gen_id
-        checkin(0, @id, &blk)
+        checkin(0, @id, &established)
       when ! e.ok?
         raise e.err_detail
       else
-        checkin(e.cas, @id, &blk)
+        blk.call
+        checkin(e.cas, @id, &fun)
       end
     end
-    checkin(0, @id, &blk)
+
+    checkin(0, @id, &established)
   end
 
   def checkin(cas, id, &blk)
