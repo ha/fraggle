@@ -103,6 +103,7 @@ class LiveTest < Test::Unit::TestCase
 
         c.delsnap se.id do |de|
           assert de.ok?, de.err_detail
+
           c.get "/ping", se.id do |ge|
             assert ge.ok?, se.err_detail
             stop
