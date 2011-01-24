@@ -22,6 +22,9 @@ module Fraggel
     def done?
       (flags & Flag::DONE) > 0
     end
+
+    def ok?       ; err_code == nil ; end
+    def mismatch? ; err_code == Err::CAS_MISMATCH ; end
   end
 
   def self.connect(port=8046, host="127.0.0.1")

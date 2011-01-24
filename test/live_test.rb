@@ -18,7 +18,8 @@ class LiveTest < Test::Unit::TestCase
   def test_get
     start do |c|
       c.get "/ping" do |e|
-        assert e.cas > 0
+        assert_nil   e.err_code
+        assert       e.cas > 0
         assert_equal "pong", e.value
         stop
       end
@@ -31,6 +32,19 @@ class LiveTest < Test::Unit::TestCase
         assert_nil e.err_code
         assert     e.cas > 0
         assert_nil e.value
+        stop
+      end
+    end
+  end
+
+  def test_error
+    start do |c|
+      c.set "/ping", "dummy", 999999 do |e|
+        assert e.mismatch?
+      end
+
+      c.set "/foo", "bar", :clobber do |e|
+        assert ! e.mismatch?
         stop
       end
     end
