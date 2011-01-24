@@ -1,6 +1,6 @@
 [I] CHECKIN  = 0;  # cas, id          => cas
   [X] Fist pass impl
-  [ ] Better id gen
+  [X] Better id gen
 [X] GET      = 1;  # path, id         => cas, value
 [X] SET      = 2;  # cas, path, value => cas
 [X] DEL      = 3;  # cas, path        => {}

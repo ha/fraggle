@@ -32,8 +32,15 @@ module Fraggel
     EM.connect(host, port, self)
   end
 
-  def session(&blk)
+  def gen_key(name, size=16)
+    nibbles = "0123456789abcdef"
+    "#{name}." + (0...size).map { nibbles[rand(nibbles.length)].chr }.join
+  end
+
+  def session(name="fraggel", &blk)
     raise ArgumentError, "no block given" if ! blk
+
+    @id = gen_key(name)
 
     fun = lambda do |e|
       raise e.err_detail if ! e.ok?
@@ -43,7 +50,7 @@ module Fraggel
     established = lambda do |e|
       case true
       when e.mismatch?
-        @id = gen_id
+        @id = gen_key(name)
         checkin(0, @id, &established)
       when ! e.ok?
         raise e.err_detail
@@ -70,7 +77,6 @@ module Fraggel
     @tag = 0
     @cbx = {}
     @len = nil
-    @id = gen_id
   end
 
   def receive_data(data)
@@ -225,10 +231,6 @@ module Fraggel
     when :clobber then -1
     else cas
     end
-  end
-
-  def gen_id
-    rand(MaxInt32)
   end
 
 end
