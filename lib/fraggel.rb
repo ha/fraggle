@@ -116,7 +116,7 @@ module Fraggel
     call(
       Request::Verb::SET,
       :path => path,
-      :body => body,
+      :value => body,
       :cas => casify(cas),
       &blk
     )

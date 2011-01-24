@@ -29,10 +29,14 @@ class LiveTest < Test::Unit::TestCase
   def test_set
     start do |c|
       c.set "/foo", "bar", :clobber do |e|
-        assert_nil e.err_code
+        assert e.ok?, e.err_detail
         assert     e.cas > 0
         assert_nil e.value
-        stop
+        c.get "/foo" do |e|
+          assert e.ok?, e.err_detail
+          assert_equal "bar", e.value
+          stop
+        end
       end
     end
   end
