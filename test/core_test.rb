@@ -37,7 +37,7 @@ class CoreTest < Test::Unit::TestCase
     assert_equal pre+buf, c.sent
   end
 
-  def test_receive_buffered_data
+  def test_receive_small_buffered_data
     count = 0
     c = FakeConn.new
 
@@ -59,6 +59,29 @@ class CoreTest < Test::Unit::TestCase
     0.step(bytes.length, 3) do |n|
       c.receive_data(bytes.slice!(0, n))
     end
+
+    assert_equal 10, count
+  end
+
+  def test_receive_large_buffered_data
+    count = 0
+    c = FakeConn.new
+
+    tag = c.call(Fraggel::Request::Verb::WATCH, :path => "**") do |e|
+      count += 1
+    end
+
+    res = Fraggel::Response.new(
+      :tag   => tag,
+      :flags => Fraggel::Response::Flag::VALID
+    )
+
+    exp   = 10
+    buf   = res.encode
+    pre   = [buf.length].pack("N")
+    bytes = (pre+buf)*exp
+
+    c.receive_data(bytes)
 
     assert_equal 10, count
   end

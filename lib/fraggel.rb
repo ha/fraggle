@@ -62,15 +62,24 @@ module Fraggel
   def receive_data(data)
     @buf << data
 
-    if @len.nil? && @buf.length >= 4
-      @len = @buf.slice!(0, 4).unpack("N").first
-    end
+    got = true
+    while got
+      if @len.nil? && @buf.length >= 4
+        @len = @buf.slice!(0, 4).unpack("N").first
+        got = true
+      else
+        got = false
+      end
 
-    if @len && @buf.length >= @len
-      bytes = @buf.slice!(0, @len)
-      res   = Response.decode(bytes)
-      receive_response(res)
-      @len = nil
+      if @len && @buf.length >= @len
+        bytes = @buf.slice!(0, @len)
+        res   = Response.decode(bytes)
+        receive_response(res)
+        @len = nil
+        got = true
+      else
+        got = false
+      end
     end
   end
 
