@@ -17,3 +17,5 @@
 
 [ ] # deprecated
 [ ] JOIN     = 13;
+
+[ ] Sugar for Fraggel::Response (i.e. dir? ...)
