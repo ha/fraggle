@@ -113,4 +113,13 @@ class LiveTest < Test::Unit::TestCase
     end
   end
 
+  def test_noop
+    start do |c|
+      c.noop do |e|
+        assert e.ok?, e.err_detail
+        stop
+      end
+    end
+  end
+
 end

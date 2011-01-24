@@ -144,6 +144,13 @@ module Fraggel
     )
   end
 
+  def noop(&blk)
+    call(
+      Request::Verb::NOOP,
+      &blk
+    )
+  end
+
   private
 
   def casify(cas)
