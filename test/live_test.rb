@@ -49,4 +49,22 @@ class LiveTest < Test::Unit::TestCase
       end
     end
   end
+
+  def test_watch
+    start do |c|
+      count = 0
+      c.watch("/**") do |e|
+        assert e.ok?, e.err_detail
+
+        count += 1
+        if count == 9
+          stop
+        end
+      end
+
+      10.times do
+        EM.next_tick { c.set("/foo", "bar", :clobber) }
+      end
+    end
+  end
 end

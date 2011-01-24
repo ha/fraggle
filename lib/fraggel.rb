@@ -122,6 +122,16 @@ module Fraggel
     )
   end
 
+  def watch(glob, &blk)
+    call(
+      Request::Verb::WALK,
+      :path => glob,
+      &blk
+    )
+  end
+
+  private
+
   def casify(cas)
     case cas
     when :missing then 0
