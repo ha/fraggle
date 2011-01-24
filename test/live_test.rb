@@ -18,8 +18,8 @@ class LiveTest < Test::Unit::TestCase
   def test_get
     start do |c|
       c.get "/ping" do |e|
-        assert_nil   e.err_code
-        assert       e.cas > 0
+        assert e.ok?, e.err_detail
+        assert e.cas > 0
         assert_equal "pong", e.value
         stop
       end
@@ -28,13 +28,14 @@ class LiveTest < Test::Unit::TestCase
 
   def test_set
     start do |c|
-      c.set "/foo", "bar", :clobber do |e|
-        assert e.ok?, e.err_detail
-        assert     e.cas > 0
-        assert_nil e.value
-        c.get "/foo" do |e|
-          assert e.ok?, e.err_detail
-          assert_equal "bar", e.value
+      c.set "/test-set", "a", :clobber do |ea|
+        assert ea.ok?, ea.err_detail
+        assert ea.cas > 0
+        assert_nil ea.value
+
+        c.get "/test-set" do |eb|
+          assert eb.ok?, eb.err_detail
+          assert_equal "a", eb.value
           stop
         end
       end
@@ -43,13 +44,13 @@ class LiveTest < Test::Unit::TestCase
 
   def test_error
     start do |c|
-      c.set "/ping", "dummy", 999999 do |e|
-        assert e.mismatch?
-      end
-
-      c.set "/foo", "bar", :clobber do |e|
-        assert ! e.mismatch?
-        stop
+      c.set "/test-error", "a", :clobber do |ea|
+        assert ! ea.mismatch?
+        assert ea.ok?, ea.err_detail
+        c.set "/test-error", "b", :missing do |eb|
+          assert eb.mismatch?, eb.err_detail
+          stop
+        end
       end
     end
   end
@@ -67,7 +68,7 @@ class LiveTest < Test::Unit::TestCase
       end
 
       10.times do
-        EM.next_tick { c.set("/foo", "bar", :clobber) }
+        EM.next_tick { c.set("/test-watch", "something", :clobber) }
       end
     end
   end
