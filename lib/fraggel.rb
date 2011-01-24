@@ -137,6 +137,13 @@ module Fraggel
     )
   end
 
+  def delsnap(id, &blk)
+    call(
+      Request::Verb::DELSNAP,
+      &blk
+    )
+  end
+
   private
 
   def casify(cas)

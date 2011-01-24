@@ -95,4 +95,21 @@ class LiveTest < Test::Unit::TestCase
     end
   end
 
+  # TODO:  ???  Shouldn't a deleted snapid produce an error on read?
+  def test_delsnap
+    start do |c|
+      c.snap do |se|
+        assert se.ok?, se.err_detail
+
+        c.delsnap se.id do |de|
+          assert de.ok?, de.err_detail
+          c.get "/ping", se.id do |ge|
+            assert ge.ok?, se.err_detail
+            stop
+          end
+        end
+      end
+    end
+  end
+
 end
