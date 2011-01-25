@@ -27,11 +27,75 @@ module Fraggel
     def mismatch? ; err_code == Err::CAS_MISMATCH ; end
   end
 
-  def self.connect(port=8046, host="127.0.0.1")
+  def self.connect(addr="127.0.0.1:8046", opts={})
     # TODO: take a magnet link instead
-    EM.connect(host, port, self)
+    p [:copts, opts]
+    host, port = addr.split(":")
+    EM.connect(host, port, self, addr, opts)
   end
 
+  attr_reader :doozers, :addr, :opts
+
+  def initialize(addr, opts)
+    opts[:assemble] = opts.fetch(:assemble, true)
+
+    # TODO: take a magnet link and load into @doozers
+    @addr    = addr
+    @opts    = opts
+    @doozers = {}
+
+    p [:opts, self.opts]
+  end
+
+  def assemble
+    return if ! opts[:assemble]
+
+    update = lambda do |e|
+      slot = e.path
+
+      if e.value == ""
+        doozers.delete(e.path)
+      else
+        get "/doozer/info/#{e.value}/public-addr" do |e|
+          if e.ok? && e.value != addr
+            doozers[slot] = e.value
+          end
+        end
+      end
+    end
+
+    watch "/doozer/slot/*" do |e, done|
+      raise "Holy guacamole, Batman!" if done
+      update.call(e)
+    end
+
+    walk("/doozer/slot/*", &update)
+  end
+
+
+  ##
+  # Attempts to connect to another doozer when a connection
+  # is lost
+  def unbind
+    return if ! opts[:assemble]
+
+    dzr = doozers.shift
+
+    if ! dzr
+      raise "ZOMG! No doozers left!!!!"
+    end
+
+    @addr = dzr.last
+    host, port = addr.split(":")
+
+    reconnect(host, port.to_i)
+  end
+
+
+
+
+  ##
+  # Session generation
   def gen_key(name, size=16)
     nibbles = "0123456789abcdef"
     "#{name}." + (0...size).map { nibbles[rand(nibbles.length)].chr }.join
@@ -77,6 +141,8 @@ module Fraggel
     @tag = 0
     @cbx = {}
     @len = nil
+
+    assemble
   end
 
   def receive_data(data)

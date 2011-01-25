@@ -7,7 +7,12 @@ class LiveTest < Test::Unit::TestCase
         EM.add_timer(timeout) { fail "Test timeout!" }
       end
 
-      blk.call(Fraggel.connect)
+      c = Fraggel.connect(
+        "127.0.0.1:8046",
+        :assemble => false
+      )
+
+      blk.call(c)
     end
   end
 
@@ -173,10 +178,8 @@ class LiveTest < Test::Unit::TestCase
           n -= 1
 
           if n == 0
-            p [:inif]
             items = []
             c.walk "/test-walk/*" do |e, done|
-              p [:walk, e, done]
               if done
                 assert_equal exp, items
                 stop

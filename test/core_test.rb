@@ -11,6 +11,7 @@ class FakeConn
 
   def initialize
     @sent = ""
+    super("127.0.0.1", :assemble => false)
     post_init
   end
 
