@@ -22,14 +22,35 @@ end
 
 class CoreTest < Test::Unit::TestCase
 
-  def test_sending_data
-    c = FakeConn.new
+  attr_reader :c
 
-    c.call(Fraggle::Request::Verb::NOOP)
+  V = Fraggle::Request::Verb
+  F = Fraggle::Response::Flag
+
+  def setup
+    @c = FakeConn.new
+  end
+
+  def reply(attrs={})
+    attrs[:tag] = c.tag
+    attrs[:flags] ||= 0
+    attrs[:flags] |= F::VALID
+    res = Fraggle::Response.new(attrs)
+    c.receive_response(res)
+    res
+  end
+
+  def reply!(attrs={})
+    attrs[:flags] = F::DONE
+    reply(attrs)
+  end
+
+  def test_sending_data
+    c.call(V::NOOP)
 
     req = Fraggle::Request.new(
       :tag   => c.tag,
-      :verb  => Fraggle::Request::Verb::NOOP
+      :verb  => V::NOOP
     )
 
     buf = req.encode
@@ -40,15 +61,14 @@ class CoreTest < Test::Unit::TestCase
 
   def test_receive_small_buffered_data
     count = 0
-    c = FakeConn.new
 
-    tag = c.call(Fraggle::Request::Verb::WATCH, :path => "**") do |e|
+    tag = c.call(V::WATCH, :path => "**") do |e|
       count += 1
     end
 
     res = Fraggle::Response.new(
       :tag   => tag,
-      :flags => Fraggle::Response::Flag::VALID
+      :flags => F::VALID
     )
 
     exp   = 10
@@ -66,15 +86,14 @@ class CoreTest < Test::Unit::TestCase
 
   def test_receive_large_buffered_data
     count = 0
-    c = FakeConn.new
 
-    tag = c.call(Fraggle::Request::Verb::WATCH, :path => "**") do |e|
+    tag = c.call(V::WATCH, :path => "**") do |e|
       count += 1
     end
 
     res = Fraggle::Response.new(
       :tag   => tag,
-      :flags => Fraggle::Response::Flag::VALID
+      :flags => F::VALID
     )
 
     exp   = 10
@@ -88,8 +107,6 @@ class CoreTest < Test::Unit::TestCase
   end
 
   def test_callback_without_done
-    c = FakeConn.new
-
     valid = lambda do |e|
       assert_kind_of Fraggle::Response, e
     end
@@ -100,23 +117,15 @@ class CoreTest < Test::Unit::TestCase
 
     tests = [valid, done]
 
-    c.call(Fraggle::Request::Verb::NOOP) do |e|
+    c.call(V::NOOP) do |e|
       tests.shift.call(e)
     end
-
-    res = Fraggle::Response.new(
-      :tag   => c.tag,
-      :flags => Fraggle::Response::Flag::VALID | Fraggle::Response::Flag::DONE
-    )
-
-    c.receive_response(res)
+    reply!
 
     assert_equal 1, tests.length
   end
 
   def test_callback_with_done
-    c = FakeConn.new
-
     valid = lambda do |e, done|
       assert_kind_of Fraggle::Response, e
       assert_equal false, done
@@ -129,108 +138,76 @@ class CoreTest < Test::Unit::TestCase
 
     tests = [valid, done]
 
-    c.call(Fraggle::Request::Verb::NOOP) do |e, done|
+    c.call(V::NOOP) do |e, done|
       tests.shift.call(e, done)
     end
 
-    res = Fraggle::Response.new(
-      :tag   => c.tag,
-      :flags => Fraggle::Response::Flag::VALID | Fraggle::Response::Flag::DONE
-    )
-
-    c.receive_response(res)
-
+    reply!
     assert tests.empty?
   end
 
   def test_no_callback
-    c = FakeConn.new
-    c.call(Fraggle::Request::Verb::NOOP)
-
-    res = Fraggle::Response.new(
-      :tag   => c.tag,
-      :flags => Fraggle::Response::Flag::VALID | Fraggle::Response::Flag::DONE
-    )
+    c.call(V::NOOP)
 
     assert_nothing_raised do
-      c.receive_response(res)
+      reply!
     end
   end
 
   def test_no_callback_gc
-    c = FakeConn.new
-    c.call(Fraggle::Request::Verb::NOOP)
-
-    res = Fraggle::Response.new(
-      :tag   => c.tag,
-      :flags => Fraggle::Response::Flag::VALID | Fraggle::Response::Flag::DONE
-    )
-
-    c.receive_response(res)
+    c.call(V::NOOP)
+    reply!
 
     assert ! c.cbx.has_key?(1)
   end
 
   def test_callback_gc
-    c = FakeConn.new
-    c.call(Fraggle::Request::Verb::NOOP) {}
-
-    res = Fraggle::Response.new(
-      :tag   => c.tag,
-      :flags => Fraggle::Response::Flag::VALID
-    )
-
-    c.receive_response(res)
+    c.call(V::NOOP) {}
+    reply
 
     assert c.cbx.has_key?(c.tag)
 
-    res.flags = Fraggle::Response::Flag::DONE
-    c.receive_response(res)
+    reply!
 
     assert ! c.cbx.has_key?(c.tag)
   end
 
   def test_call_returns_tag
-    c = FakeConn.new
-    assert_equal 0, c.call(Fraggle::Request::Verb::NOOP)
-    assert_equal 1, c.call(Fraggle::Request::Verb::NOOP)
+    assert_equal 0, c.call(V::NOOP)
+    assert_equal 1, c.call(V::NOOP)
   end
 
   def test_call_increments_tag
-    c = FakeConn.new
-    c.call(Fraggle::Request::Verb::NOOP)
+    c.call(V::NOOP)
     assert_equal 0, c.tag
-    c.call(Fraggle::Request::Verb::NOOP)
+    c.call(V::NOOP)
     assert_equal 1, c.tag
-    c.call(Fraggle::Request::Verb::NOOP)
+    c.call(V::NOOP)
     assert_equal 2, c.tag
-    c.call(Fraggle::Request::Verb::NOOP)
+    c.call(V::NOOP)
     assert_equal 3, c.tag
-    c.call(Fraggle::Request::Verb::NOOP)
+    c.call(V::NOOP)
     assert_equal 4, c.tag
-    c.call(Fraggle::Request::Verb::NOOP)
+    c.call(V::NOOP)
     assert_equal 5, c.tag
-    c.call(Fraggle::Request::Verb::NOOP)
+    c.call(V::NOOP)
     assert_equal 6, c.tag
-    c.call(Fraggle::Request::Verb::NOOP)
+    c.call(V::NOOP)
     assert_equal 7, c.tag
-    c.call(Fraggle::Request::Verb::NOOP)
+    c.call(V::NOOP)
     assert_equal 8, c.tag
-    c.call(Fraggle::Request::Verb::NOOP)
+    c.call(V::NOOP)
     assert_equal 9, c.tag
   end
 
   def test_no_overlap_in_tags
-    c = FakeConn.new
-
     c.cbx[0] = Proc.new {}
-    assert_equal 1, c.call(Fraggle::Request::Verb::NOOP)
+    assert_equal 1, c.call(V::NOOP)
   end
 
   def test_rollover_tag_when_maxed_out
-    c = FakeConn.new
     c.tag = Fraggle::MaxInt32
-    c.call(Fraggle::Request::Verb::NOOP)
+    c.call(V::NOOP)
 
     assert_equal  Fraggle::MinInt32, c.tag
   end
