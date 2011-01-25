@@ -1,8 +1,8 @@
 require 'beefcake'
 require 'eventmachine'
-require 'fraggel/proto'
+require 'fraggle/proto'
 
-module Fraggel
+module Fraggle
 
   MaxInt32 = (1<<31)-1
   MinInt32 = -(1<<31)
@@ -101,7 +101,7 @@ module Fraggel
     "#{name}." + (0...size).map { nibbles[rand(nibbles.length)].chr }.join
   end
 
-  def session(name="fraggel", &blk)
+  def session(name="fraggle", &blk)
     raise ArgumentError, "no block given" if ! blk
 
     id = gen_key(name)

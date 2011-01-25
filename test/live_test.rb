@@ -1,4 +1,4 @@
-require 'fraggel'
+require 'fraggle'
 
 class LiveTest < Test::Unit::TestCase
   def start(timeout=1, &blk)
@@ -7,7 +7,7 @@ class LiveTest < Test::Unit::TestCase
         EM.add_timer(timeout) { fail "Test timeout!" }
       end
 
-      c = Fraggel.connect(
+      c = Fraggle.connect(
         "127.0.0.1:8046",
         :assemble => false
       )

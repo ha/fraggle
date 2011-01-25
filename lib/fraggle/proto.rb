@@ -1,6 +1,6 @@
 require 'beefcake'
 
-module Fraggel
+module Fraggle
 
   class Request
     include Beefcake::Message

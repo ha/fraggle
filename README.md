@@ -1,18 +1,18 @@
-# Fraggel
+# Fraggle
 **An EventMachine based Doozer c**
 
 ## Install
 
-    $ gem install fraggel
+    $ gem install fraggle
 
 ## Use
 
     require 'rubygems'
     require 'eventmachine'
-    require 'fraggel'
+    require 'fraggle'
 
     EM.start do
-      c = Fraggel.connect "127.0.0.1", 8046
+      c = Fraggle.connect "127.0.0.1", 8046
 
       ## Setting a key
       c.set "/foo", "bar", :missing do |e|
@@ -61,7 +61,7 @@
 ## Dev
 
 **Clone**
-    $ git clone http://github.com/bmizerany/fraggel.git
+    $ git clone http://github.com/bmizerany/fraggle.git
 
 **Test**
     $ gem install turn

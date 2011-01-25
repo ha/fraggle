@@ -1,10 +1,10 @@
-require 'fraggel'
+require 'fraggle'
 
 ##
 # This is used to test core functionality that the live integration tests will
 # rely on.
 class FakeConn
-  include Fraggel
+  include Fraggle
 
   attr_reader   :sent, :cbx
   attr_accessor :tag
@@ -25,11 +25,11 @@ class CoreTest < Test::Unit::TestCase
   def test_sending_data
     c = FakeConn.new
 
-    c.call(Fraggel::Request::Verb::NOOP)
+    c.call(Fraggle::Request::Verb::NOOP)
 
-    req = Fraggel::Request.new(
+    req = Fraggle::Request.new(
       :tag   => c.tag,
-      :verb  => Fraggel::Request::Verb::NOOP
+      :verb  => Fraggle::Request::Verb::NOOP
     )
 
     buf = req.encode
@@ -42,13 +42,13 @@ class CoreTest < Test::Unit::TestCase
     count = 0
     c = FakeConn.new
 
-    tag = c.call(Fraggel::Request::Verb::WATCH, :path => "**") do |e|
+    tag = c.call(Fraggle::Request::Verb::WATCH, :path => "**") do |e|
       count += 1
     end
 
-    res = Fraggel::Response.new(
+    res = Fraggle::Response.new(
       :tag   => tag,
-      :flags => Fraggel::Response::Flag::VALID
+      :flags => Fraggle::Response::Flag::VALID
     )
 
     exp   = 10
@@ -68,13 +68,13 @@ class CoreTest < Test::Unit::TestCase
     count = 0
     c = FakeConn.new
 
-    tag = c.call(Fraggel::Request::Verb::WATCH, :path => "**") do |e|
+    tag = c.call(Fraggle::Request::Verb::WATCH, :path => "**") do |e|
       count += 1
     end
 
-    res = Fraggel::Response.new(
+    res = Fraggle::Response.new(
       :tag   => tag,
-      :flags => Fraggel::Response::Flag::VALID
+      :flags => Fraggle::Response::Flag::VALID
     )
 
     exp   = 10
@@ -91,7 +91,7 @@ class CoreTest < Test::Unit::TestCase
     c = FakeConn.new
 
     valid = lambda do |e|
-      assert_kind_of Fraggel::Response, e
+      assert_kind_of Fraggle::Response, e
     end
 
     done = lambda do |e|
@@ -100,13 +100,13 @@ class CoreTest < Test::Unit::TestCase
 
     tests = [valid, done]
 
-    c.call(Fraggel::Request::Verb::NOOP) do |e|
+    c.call(Fraggle::Request::Verb::NOOP) do |e|
       tests.shift.call(e)
     end
 
-    res = Fraggel::Response.new(
+    res = Fraggle::Response.new(
       :tag   => c.tag,
-      :flags => Fraggel::Response::Flag::VALID | Fraggel::Response::Flag::DONE
+      :flags => Fraggle::Response::Flag::VALID | Fraggle::Response::Flag::DONE
     )
 
     c.receive_response(res)
@@ -118,7 +118,7 @@ class CoreTest < Test::Unit::TestCase
     c = FakeConn.new
 
     valid = lambda do |e, done|
-      assert_kind_of Fraggel::Response, e
+      assert_kind_of Fraggle::Response, e
       assert_equal false, done
     end
 
@@ -129,13 +129,13 @@ class CoreTest < Test::Unit::TestCase
 
     tests = [valid, done]
 
-    c.call(Fraggel::Request::Verb::NOOP) do |e, done|
+    c.call(Fraggle::Request::Verb::NOOP) do |e, done|
       tests.shift.call(e, done)
     end
 
-    res = Fraggel::Response.new(
+    res = Fraggle::Response.new(
       :tag   => c.tag,
-      :flags => Fraggel::Response::Flag::VALID | Fraggel::Response::Flag::DONE
+      :flags => Fraggle::Response::Flag::VALID | Fraggle::Response::Flag::DONE
     )
 
     c.receive_response(res)
@@ -145,11 +145,11 @@ class CoreTest < Test::Unit::TestCase
 
   def test_no_callback
     c = FakeConn.new
-    c.call(Fraggel::Request::Verb::NOOP)
+    c.call(Fraggle::Request::Verb::NOOP)
 
-    res = Fraggel::Response.new(
+    res = Fraggle::Response.new(
       :tag   => c.tag,
-      :flags => Fraggel::Response::Flag::VALID | Fraggel::Response::Flag::DONE
+      :flags => Fraggle::Response::Flag::VALID | Fraggle::Response::Flag::DONE
     )
 
     assert_nothing_raised do
@@ -159,11 +159,11 @@ class CoreTest < Test::Unit::TestCase
 
   def test_no_callback_gc
     c = FakeConn.new
-    c.call(Fraggel::Request::Verb::NOOP)
+    c.call(Fraggle::Request::Verb::NOOP)
 
-    res = Fraggel::Response.new(
+    res = Fraggle::Response.new(
       :tag   => c.tag,
-      :flags => Fraggel::Response::Flag::VALID | Fraggel::Response::Flag::DONE
+      :flags => Fraggle::Response::Flag::VALID | Fraggle::Response::Flag::DONE
     )
 
     c.receive_response(res)
@@ -173,18 +173,18 @@ class CoreTest < Test::Unit::TestCase
 
   def test_callback_gc
     c = FakeConn.new
-    c.call(Fraggel::Request::Verb::NOOP) {}
+    c.call(Fraggle::Request::Verb::NOOP) {}
 
-    res = Fraggel::Response.new(
+    res = Fraggle::Response.new(
       :tag   => c.tag,
-      :flags => Fraggel::Response::Flag::VALID
+      :flags => Fraggle::Response::Flag::VALID
     )
 
     c.receive_response(res)
 
     assert c.cbx.has_key?(c.tag)
 
-    res.flags = Fraggel::Response::Flag::DONE
+    res.flags = Fraggle::Response::Flag::DONE
     c.receive_response(res)
 
     assert ! c.cbx.has_key?(c.tag)
@@ -192,31 +192,31 @@ class CoreTest < Test::Unit::TestCase
 
   def test_call_returns_tag
     c = FakeConn.new
-    assert_equal 0, c.call(Fraggel::Request::Verb::NOOP)
-    assert_equal 1, c.call(Fraggel::Request::Verb::NOOP)
+    assert_equal 0, c.call(Fraggle::Request::Verb::NOOP)
+    assert_equal 1, c.call(Fraggle::Request::Verb::NOOP)
   end
 
   def test_call_increments_tag
     c = FakeConn.new
-    c.call(Fraggel::Request::Verb::NOOP)
+    c.call(Fraggle::Request::Verb::NOOP)
     assert_equal 0, c.tag
-    c.call(Fraggel::Request::Verb::NOOP)
+    c.call(Fraggle::Request::Verb::NOOP)
     assert_equal 1, c.tag
-    c.call(Fraggel::Request::Verb::NOOP)
+    c.call(Fraggle::Request::Verb::NOOP)
     assert_equal 2, c.tag
-    c.call(Fraggel::Request::Verb::NOOP)
+    c.call(Fraggle::Request::Verb::NOOP)
     assert_equal 3, c.tag
-    c.call(Fraggel::Request::Verb::NOOP)
+    c.call(Fraggle::Request::Verb::NOOP)
     assert_equal 4, c.tag
-    c.call(Fraggel::Request::Verb::NOOP)
+    c.call(Fraggle::Request::Verb::NOOP)
     assert_equal 5, c.tag
-    c.call(Fraggel::Request::Verb::NOOP)
+    c.call(Fraggle::Request::Verb::NOOP)
     assert_equal 6, c.tag
-    c.call(Fraggel::Request::Verb::NOOP)
+    c.call(Fraggle::Request::Verb::NOOP)
     assert_equal 7, c.tag
-    c.call(Fraggel::Request::Verb::NOOP)
+    c.call(Fraggle::Request::Verb::NOOP)
     assert_equal 8, c.tag
-    c.call(Fraggel::Request::Verb::NOOP)
+    c.call(Fraggle::Request::Verb::NOOP)
     assert_equal 9, c.tag
   end
 
@@ -224,15 +224,15 @@ class CoreTest < Test::Unit::TestCase
     c = FakeConn.new
 
     c.cbx[0] = Proc.new {}
-    assert_equal 1, c.call(Fraggel::Request::Verb::NOOP)
+    assert_equal 1, c.call(Fraggle::Request::Verb::NOOP)
   end
 
   def test_rollover_tag_when_maxed_out
     c = FakeConn.new
-    c.tag = Fraggel::MaxInt32
-    c.call(Fraggel::Request::Verb::NOOP)
+    c.tag = Fraggle::MaxInt32
+    c.call(Fraggle::Request::Verb::NOOP)
 
-    assert_equal  Fraggel::MinInt32, c.tag
+    assert_equal  Fraggle::MinInt32, c.tag
   end
 
 end
