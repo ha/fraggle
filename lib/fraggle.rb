@@ -27,9 +27,13 @@ module Fraggle
     def mismatch? ; err_code == Err::CAS_MISMATCH ; end
   end
 
+
+  class AssemblyError < StandardError
+  end
+
+
   def self.connect(addr="127.0.0.1:8046", opts={})
     # TODO: take a magnet link instead
-    p [:copts, opts]
     host, port = addr.split(":")
     EM.connect(host, port, self, addr, opts)
   end
@@ -43,52 +47,46 @@ module Fraggle
     @addr    = addr
     @opts    = opts
     @doozers = {}
-
-    p [:opts, self.opts]
   end
 
+  ##
+  # Collect all cluster information for the event of a disconnect from the
+  # server; At which point we will want to attempt a connecting to them one by
+  # one until we have a connection or run out of options.
   def assemble
     return if ! opts[:assemble]
 
-    update = lambda do |e|
-      slot = e.path
+    blk = Proc.new do |we|
+      if ! we.ok?
+        raise AssemblyError, we.err_detail
+      end
 
-      if e.value == ""
-        doozers.delete(e.path)
+      if we.value == ""
+        doozers.delete(we.path)
       else
-        get "/doozer/info/#{e.value}/public-addr" do |e|
-          if e.ok? && e.value != addr
-            doozers[slot] = e.value
-          end
+        get "/doozer/info/#{we.value}/public-addr" do |e|
+          next if e.value == addr
+          doozers[we.path] = e.value
         end
       end
     end
 
-    watch "/doozer/slot/*" do |e, done|
-      raise "Holy guacamole, Batman!" if done
-      update.call(e)
-    end
-
-    walk("/doozer/slot/*", &update)
+    watch "/doozer/slot/*", &blk
+    walk  "/doozer/slot/*", &blk
   end
 
-
   ##
-  # Attempts to connect to another doozer when a connection
-  # is lost
+  # Attempts to connect to another doozer when a connection is lost
   def unbind
     return if ! opts[:assemble]
 
-    dzr = doozers.shift
-
-    if ! dzr
-      raise "ZOMG! No doozers left!!!!"
+    _, @addr = doozers.shift
+    if ! @addr
+      raise AssemblyError, "All known doozers are down"
     end
 
-    @addr = dzr.last
-    host, port = addr.split(":")
-
-    reconnect(host, port.to_i)
+    host, port = @addr.split(":")
+    reconnect(host, port)
   end
 
 
