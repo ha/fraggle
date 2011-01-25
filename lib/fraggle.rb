@@ -23,8 +23,22 @@ module Fraggle
       (flags & Flag::DONE) > 0
     end
 
-    def ok?       ; err_code == nil ; end
-    def mismatch? ; err_code == Err::CAS_MISMATCH ; end
+    # Err sugar
+    def ok?           ; err_code == nil               ; end
+    def other?        ; err_code == Err::OTHER        ; end
+    def tag_in_use?   ; err_code == Err::TAG_IN_USE   ; end
+    def unknown_verb? ; err_code == Err::UNKNOWN_VERB ; end
+    def redirect?     ; err_code == Err::REDIRECT     ; end
+    def invalid_snap? ; err_code == Err::INVALID_SNAP ; end
+    def mismatch?     ; err_code == Err::CAS_MISMATCH ; end
+    def notdir?       ; err_code == Err::NOTDIR       ; end
+    def dir?          ; err_code == Err::ISDIR        ; end
+
+    # CAS sugar
+    def missing?  ; cas ==  0 ; end
+    def clobber?  ; cas == -1 ; end
+    def dir?      ; cas == -2 ; end
+    def dummy?    ; cas == -3 ; end
   end
 
 
@@ -128,7 +142,7 @@ module Fraggle
   def checkin(cas, id, &blk)
     call(
       Request::Verb::CHECKIN,
-      :cas => cas,
+      :cas => casify(cas),
       :path => id.to_s,
       &blk
     )
@@ -236,7 +250,7 @@ module Fraggle
     call(
       Request::Verb::DEL,
       :path => path,
-      :cas  => cas,
+      :cas  => casify(cas),
       &blk
     )
   end
