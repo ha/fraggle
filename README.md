@@ -1,5 +1,5 @@
 # Fraggle
-**An EventMachine based Doozer c**
+**An EventMachine based Doozer client**
 
 ## Install
 
