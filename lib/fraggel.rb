@@ -179,7 +179,7 @@ module Fraggel
 
   def watch(glob, &blk)
     call(
-      Request::Verb::WALK,
+      Request::Verb::WATCH,
       :path => glob,
       &blk
     )
