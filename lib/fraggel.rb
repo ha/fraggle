@@ -215,10 +215,18 @@ module Fraggel
     )
   end
 
-  def cancel(id, &blk)
+  def cancel(tag)
+    blk = lambda do |e|
+      if e.ok?
+        if blk = @cbx.delete(tag)
+          blk.call(nil, true)
+        end
+      end
+    end
+
     call(
-      Request::Verb::NOOP,
-      :id => id,
+      Request::Verb::CANCEL,
+      :id => tag,
       &blk
     )
   end
