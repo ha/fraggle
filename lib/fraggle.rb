@@ -46,6 +46,18 @@ module Fraggle
   end
 
 
+  ## Simple proxy for working with snapshots
+  class Snap < Struct.new(:cn, :id)
+    def get(path, &blk)
+      cn.get(path, id, &blk)
+    end
+
+    def walk(glob, &blk)
+      cn.walk(path, id, &blk)
+    end
+  end
+
+
   def self.connect(addr="127.0.0.1:8046", opts={})
     # TODO: take a magnet link instead
     host, port = addr.split(":")
@@ -263,19 +275,19 @@ module Fraggle
     )
   end
 
-  def walk(glob, &blk)
+  def walk(glob, sid=0, &blk)
     call(
       Request::Verb::WALK,
       :path => glob,
+      :id   => sid,
       &blk
     )
   end
 
   def snap(&blk)
-    call(
-      Request::Verb::SNAP,
-      &blk
-    )
+    call(Request::Verb::SNAP) do |e|
+      blk.call(Snap.new(self, e.id), e)
+    end
   end
 
   def delsnap(id, &blk)

@@ -96,14 +96,15 @@ class LiveTest < Test::Unit::TestCase
       c.set "/test-snap", "a", :clobber do |e|
         assert e.ok?, e.err_detail
 
-        c.snap do |se|
+        c.snap do |sn, se|
+          assert_kind_of Fraggle::Snap, sn
           assert se.ok?, se.err_detail
           assert_not_equal 0, se.id
 
           c.set "/test-snap", "b", :clobber do |e|
             assert e.ok?, e.err_detail
 
-            c.get "/test-snap", se.id do |ge|
+            sn.get "/test-snap" do |ge|
               assert ge.ok?, ge.err_detail
               assert_equal "a", ge.value
               stop
@@ -114,18 +115,13 @@ class LiveTest < Test::Unit::TestCase
     end
   end
 
-  # TODO:  ???  Shouldn't a deleted snapid produce an error on read?
   def test_delsnap
     start do |c|
-      c.snap do |se|
-        assert se.ok?, se.err_detail
-        assert_not_equal 0, se.id
-
-
+      c.snap do |sn, se|
         c.delsnap se.id do |de|
           assert de.ok?, de.err_detail
 
-          c.get "/ping", se.id do |ge|
+          sn.get "/ping" do |ge|
             assert ! ge.ok?, ge.err_detail
             stop
           end
