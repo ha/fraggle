@@ -45,14 +45,19 @@ module Fraggle
   class Response
     include Beefcake::Message
 
-    required :tag,   :int32, 1
+    required :tag,   :uint32, 1
     required :flags, :int32, 2
 
-    optional :seqn,  :int64,  3
+    optional :rev,   :int64,  3
     optional :cas,   :int64,  4
     optional :path,  :string, 5
     optional :value, :bytes,  6
     optional :id,    :int32,  7
+
+    module Flag
+      VALID = 1
+      DONE  = 2
+    end
 
     module Err
       # don't use value 0
