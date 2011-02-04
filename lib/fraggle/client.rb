@@ -152,7 +152,11 @@ module Fraggle
 
       # Setup a default error handler that gives useful information
       req.error do |e|
-        raise Error.new("'%s' for: %s" % [e.err_detail, req.inspect])
+        raise Error.new("'error (%d) (%s)' for: %s" % [
+          e.err_code,
+          e.err_detail.inspect,
+          req.inspect
+        ])
       end
 
       @cbx[req.tag] = req

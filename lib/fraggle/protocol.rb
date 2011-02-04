@@ -5,8 +5,9 @@ module Fraggle
   module Protocol
 
     def receive_data(data)
-
       (@buf ||= "") << data
+
+      p [:buf, @buf]
 
       while @buf.length > 0
         if @len && @buf.length >= @len
