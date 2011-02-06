@@ -7,8 +7,6 @@ module Fraggle
     def receive_data(data)
       (@buf ||= "") << data
 
-      p [:buf, @buf]
-
       while @buf.length > 0
         if @len && @buf.length >= @len
             bytes = @buf.slice!(0, @len)
