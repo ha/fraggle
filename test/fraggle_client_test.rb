@@ -97,6 +97,14 @@ class FraggleClientTest < Test::Unit::TestCase
     assert_recv reply(req.tag, :cas => 123, :value => "pong")
   end
 
+  # STAT     path, id         => cas, len
+  def test_stat
+    req = c.stat(0, "/ping", &blk)
+
+    assert_sent req.tag, :verb => V::STAT, :path => "/ping"
+    assert_recv reply(req.tag, :cas => 123, :len => 4)
+  end
+
   # SET     cas, path, value => cas
   def test_set
     req = c.set("/foo", "bar", 123, &blk)

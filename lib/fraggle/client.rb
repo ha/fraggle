@@ -58,6 +58,15 @@ module Fraggle
       send(req, &blk)
     end
 
+    def stat(sid, path, &blk)
+      req = Request.new
+      req.verb = Request::Verb::STAT
+      req.id   = sid if sid != 0 # wire optimization
+      req.path = path
+
+      send(req, &blk)
+    end
+
     def set(path, value, cas, &blk)
       req = Request.new
       req.verb  = Request::Verb::SET

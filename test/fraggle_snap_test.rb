@@ -19,6 +19,13 @@ class FraggleSnapTest < Test::Unit::TestCase
     assert_recv reply(req.tag)
   end
 
+  def test_stat
+    req = c.stat("/ping", &blk)
+
+    assert_sent req.tag, :verb => V::STAT, :id => 1, :path => "/ping"
+    assert_recv reply(req.tag)
+  end
+
   def test_walk
     req = c.walk("/letters/*", &blk)
 

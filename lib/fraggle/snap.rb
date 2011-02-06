@@ -19,6 +19,10 @@ module Fraggle
       @c.walk(@id, glob, &blk)
     end
 
+    def stat(path, &blk)
+      @c.stat(@id, path, &blk)
+    end
+
     def snap(&blk)
       @c.snap do |res|
         sn = Snap.new(res.id, @c)

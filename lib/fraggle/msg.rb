@@ -18,6 +18,7 @@ module Fraggle
       NOOP     = 7;  # {}               => {}
       WATCH    = 8;  # path             => {cas, path, value}+
       CANCEL   = 10; # id               => {}
+      STAT     = 16; # path, id         => cas, len
 
       # future
       GETDIR   = 14; # path             => {cas, value}+
@@ -53,6 +54,7 @@ module Fraggle
     optional :path,  :string, 5
     optional :value, :bytes,  6
     optional :id,    :int32,  7
+    optional :len,   :int32,  8
 
     module Flag
       VALID = 1
