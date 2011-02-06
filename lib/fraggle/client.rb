@@ -44,7 +44,7 @@ module Fraggle
       req = Request.new
       req.verb  = Request::Verb::CHECKIN
       req.path  = path
-      req.cas   = cas
+      req.cas   = casify(cas)
 
       send(req, &blk)
     end
@@ -63,7 +63,7 @@ module Fraggle
       req.verb  = Request::Verb::SET
       req.path  = path
       req.value = value
-      req.cas   = cas
+      req.cas   = casify(cas)
 
       send(req, &blk)
     end
@@ -72,7 +72,7 @@ module Fraggle
       req = Request.new
       req.verb  = Request::Verb::DEL
       req.path  = path
-      req.cas   = cas
+      req.cas   = casify(cas)
 
       send(req, &blk)
     end
@@ -186,6 +186,14 @@ module Fraggle
     # What happens when a connection is closed for any reason.
     def unbind
       raise "No more doozers!"
+    end
+
+    def casify(cas)
+      case cas
+      when :missing then 0
+      when :clobber then -1
+      else cas
+      end
     end
 
   end
