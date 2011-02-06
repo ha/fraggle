@@ -8,14 +8,14 @@ EM.run do
     $stderr.puts e.message + "\n" + (e.backtrace * "\n")
   end
 
-  c = Fraggle.connect "doozer://127.0.0.1:8046"
+  c = Fraggle.connect "doozer://127.0.0.1:8041"
 
   c.watch "/example/*" do |e|
     p e
   end
 
   EM.add_periodic_timer(0.5) do
-    c.set "/example/#{rand(10)}", "test", 0
+    c.set "/example/#{rand(10)}", "test", :clobber
   end
 
 end
