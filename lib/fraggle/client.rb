@@ -199,8 +199,8 @@ module Fraggle
 
     def casify(cas)
       case cas
-      when :missing then 0
-      when :clobber then -1
+      when :missing then Request::Missing
+      when :clobber then Request::Clobber
       else cas
       end
     end
