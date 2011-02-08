@@ -231,7 +231,7 @@ module Fraggle
 
       waw = Proc.new do |e|
         get 0, "/doozer/info/#{e.value}/public-addr" do |a|
-          next if a.value == "" || a.value == @addr
+          next if a.value.to_s == "" || a.value == @addr
           @addrs[e.path] = a.value
           @log.debug("added #{e.path} addr #{a.value}")
         end
