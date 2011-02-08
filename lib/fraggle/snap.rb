@@ -23,6 +23,10 @@ module Fraggle
       @c.stat(@id, path, &blk)
     end
 
+    def getdir(path, offset=0, limit=0, &blk)
+      @c.getdir(@id, path, offset, limit, &blk)
+    end
+
     def snap(&blk)
       @c.snap do |res|
         sn = Snap.new(res.id, @c)

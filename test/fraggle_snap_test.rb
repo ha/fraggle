@@ -26,6 +26,18 @@ class FraggleSnapTest < Test::Unit::TestCase
     assert_recv reply(req.tag)
   end
 
+  def test_getdir
+    req = c.getdir("/test", &blk)
+
+    assert_sent req.tag, :verb => V::GETDIR, :path => "/test", :id => 1
+    assert_recv reply(req.tag)
+
+    req = c.getdir("/test", 1, 2, &blk)
+
+    assert_sent req.tag, :verb => V::GETDIR, :path => "/test", :offset => 1, :limit => 2, :id => 1
+    assert_recv reply(req.tag)
+  end
+
   def test_walk
     req = c.walk("/letters/*", &blk)
 

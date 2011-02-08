@@ -105,6 +105,19 @@ class FraggleClientTest < Test::Unit::TestCase
     assert_recv reply(req.tag, :cas => 123, :len => 4)
   end
 
+  # GETDIR     id, path, offset, limit         => {cas, value}+
+  def test_getdir
+    req = c.getdir(0, "/test", 0, 0, &blk)
+
+    assert_sent req.tag, :verb => V::GETDIR, :path => "/test"
+    assert_recv reply(req.tag, :cas => 123, :value => "a")
+
+    req = c.getdir(0, "/test", 1, 2, &blk)
+
+    assert_sent req.tag, :verb => V::GETDIR, :path => "/test", :offset => 1, :limit => 2
+    assert_recv reply(req.tag, :cas => 123, :value => "b")
+  end
+
   # SET     cas, path, value => cas
   def test_set
     req = c.set("/foo", "bar", 123, &blk)

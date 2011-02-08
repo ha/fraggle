@@ -73,6 +73,7 @@ module Fraggle
       # match unix errno
       NOTDIR       = 20
       ISDIR        = 21
+      NOINT        = 22
     end
 
     optional :err_code,   Err,     100

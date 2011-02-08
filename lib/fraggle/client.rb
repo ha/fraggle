@@ -67,6 +67,17 @@ module Fraggle
       send(req, &blk)
     end
 
+    def getdir(sid, path, offset, limit, &blk)
+      req = Request.new
+      req.verb   = Request::Verb::GETDIR
+      req.id     = sid    if sid != 0
+      req.offset = offset if offset != 0
+      req.limit  = limit  if limit  != 0
+      req.path   = path
+
+      send(req, &blk)
+    end
+
     def set(path, value, cas, &blk)
       req = Request.new
       req.verb  = Request::Verb::SET
