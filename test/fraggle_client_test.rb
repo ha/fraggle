@@ -5,9 +5,6 @@ require 'fraggle/test'
 class FraggleClientTest < Test::Unit::TestCase
   include Fraggle::Test
 
-  V = Fraggle::Request::Verb
-  F = Fraggle::Response::Flag
-
   attr_reader :c, :blk
 
   def setup
