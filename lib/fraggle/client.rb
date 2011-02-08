@@ -211,24 +211,21 @@ module Fraggle
     end
 
     def post_init
-      p [:connected, @addr]
       @last_received = Time.now
       @addrs = {}
 
       ## Memoize the timer so we don't call it twice
       @timer ||= EM.add_periodic_timer(2) do
         if (n = Time.now - last_received) >= 3
-          p [:timeout, n]
           close_connection
         else
-          p [:ping]
-          get(0, "/ping") { p :pong }
+          get(0, "/ping")
         end
       end
 
       waw = Proc.new do |e|
         get 0, "/doozer/info/#{e.value}/public-addr" do |a|
-          p [:a, a]
+
           next if a.value == "" || a.value == @addr
           @addrs[e.path] = a.value
           puts "Got addr: #{a.value}"
@@ -248,7 +245,6 @@ module Fraggle
         raise "No more doozers!"
       end
 
-      p [:attempting, @addr]
       host, port = @addr.split(":")
       reconnect(host, port.to_i)
       post_init
