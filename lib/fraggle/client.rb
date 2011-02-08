@@ -3,6 +3,7 @@ require 'fraggle/protocol'
 require 'fraggle/request'
 require 'fraggle/response'
 require 'logger'
+require 'set'
 require 'uri'
 
 module Fraggle
@@ -24,6 +25,7 @@ module Fraggle
 
       @addr  = [uri.host, uri.port] * ":"
       @addrs = {}
+      @shun  = {}
       @cbx   = {}
       @log   = log
     end
@@ -235,7 +237,14 @@ module Fraggle
           end
         else
           get 0, "/doozer/info/#{e.value}/public-addr" do |a|
-            next if a.value == @addr
+            if @shun.has_key?(a.value)
+              if (n = Time.now - @shun[a.value]) > 3
+                @log.info "unshunning #{a.value} after #{n} secs"
+              else
+                @log.info "ignoring shunned addr #{a.value}"
+                next
+              end
+            end
             # TODO: Be defensive and check the addr value is valid
             @addrs[e.path] = a.value
             @log.info("added #{e.path} addr #{a.value}")
@@ -249,11 +258,15 @@ module Fraggle
 
     # What happens when a connection is closed for any reason.
     def unbind
-      @log.debug "disconnected from #{@addr}"
+      @log.error "disconnected from #{@addr}"
+
+      # Shun the address we were currently attempting/connected to.
+      @shun[@addr] = Time.now
+      @addrs.delete_if {|_, v| v == @addr }
 
       # We don't want the timer to race us while
       # we're trying to reconnect.  Once the reconnect
-      # has been ordered, we'll start the timer again.
+      # has been complete, we'll start the timer again.
       EM.cancel_timer(@timer)
 
       _, @addr = @addrs.shift rescue nil
