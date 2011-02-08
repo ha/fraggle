@@ -4,7 +4,11 @@ module Fraggle
 
   module Protocol
 
+    attr_reader :last_received
+
     def receive_data(data)
+      @last_received = Time.now
+
       (@buf ||= "") << data
 
       while @buf.length > 0

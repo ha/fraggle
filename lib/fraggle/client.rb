@@ -2,6 +2,7 @@ require 'fraggle/meta'
 require 'fraggle/protocol'
 require 'fraggle/request'
 require 'fraggle/response'
+require 'uri'
 
 module Fraggle
 
@@ -15,8 +16,14 @@ module Fraggle
     MaxTag = (1<<32)
 
 
-    def initialize
-      @cbx = {}
+    def initialize(uri)
+      # Simplied for now.  Later we'll take a real uri
+      # and disect it to init the addrs list
+      uri = URI(uri.to_s)
+
+      @addr  = [uri.host, uri.port] * ":"
+      @addrs = []
+      @cbx   = {}
     end
 
     def receive_response(res)
@@ -203,9 +210,48 @@ module Fraggle
       req
     end
 
+    def post_init
+      p [:connected, @addr]
+      @last_received = Time.now
+      @addrs = {}
+
+      ## Memoize the timer so we don't call it twice
+      @timer ||= EM.add_periodic_timer(2) do
+        if (n = Time.now - last_received) >= 3
+          p [:timeout, n]
+          close_connection
+        else
+          p [:ping]
+          get(0, "/ping") { p :pong }
+        end
+      end
+
+      waw = Proc.new do |e|
+        get 0, "/doozer/info/#{e.value}/public-addr" do |a|
+          p [:a, a]
+          next if a.value == "" || a.value == @addr
+          @addrs[e.path] = a.value
+          puts "Got addr: #{a.value}"
+        end
+      end
+
+      walk  0, "/doozer/slot/*", &waw
+      watch    "/doozer/slot/*", &waw
+    end
+
     # What happens when a connection is closed for any reason.
     def unbind
-      raise "No more doozers!"
+      _, @addr = @addrs.shift rescue nil
+
+      if ! @addr
+        # We are all out of addresses to try
+        raise "No more doozers!"
+      end
+
+      p [:attempting, @addr]
+      host, port = @addr.split(":")
+      reconnect(host, port.to_i)
+      post_init
     end
 
     def casify(cas)
