@@ -23,7 +23,7 @@ module Fraggle
       uri = URI(uri.to_s)
 
       @addr  = [uri.host, uri.port] * ":"
-      @addrs = []
+      @addrs = {}
       @cbx   = {}
       @log   = log
     end
@@ -216,10 +216,8 @@ module Fraggle
       @log.info "successfully connected to #{@addr}"
 
       @last_received = Time.now
-      @addrs = {}
 
-      ## Memoize the timer so we don't call it twice
-      @timer ||= EM.add_periodic_timer(2) do
+      EM.add_periodic_timer(2) do
         if (n = Time.now - last_received) >= 3
           @log.error("timedout talking to #{@addr}")
           close_connection
@@ -233,7 +231,7 @@ module Fraggle
         get 0, "/doozer/info/#{e.value}/public-addr" do |a|
           next if a.value.to_s == "" || a.value == @addr
           @addrs[e.path] = a.value
-          @log.debug("added #{e.path} addr #{a.value}")
+          @log.info("added #{e.path} addr #{a.value}")
         end
       end
 
@@ -249,7 +247,6 @@ module Fraggle
       # we're trying to reconnect.  Once the reconnect
       # has been ordered, we'll start the timer again.
       EM.cancel_timer(@timer)
-      @timer = nil
 
       _, @addr = @addrs.shift rescue nil
 
