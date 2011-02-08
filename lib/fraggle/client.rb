@@ -3,7 +3,6 @@ require 'fraggle/protocol'
 require 'fraggle/request'
 require 'fraggle/response'
 require 'logger'
-require 'set'
 require 'uri'
 
 module Fraggle
