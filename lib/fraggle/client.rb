@@ -2,6 +2,7 @@ require 'fraggle/meta'
 require 'fraggle/protocol'
 require 'fraggle/request'
 require 'fraggle/response'
+require 'logger'
 require 'uri'
 
 module Fraggle
@@ -16,7 +17,7 @@ module Fraggle
     MaxTag = (1<<32)
 
 
-    def initialize(uri)
+    def initialize(uri, log=Logger.new("/dev/null"))
       # Simplied for now.  Later we'll take a real uri
       # and disect it to init the addrs list
       uri = URI(uri.to_s)
@@ -24,6 +25,7 @@ module Fraggle
       @addr  = [uri.host, uri.port] * ":"
       @addrs = []
       @cbx   = {}
+      @log   = log
     end
 
     def receive_response(res)
@@ -211,24 +213,27 @@ module Fraggle
     end
 
     def post_init
+      @log.info "successfully connected to #{@addr}"
+
       @last_received = Time.now
       @addrs = {}
 
       ## Memoize the timer so we don't call it twice
       @timer ||= EM.add_periodic_timer(2) do
         if (n = Time.now - last_received) >= 3
+          @log.error("timedout talking to #{@addr}")
           close_connection
         else
-          get(0, "/ping")
+          @log.debug("ping")
+          get(0, "/ping") { @log.debug("pong") }
         end
       end
 
       waw = Proc.new do |e|
         get 0, "/doozer/info/#{e.value}/public-addr" do |a|
-
           next if a.value == "" || a.value == @addr
           @addrs[e.path] = a.value
-          puts "Got addr: #{a.value}"
+          @log.debug("added #{e.path} addr #{a.value}")
         end
       end
 
@@ -238,6 +243,14 @@ module Fraggle
 
     # What happens when a connection is closed for any reason.
     def unbind
+      @log.debug "disconnected from #{@addr}"
+
+      # We don't want the timer to race us while
+      # we're trying to reconnect.  Once the reconnect
+      # has been ordered, we'll start the timer again.
+      EM.cancel_timer(@timer)
+      @timer = nil
+
       _, @addr = @addrs.shift rescue nil
 
       if ! @addr
@@ -246,6 +259,7 @@ module Fraggle
       end
 
       host, port = @addr.split(":")
+      @log.info "attempting reconnect to #{host}:#{port}"
       reconnect(host, port.to_i)
       post_init
     end

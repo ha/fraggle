@@ -8,7 +8,9 @@ EM.run do
     $stderr.puts e.message + "\n" + (e.backtrace * "\n")
   end
 
-  c = Fraggle.connect "doozer://127.0.0.1:8041"
+  l = Logger.new($stderr)
+  l.level = Logger::INFO
+  c = Fraggle.connect "doozer://127.0.0.1:8041", l
 
   ents = []
   req = c.getdir "/doozer" do |e|
