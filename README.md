@@ -16,15 +16,18 @@
       # connected.  In the event of a lost connection, fraggle will attempt
       # other doozers until one accepts or it runs out of options; An
       # AssemlyError will be raised if that later happens.
-      c = Fraggle.connect "127.0.0.1:8046"
+      c = Fraggle.connect "doozerd://127.0.0.1:8046"
 
-      c.get "/foo" do |e|
-        if e.ok?
-          e.value   # => "bar"
-          e.cas     # => "123"
-          e.dir?    # => false
-          e.notdir? # => true
-        end
+      req = c.get "/foo" do |e|
+        e.value   # => "bar"
+        e.cas     # => "123"
+        e.dir?    # => false
+        e.notdir? # => true
+      end
+
+      req.error do |e|
+        e.err_code   # => nil
+        e.err_detail # => nil
       end
 
       watch = c.watch "/foo" do |e|
@@ -44,25 +47,38 @@
 
         # Phoney check for example
         if can_stop_watching?(path)
-          c.cancel(watch)
+          watch.cancel
         end
       end
 
       ## Setting a key (this will trigger the watch above)
-      c.set "/foo", "zomg!", :missing do |e|
+      req = c.set "/foo", "zomg!", :missing do |e|
         case true
         when e.mismatch? # CAS mis-match
           # retry if we must
-          c.set "/foo", "zomg!", e.cas do |e|
-            if ! e.ok?
-              # we give up
-            end
-          end
         when e.ok?
           e.cas # => "123"
         else
           raise e.err_detail
         end
+      end
+
+      req.error do |e|
+        # This is the default behavior for fraggle.
+        # I'm showing this to bring attention to the use of the
+        # error callback.
+        raise e.err_detail
+      end
+
+      # Knowning when a command is done is useful in some cases.
+      # Use the `done` callback for those situations.
+      ents = []
+      req = c.getdir("/test") do |e|
+        ents << e
+      end
+
+      req.done do
+        p ents
       end
 
     end
