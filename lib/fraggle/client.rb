@@ -228,10 +228,18 @@ module Fraggle
       end
 
       waw = Proc.new do |e|
-        get 0, "/doozer/info/#{e.value}/public-addr" do |a|
-          next if a.value.to_s == "" || a.value == @addr
-          @addrs[e.path] = a.value
-          @log.info("added #{e.path} addr #{a.value}")
+        if e.value == ""
+          addr = @addrs.delete(e.path)
+          if addr
+            @log.error "noticed #{addr} is gone; removing"
+          end
+        else
+          get 0, "/doozer/info/#{e.value}/public-addr" do |a|
+            next if a.value == @addr
+            # TODO: Be defensive and check the addr value is valid
+            @addrs[e.path] = a.value
+            @log.info("added #{e.path} addr #{a.value}")
+          end
         end
       end
 
