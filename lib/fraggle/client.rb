@@ -34,7 +34,7 @@ module Fraggle
     end
 
     def receive_response(res)
-      info "received response: #{res.inspect}"
+      debug "received response: #{res.inspect}"
 
       if res.err_code
         if req = @cbx.delete(res.tag)
@@ -197,7 +197,7 @@ module Fraggle
 
       @cbx[req.tag] = req
 
-      info "sending request:   #{req.inspect}"
+      debug "sending request:   #{req.inspect}"
       send_request(req)
 
       req
