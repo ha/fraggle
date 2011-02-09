@@ -7,7 +7,7 @@ class FraggleSnapTest < Test::Unit::TestCase
   attr_reader :c, :blk
 
   def setup
-    cl   = TestClient.new("doozer:?ca=127.0.0.1:8046")
+    cl   = TestClient.new(["127.0.0.1:8046"])
     @c   = Fraggle::Snap.new(1, cl)
     @blk = Blk.new
   end

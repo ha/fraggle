@@ -82,7 +82,7 @@ class FraggleProtocolTest < Test::Unit::TestCase
 
       def initialize
         @data = ""
-        super("doozer:?ca=127.0.0.1:8046")
+        super(["127.0.0.1:8046"])
       end
 
       def send_data(data)
