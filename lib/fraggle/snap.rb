@@ -4,11 +4,12 @@ module Fraggle
 
   class Snap
 
-    attr_reader :id
+    attr_reader :id, :rev, :c
 
-    def initialize(id, c)
-      @id = id
-      @c  = c
+    def initialize(id, c, rev=nil)
+      @id  = id
+      @c   = c
+      @rev = rev
     end
 
     def get(path, &blk)
@@ -29,7 +30,7 @@ module Fraggle
 
     def snap(&blk)
       @c.snap do |res|
-        sn = Snap.new(res.id, @c)
+        sn = Snap.new(res.id, @c, res.rev)
         blk.call(sn)
       end
     end
