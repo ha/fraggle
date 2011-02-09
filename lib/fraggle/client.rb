@@ -18,6 +18,7 @@ module Fraggle
     MinTag = 0
     MaxTag = (1<<32)
 
+    Nibbles = "0123456789abcdef"
 
     def initialize(addrs)
       @addr  = addrs.shift
@@ -64,9 +65,7 @@ module Fraggle
     end
 
     def session(prefix=nil, &blk)
-      nibbles = "0123456789abcdef"
-      postfix = (0...16).map { nibbles[rand(nibbles.length)].chr }.join
-      name    = prefix ? prefix+"."+postfix : postfix
+      name    = genkey(prefix)
       estab   = false
 
       f = Proc.new do |e|
@@ -331,6 +330,11 @@ module Fraggle
       when :clobber then Response::Clobber
       else cas
       end
+    end
+
+    def genkey(prefix=nil)
+      postfix = (0...16).map { Nibbles[rand(Nibbles.length)].chr }.join
+      prefix ? prefix+"."+postfix : postfix
     end
 
   end
