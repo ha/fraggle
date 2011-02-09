@@ -3,6 +3,7 @@ require 'fraggle/meta'
 require 'fraggle/protocol'
 require 'fraggle/request'
 require 'fraggle/response'
+require 'set'
 require 'uri'
 
 module Fraggle
@@ -18,12 +19,9 @@ module Fraggle
     MaxTag = (1<<32)
 
 
-    def initialize(uri)
-      # Simplied for now.  Later we'll take a real uri
-      # and disect it to init the addrs list
-      uri = URI(uri.to_s)
-
-      @addr  = [uri.host, uri.port] * ":"
+    def initialize(addrs)
+      @addr  = addrs.shift
+      @init  = addrs
       @addrs = {}
       @shun  = {}
       @cbx   = {}
@@ -259,8 +257,8 @@ module Fraggle
       end
 
       waw = Proc.new do |e|
-        if e.value == ""
-          addr = @addrs.delete(e.path)
+        if e.value != ""
+          addr = @addrs.delete(e.value)
           if addr
             error "noticed #{addr} is gone; removing"
           end
@@ -283,8 +281,15 @@ module Fraggle
         end
       end
 
-      watch    "/doozer/slot/*", &waw
-      walk  0, "/doozer/slot/*", &waw
+      watch("/doozer/slot/*", &waw)
+
+      w = walk(0, "/doozer/slot/*", &waw)
+      w.done do
+        # We have the best known addrs;  We can clear the initial
+        # ones given at inception.
+        debug "addrs list complete; clearing init addrs"
+        @init.clear
+      end
     end
 
     # What happens when a connection is closed for any reason.
@@ -300,7 +305,14 @@ module Fraggle
       # has been complete, we'll start the timer again.
       EM.cancel_timer(@timer)
 
-      _, @addr = @addrs.shift rescue nil
+      # Attempt to use an addr given to us by a Doozer
+      _, @addr = @addrs.shift
+
+      if ! @addr
+        # As a last resort, try one of the addresses given
+        # at inception.
+        @addr = @init.shift
+      end
 
       if ! @addr
         # We are all out of addresses to try

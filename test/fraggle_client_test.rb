@@ -8,7 +8,7 @@ class FraggleClientTest < Test::Unit::TestCase
   attr_reader :c, :blk
 
   def setup
-    @c   = TestClient.new("doozer://127.0.0.1:8046")
+    @c   = TestClient.new("doozer:?ca=127.0.0.1:8046")
     @blk = Blk.new
   end
 
