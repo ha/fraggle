@@ -3,8 +3,8 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
 
   s.name = 'fraggle'
-  s.version = '0.3.1'
-  s.date = '2011-02-08'
+  s.version = '0.3.2'
+  s.date = '2011-02-09'
 
   s.description = "A Ruby/EventMachine Client for Doozer"
   s.summary     = s.description
