@@ -252,8 +252,8 @@ module Fraggle
         end
       end
 
-      walk  0, "/doozer/slot/*", &waw
       watch    "/doozer/slot/*", &waw
+      walk  0, "/doozer/slot/*", &waw
     end
 
     # What happens when a connection is closed for any reason.
