@@ -1,14 +1,15 @@
+require 'fraggle/logger'
 require 'fraggle/meta'
 require 'fraggle/protocol'
 require 'fraggle/request'
 require 'fraggle/response'
-require 'logger'
 require 'uri'
 
 module Fraggle
 
   module Client
     include Protocol
+    include Logger
 
     class Error < StandardError ; end
 
@@ -17,7 +18,7 @@ module Fraggle
     MaxTag = (1<<32)
 
 
-    def initialize(uri, log=Logger.new("/dev/null"))
+    def initialize(uri)
       # Simplied for now.  Later we'll take a real uri
       # and disect it to init the addrs list
       uri = URI(uri.to_s)
@@ -26,11 +27,14 @@ module Fraggle
       @addrs = {}
       @shun  = {}
       @cbx   = {}
-      @log   = log
+
+      # Logging
+      @level   = ERROR
+      @writer  = $stderr
     end
 
     def receive_response(res)
-      @log.info "received response: #{res.inspect}"
+      info "received response: #{res.inspect}"
 
       if res.err_code
         if req = @cbx.delete(res.tag)
@@ -193,7 +197,7 @@ module Fraggle
 
       @cbx[req.tag] = req
 
-      @log.info "sending request: #{req.inspect}"
+      info "sending request:   #{req.inspect}"
       send_request(req)
 
       req
@@ -218,17 +222,17 @@ module Fraggle
     end
 
     def post_init
-      @log.info "successfully connected to #{@addr}"
+      info "successfully connected to #{@addr}"
 
       @last_received = Time.now
 
       EM.add_periodic_timer(2) do
         if (n = Time.now - last_received) >= 3
-          @log.error("timeout talking to #{@addr}")
+          error("timeout talking to #{@addr}")
           close_connection
         else
-          @log.debug("ping")
-          get(0, "/ping") { @log.debug("pong") }
+          debug("ping")
+          get(0, "/ping") { debug("pong") }
         end
       end
 
@@ -236,22 +240,22 @@ module Fraggle
         if e.value == ""
           addr = @addrs.delete(e.path)
           if addr
-            @log.error "noticed #{addr} is gone; removing"
+            error "noticed #{addr} is gone; removing"
           end
         else
           get 0, "/doozer/info/#{e.value}/public-addr" do |a|
             if @shun.has_key?(a.value)
               if (n = Time.now - @shun[a.value]) > 3
-                @log.info "pardoning #{a.value} after #{n} secs"
+                info "pardoning #{a.value} after #{n} secs"
                 @shun.delete(a.value)
               else
-                @log.info "ignoring shunned addr #{a.value}"
+                info "ignoring shunned addr #{a.value}"
                 next
               end
             end
             # TODO: Be defensive and check the addr value is valid
             @addrs[e.path] = a.value
-            @log.info("added #{e.path} addr #{a.value}")
+            info("added #{e.path} addr #{a.value}")
           end
         end
       end
@@ -262,7 +266,7 @@ module Fraggle
 
     # What happens when a connection is closed for any reason.
     def unbind
-      @log.error "disconnected from #{@addr}"
+      error "disconnected from #{@addr}"
 
       # Shun the address we were currently attempting/connected to.
       @shun[@addr] = Time.now
@@ -281,7 +285,7 @@ module Fraggle
       end
 
       host, port = @addr.split(":")
-      @log.info "attempting reconnect to #{host}:#{port}"
+      info "attempting reconnect to #{host}:#{port}"
       reconnect(host, port.to_i)
       post_init
     end
