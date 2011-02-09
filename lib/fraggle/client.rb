@@ -266,18 +266,19 @@ module Fraggle
           end
         else
           get 0, "/doozer/info/#{e.value}/public-addr" do |a|
-            if @shun.has_key?(a.value)
-              if (n = Time.now - @shun[a.value]) > 3
-                info "pardoning #{a.value} after #{n} secs"
-                @shun.delete(a.value)
+            addr = a.value.to_s
+            if @shun.has_key?(addr)
+              if (n = Time.now - @shun[addr]) > 3
+                info "pardoning #{addr} after #{n} secs"
+                @shun.delete(addr)
               else
-                info "ignoring shunned addr #{a.value}"
+                info "ignoring shunned addr #{addr}"
                 next
               end
             end
             # TODO: Be defensive and check the addr value is valid
-            @addrs[e.path] = a.value
-            info("added #{e.path} addr #{a.value}")
+            @addrs[e.path] = addr
+            info("added #{e.path} addr #{addr}")
           end
         end
       end
