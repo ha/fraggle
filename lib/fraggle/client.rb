@@ -220,7 +220,7 @@ module Fraggle
 
       EM.add_periodic_timer(2) do
         if (n = Time.now - last_received) >= 3
-          @log.error("timedout talking to #{@addr}")
+          @log.error("timeout talking to #{@addr}")
           close_connection
         else
           @log.debug("ping")
