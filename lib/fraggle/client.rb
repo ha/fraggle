@@ -238,7 +238,7 @@ module Fraggle
           get 0, "/doozer/info/#{e.value}/public-addr" do |a|
             if @shun.has_key?(a.value)
               if (n = Time.now - @shun[a.value]) > 3
-                @log.info "unshunning #{a.value} after #{n} secs"
+                @log.info "pardoning #{a.value} after #{n} secs"
                 @shun.delete(a.value)
               else
                 @log.info "ignoring shunned addr #{a.value}"
