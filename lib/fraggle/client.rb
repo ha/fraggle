@@ -71,7 +71,7 @@ module Fraggle
       f = Proc.new do |e|
         # If this is the first response from the server, it's go-time.
         if ! estab
-          blk.call
+          blk.call(name)
         end
 
         # We've successfully established a session.  Say so.
