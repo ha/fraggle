@@ -65,6 +65,28 @@ module Fraggle
       send(req, &blk)
     end
 
+    def session(prefix=nil, &blk)
+      nibbles = "0123456789abcdef"
+      postfix = (0...16).map { nibbles[rand(nibbles.length)].chr }.join
+      name    = prefix ? prefix+"."+postfix : postfix
+      estab   = false
+
+      f = Proc.new do |e|
+        # If this is the first response from the server, it's go-time.
+        if ! estab
+          blk.call
+        end
+
+        # We've successfully established a session.  Say so.
+        estab = true
+
+        # Get back to the server ASAP
+        checkin(name, e.cas, &f)
+      end
+
+      checkin(name, 0, &f)
+    end
+
     def get(sid, path, &blk)
       req = Request.new
       req.verb = Request::Verb::GET
