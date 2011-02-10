@@ -21,6 +21,16 @@ module Fraggle
       callbacks[name] = blk
     end
 
+    def aggr(coll=[], &blk)
+      valid do |item|
+        coll << item
+      end
+
+      done do
+        blk.call(coll)
+      end
+    end
+
   end
 
 end
