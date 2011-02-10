@@ -38,10 +38,6 @@ module Fraggle
       send_data("#{head}#{data}")
     end
 
-    def send_data(data)
-      super(data)
-    end
-
   end
 
 end
