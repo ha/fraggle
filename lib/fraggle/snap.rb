@@ -35,6 +35,10 @@ module Fraggle
       end
     end
 
+    def delete(&blk)
+      @c.delsnap(@id, &blk)
+    end
+
     def method_missing(*args, &blk)
       @c.__send__(*args, &blk)
     end
