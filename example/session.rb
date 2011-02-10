@@ -11,7 +11,7 @@ EM.run do
   c = Fraggle.connect "doozer:?ca=127.0.0.1:8046&ca=123.0.0.1:9999"
   c.level = Fraggle::Client::DEBUG
 
-  c.session "example" do |session_id|
+  c.session "example." do |session_id|
     c.debug "established session (#{session_id})!"
   end
 end

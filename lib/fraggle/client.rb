@@ -65,7 +65,7 @@ module Fraggle
     end
 
     def session(prefix=nil, &blk)
-      name    = genkey(prefix)
+      name    = "#{prefix}#{genkey}"
       estab   = false
 
       f = Proc.new do |e|
@@ -332,9 +332,8 @@ module Fraggle
       end
     end
 
-    def genkey(prefix=nil)
-      postfix = (0...16).map { Nibbles[rand(Nibbles.length)].chr }.join
-      prefix ? prefix+"."+postfix : postfix
+    def genkey
+      (0...16).map { Nibbles[rand(Nibbles.length)].chr }.join
     end
 
   end
