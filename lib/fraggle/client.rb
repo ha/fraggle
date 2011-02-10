@@ -1,3 +1,4 @@
+require 'fraggle/errors'
 require 'fraggle/logger'
 require 'fraggle/meta'
 require 'fraggle/protocol'
@@ -315,7 +316,7 @@ module Fraggle
 
       if ! @addr
         # We are all out of addresses to try
-        raise "No more doozers!"
+        raise NoAddrs
       end
 
       host, port = @addr.split(":")

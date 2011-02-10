@@ -3,14 +3,16 @@ module Fraggle
 
     DEBUG = 0
     INFO  = 1
-    ERROR = 2
+    WARN  = 2
+    ERROR = 3
 
-    attr_accessor :writer, :level
+    attr_writer :writer, :level
 
     def log(lv, msg)
       label = case lv
       when DEBUG then "debug "
       when INFO  then "info  "
+      when WARN  then "warn  "
       when ERROR then "error "
       end
 
@@ -19,8 +21,12 @@ module Fraggle
       end
     end
 
+    def writer ; @writer ||= STDERR ; end
+    def level  ; @level ||= WARN   ; end
+
     def debug(msg) ; log(DEBUG, msg) ; end
     def info(msg)  ; log(INFO,  msg) ; end
+    def warn(msg)  ; log(WARN,  msg) ; end
     def error(msg) ; log(ERROR, msg) ; end
   end
 end
