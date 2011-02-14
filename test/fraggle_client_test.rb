@@ -46,18 +46,6 @@ class FraggleClientTest < Test::Unit::TestCase
     assert_equal 1, blk.length
   end
 
-  def test_default_error
-    req = c.send(Fraggle::Request.new)
-
-    assert_raises Fraggle::Client::Error do
-      reply(req.tag, :err_code => E::OTHER, :err_detail => "boom!")
-    end
-
-    assert_nothing_raised do
-      reply(req.tag, :err_code => E::OTHER, :err_detail => "boom!")
-    end
-  end
-
   def test_error
     req = c.send(Fraggle::Request.new)
     req.error(&blk)

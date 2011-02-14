@@ -208,7 +208,7 @@ module Fraggle
 
       # Setup a default error handler that gives useful information
       req.error do |e|
-        raise Error.new("'error (%d) (%s)' for: %s" % [
+        warn("'error (%d) (%s)' for: %s" % [
           e.err_code,
           e.err_detail.inspect,
           req.inspect
