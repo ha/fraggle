@@ -66,6 +66,12 @@ class FraggleClientTest < Test::Unit::TestCase
     assert_equal t+4, c.noop.tag
   end
 
+  def test_no_tag_if_tag
+    req = Fraggle::Request.new :tag => 99
+    c.send(req)
+    assert_sent 99
+  end
+
   # CHECKIN cas, path         => cas
   def test_checkin
     req = c.checkin("abc123", 123, &blk)

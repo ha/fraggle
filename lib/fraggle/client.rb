@@ -191,16 +191,18 @@ module Fraggle
     end
 
     def send(req, &blk)
-      tag = MinTag
+      if ! req.tag
+        tag = MinTag
 
-      while @cbx.has_key?(tag)
-        tag += 1
-        if tag > MaxTag
-          tag = MinTag
+        while @cbx.has_key?(tag)
+          tag += 1
+          if tag > MaxTag
+            tag = MinTag
+          end
         end
-      end
 
-      req.tag = tag
+        req.tag = tag
+      end
 
       if blk
         req.valid(&blk)
