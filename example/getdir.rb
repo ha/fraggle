@@ -16,7 +16,7 @@ EM.run do
     ents << e.path
   end
 
-  req.done do
+  req.error do
     puts *ents
   end
 

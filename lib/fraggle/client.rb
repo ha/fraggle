@@ -248,13 +248,17 @@ module Fraggle
 
       @last_received = Time.now
 
+      # We've been connected to a new server.  Notify all requests.
+      @cbx.values.each do |req|
+        req.emit(:again, req)
+      end
+
       EM.add_periodic_timer(2) do
         if (n = Time.now - last_received) >= 3
           error("timeout talking to #{@addr}")
           close_connection
         else
-          debug("ping")
-          get(0, "/ping") { debug("pong") }
+          get(0, "/ping")
         end
       end
 

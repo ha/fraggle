@@ -13,6 +13,7 @@ module Fraggle
     def valid(&blk) ; must_callback!(:valid, blk) ; end
     def done(&blk)  ; must_callback!(:done,  blk) ; end
     def error(&blk) ; must_callback!(:error, blk) ; end
+    def again(&blk) ; must_callback!(:again, blk) ; end
 
     def must_callback!(name, blk)
       if ! blk

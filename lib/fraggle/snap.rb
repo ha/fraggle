@@ -39,6 +39,10 @@ module Fraggle
       @c.delsnap(@id, &blk)
     end
 
+    def send(req, &blk)
+      @c.send(req, &blk)
+    end
+
     def method_missing(*args, &blk)
       @c.__send__(*args, &blk)
     end
