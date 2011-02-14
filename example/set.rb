@@ -6,7 +6,7 @@ EM.run do
     $stderr.puts e.message + "\n" + (e.backtrace * "\n")
   end
 
-  c = Fraggle.connect "doozer:?ca=127.0.0.1:8046"
+  c = Fraggle.connect
 
   EM.add_periodic_timer(1) do
     c.get "/hello" do |e|

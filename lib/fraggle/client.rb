@@ -294,7 +294,7 @@ module Fraggle
 
     # What happens when a connection is closed for any reason.
     def unbind
-      error "disconnected from #{@addr}"
+      warn "disconnected from #{@addr}"
 
       # Shun the address we were currently attempting/connected to.
       @shun[@addr] = Time.now

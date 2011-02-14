@@ -6,10 +6,19 @@ require 'uri'
 module Fraggle
   extend Logger
 
-  def self.connect(uri, *args)
+  DefaultUri = "doozer:?"+
+    # Default host/port
+    "ca=127.0.0.1:8046&"+
+
+    # Default host + test-cluster ports
+    "ca=127.0.0.1:8041&"+
+    "ca=127.0.0.1:8042&"+
+    "ca=127.0.0.1:8043"
+
+  def self.connect(uri=ENV["DOOZER_URI"] || DefaultUri)
     addrs = addrs_for(uri)
     host, port = addrs.first.split(":")
-    c = EM.connect(host, port, Client, addrs, *args)
+    c = EM.connect(host, port, Client, addrs)
     Snap.new(0, c)
   end
 
