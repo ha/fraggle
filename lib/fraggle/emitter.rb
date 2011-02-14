@@ -19,6 +19,8 @@ module Fraggle
         raise ArgumentError, "no block given to `#{name}`"
       end
       callbacks[name] = blk
+
+      self
     end
 
     def aggr(coll=[], &blk)
