@@ -9,6 +9,7 @@ EM.run do
   end
 
   c = Fraggle.connect
+  c.level = Fraggle::Logger::WARN
 
   c.watch "/example/*" do |e|
     p e
