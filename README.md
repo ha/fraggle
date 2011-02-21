@@ -43,7 +43,7 @@
         e.set?       # => true
         e.del?       # => false
 
-        done_something_with(e)
+        do_something_with(e)
 
         # Phoney check for example
         if can_stop_watching?(path)
