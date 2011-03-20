@@ -58,11 +58,11 @@ module Fraggle
 
     def checkin(path, rev, &blk)
       req = Request.new
-      req.verb  = Request::Verb::CHECKIN
-      req.path  = path
-      req.rev   = casify(rev)
+      req.verb = Request::Verb::CHECKIN
+      req.path = path
+      req.rev  = casify(rev)
 
-      send(req, &blk)
+      resend(req)
     end
 
     def session(prefix=nil, &blk)
@@ -91,7 +91,7 @@ module Fraggle
       req.id   = sid if sid != 0 # wire optimization
       req.path = path
 
-      send(req, &blk)
+      resend(req)
     end
 
     def stat(sid, path, &blk)
@@ -100,7 +100,7 @@ module Fraggle
       req.id   = sid if sid != 0 # wire optimization
       req.path = path
 
-      send(req, &blk)
+      resend(req)
     end
 
     def getdir(sid, path, offset, limit, &blk)
@@ -111,7 +111,7 @@ module Fraggle
       req.limit  = limit  if limit  != 0
       req.path   = path
 
-      send(req, &blk)
+      resend(req)
     end
 
     def set(path, value, rev, &blk)
@@ -121,7 +121,7 @@ module Fraggle
       req.value = value
       req.rev   = casify(rev)
 
-      send(req, &blk)
+      send(req)
     end
 
     def del(path, rev, &blk)
@@ -130,16 +130,18 @@ module Fraggle
       req.path  = path
       req.rev   = casify(rev)
 
-      send(req, &blk)
+      send(req)
     end
 
-    def walk(sid, glob, &blk)
+    def walk(rev, glob, offset=nil, limit=nil, &blk)
       req = Request.new
-      req.verb = Request::Verb::WALK
-      req.id   = sid if sid != 0 # wire optimization
-      req.path = glob
+      req.verb   = Request::Verb::WALK
+      req.rev    = rev
+      req.path   = glob
+      req.offset = offset
+      req.limit  = limit
 
-      cancelable(send(req, &blk))
+      cancelable(resend(req))
     end
 
     def watch(glob, &blk)
@@ -147,14 +149,14 @@ module Fraggle
       req.verb = Request::Verb::WATCH
       req.path = glob
 
-      cancelable(send(req, &blk))
+      cancelable(resend(req))
     end
 
     def noop(&blk)
       req = Request.new
       req.verb = Request::Verb::NOOP
 
-      send(req, &blk)
+      send(req)
     end
 
     # Be careful with this.  It is recommended you use #cancel on the Request
@@ -168,39 +170,28 @@ module Fraggle
       # Hold on to the tag as unavaiable for reuse until the cancel succeeds.
       @cbx[what.tag] = nil
 
-      send(req) do |res|
+      send(req).valid do |res|
         # Do not send any more responses from the server to this request.
         @cbx.delete(what.tag)
         blk.call(res) if blk
       end
     end
 
-    def send(req, &blk)
-      if ! req.tag
-        tag = MinTag
+    def next_tag
+      tag = MinTag
 
-        while @cbx.has_key?(tag)
-          tag += 1
-          if tag > MaxTag
-            tag = MinTag
-          end
+      while @cbx.has_key?(tag)
+        tag += 1
+        if tag > MaxTag
+          tag = MinTag
         end
-
-        req.tag = tag
       end
 
-      if blk
-        req.valid(&blk)
-      end
+      tag
+    end
 
-      # Setup a default error handler that gives useful information
-      req.error do |e|
-        warn("'error (%d) (%s)' for: %s" % [
-          e.err_code,
-          e.err_detail.inspect,
-          req.inspect
-        ])
-      end
+    def send(req)
+      req.tag ||= next_tag
 
       @cbx[req.tag] = req
 
@@ -208,6 +199,44 @@ module Fraggle
       send_request(req)
 
       req
+    end
+
+    def resend(req)
+      req.tag ||= next_tag
+
+      wrap = Request.new(req.to_hash)
+
+      req.valid do |e|
+        if req.offset
+          req.offset += 1
+        end
+
+        if req.limit
+          req.limit -= 1
+        end
+
+        if (req.rev || 0) < (e.rev || 0)
+          req.rev = e.rev
+        end
+
+        wrap.emit(:valid, e)
+      end
+
+      req.error do |err|
+        if err.disconnected?
+          send(req)
+        else
+          wrap.emit(:error, err)
+        end
+      end
+
+      req.done do |e|
+        wrap.emit(:done, e)
+      end
+
+      send(req)
+
+      wrap
     end
 
     def cancelable(req)
