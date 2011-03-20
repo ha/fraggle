@@ -76,8 +76,8 @@ class FraggleClientTest < Test::Unit::TestCase
   def test_checkin
     req = c.checkin("abc123", 123, &blk)
 
-    assert_sent(req.tag, :verb => V::CHECKIN, :path => "abc123", :cas => 123)
-    assert_recv(reply(req.tag, :cas => 123))
+    assert_sent(req.tag, :verb => V::CHECKIN, :path => "abc123", :rev => 123)
+    assert_recv(reply(req.tag, :rev => 123))
   end
 
   # GET     path, id         => cas, value
@@ -113,15 +113,15 @@ class FraggleClientTest < Test::Unit::TestCase
   def test_set
     req = c.set("/foo", "bar", 123, &blk)
 
-    assert_sent(req.tag, :verb => V::SET,  :cas => 123, :path => "/foo", :value => "bar")
-    assert_recv(reply(req.tag, :cas => 123))
+    assert_sent(req.tag, :verb => V::SET,  :rev => 123, :path => "/foo", :value => "bar")
+    assert_recv(reply(req.tag, :rev => 123))
   end
 
   # DEL     cas, path        => {}
   def test_del
     req = c.del("/foo", 123, &blk)
 
-    assert_sent(req.tag, :verb => V::DEL, :cas => 123, :path => "/foo")
+    assert_sent(req.tag, :verb => V::DEL, :rev => 123, :path => "/foo")
     assert_recv(reply(req.tag))
   end
 
@@ -147,22 +147,6 @@ class FraggleClientTest < Test::Unit::TestCase
     assert_recv(reply(req.tag, :cas => 123, :path => "/foo/a", :value => "1"))
     assert_recv(reply(req.tag, :cas => 456, :path => "/foo/b", :value => "2"))
     assert_recv(reply(req.tag, :cas => 789, :path => "/foo/c", :value => "3"))
-  end
-
-  # SNAP     {}               => id
-  def test_snap
-    req = c.snap(&blk)
-
-    assert_sent(req.tag, :verb => V::SNAP)
-    assert_recv(reply(req.tag, :id => 1))
-  end
-
-  # DELSNAP  id               => {}
-  def test_delsnap
-    req = c.delsnap(1, &blk)
-
-    assert_sent(req.tag, :verb => V::DELSNAP, :id => 1)
-    assert_recv(reply(req.tag))
   end
 
   # NOOP     {}               => {}

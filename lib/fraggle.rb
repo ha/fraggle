@@ -1,6 +1,5 @@
 require 'fraggle/errors'
 require 'fraggle/logger'
-require 'fraggle/snap'
 require 'uri'
 
 module Fraggle
@@ -18,8 +17,7 @@ module Fraggle
   def self.connect(uri=ENV["DOOZER_URI"] || DefaultUri)
     addrs = addrs_for(uri)
     host, port = addrs.first.split(":")
-    c = EM.connect(host, port, Client, addrs)
-    Snap.new(0, c)
+    EM.connect(host, port, Client, addrs)
   end
 
   def self.addrs_for(uri)

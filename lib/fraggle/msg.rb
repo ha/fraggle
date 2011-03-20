@@ -8,23 +8,22 @@ module Fraggle
     required :tag, :int32, 1
 
     module Verb
-      CHECKIN  = 0;  # cas, id          => cas
-      GET      = 1;  # path, id         => cas, value
-      SET      = 2;  # cas, path, value => cas
-      DEL      = 3;  # cas, path        => {}
-      ESET     = 4;  # cas, path        => {}
-      SNAP     = 5;  # {}               => seqn, id
-      DELSNAP  = 6;  # id               => {}
+      CHECKIN  = 0;  # rev, id          => rev
+      GET      = 1;  # path, id         => rev, value
+      SET      = 2;  # rev, path, value => rev
+      DEL      = 3;  # rev, path        => {}
+      ESET     = 4;  # rev, path        => {}
+      REV      = 5;  # {}               => seqn, id
       NOOP     = 7;  # {}               => {}
-      WATCH    = 8;  # path             => {cas, path, value}+
+      WATCH    = 8;  # path             => {rev, path, value}+
       CANCEL   = 10; # id               => {}
-      STAT     = 16; # path, id         => cas, len
+      STAT     = 16; # path, id         => rev, len
 
       # future
-      GETDIR   = 14; # path             => {cas, value}+
-      MONITOR  = 11; # path             => {cas, path, value}+
-      SYNCPATH = 12; # path             => cas, value
-      WALK     = 9;  # path, id         => {cas, path, value}+
+      GETDIR   = 14; # path             => {rev, value}+
+      MONITOR  = 11; # path             => {rev, path, value}+
+      SYNCPATH = 12; # path             => rev, value
+      WALK     = 9;  # path, id         => {rev, path, value}+
 
       # deprecated
       JOIN     = 13;
@@ -32,7 +31,6 @@ module Fraggle
 
     required :verb, Verb, 2
 
-    optional :cas,   :int64,  3
     optional :path,  :string, 4
     optional :value, :bytes,  5
     optional :id,    :int32,  6
@@ -40,6 +38,7 @@ module Fraggle
     optional :offset, :int32, 7
     optional :limit,  :int32, 8
 
+    optional :rev,    :int64, 9
   end
 
 
@@ -67,7 +66,7 @@ module Fraggle
       TAG_IN_USE   = 1
       UNKNOWN_VERB = 2
       REDIRECT     = 3
-      INVALID_SNAP = 4
+      TOO_LATE     = 4
       CAS_MISMATCH = 5
 
       # match unix errno

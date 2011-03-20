@@ -56,11 +56,11 @@ module Fraggle
       end
     end
 
-    def checkin(path, cas, &blk)
+    def checkin(path, rev, &blk)
       req = Request.new
       req.verb  = Request::Verb::CHECKIN
       req.path  = path
-      req.cas   = casify(cas)
+      req.rev   = casify(rev)
 
       send(req, &blk)
     end
@@ -114,21 +114,21 @@ module Fraggle
       send(req, &blk)
     end
 
-    def set(path, value, cas, &blk)
+    def set(path, value, rev, &blk)
       req = Request.new
       req.verb  = Request::Verb::SET
       req.path  = path
       req.value = value
-      req.cas   = casify(cas)
+      req.rev   = casify(rev)
 
       send(req, &blk)
     end
 
-    def del(path, cas, &blk)
+    def del(path, rev, &blk)
       req = Request.new
       req.verb  = Request::Verb::DEL
       req.path  = path
-      req.cas   = casify(cas)
+      req.rev   = casify(rev)
 
       send(req, &blk)
     end
@@ -148,21 +148,6 @@ module Fraggle
       req.path = glob
 
       cancelable(send(req, &blk))
-    end
-
-    def snap(&blk)
-      req = Request.new
-      req.verb = Request::Verb::SNAP
-
-      send(req, &blk)
-    end
-
-    def delsnap(sid, &blk)
-      req = Request.new
-      req.verb = Request::Verb::DELSNAP
-      req.id = sid
-
-      send(req, &blk)
     end
 
     def noop(&blk)

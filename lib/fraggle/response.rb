@@ -29,7 +29,7 @@ module Fraggle
     def other?        ; err_code == Err::OTHER        ; end
     def unknown_verb? ; err_code == Err::UNKNOWN_VERB ; end
     def redirect?     ; err_code == Err::REDIRECT     ; end
-    def invalid_snap? ; err_code == Err::INVALID_SNAP ; end
+    def too_late?     ; err_code == Err::TOO_LATE     ; end
     def mismatch?     ; err_code == Err::CAS_MISMATCH ; end
     def not_dir?      ; err_code == Err::NOT_DIR      ; end
     def is_dir?       ; err_code == Err::ISDIR        ; end
