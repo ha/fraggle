@@ -245,90 +245,11 @@ module Fraggle
 
     def post_init
       info "successfully connected to #{@addr}"
-
-      @last_received = Time.now
-
-      # We've been connected to a new server.  Notify all requests.
-      @cbx.values.each do |req|
-        req.emit(:again, req)
-      end
-
-      EM.add_periodic_timer(2) do
-        if (n = Time.now - last_received) >= 3
-          error("timeout talking to #{@addr}")
-          close_connection
-        else
-          get(0, "/ping")
-        end
-      end
-
-      waw = Proc.new do |e|
-        if e.value != ""
-          addr = @addrs.delete(e.value)
-          if addr
-            error "noticed #{addr} is gone; removing"
-          end
-        else
-          get 0, "/doozer/info/#{e.value}/public-addr" do |a|
-            addr = a.value.to_s
-            if @shun.has_key?(addr)
-              if (n = Time.now - @shun[addr]) > 3
-                info "pardoning #{addr} after #{n} secs"
-                @shun.delete(addr)
-              else
-                info "ignoring shunned addr #{addr}"
-                next
-              end
-            end
-            # TODO: Be defensive and check the addr value is valid
-            @addrs[e.path] = addr
-            info("added #{e.path} addr #{addr}")
-          end
-        end
-      end
-
-      watch("/doozer/slot/*", &waw)
-
-      w = walk(0, "/doozer/slot/*", &waw)
-      w.done do
-        # We have the best known addrs;  We can clear the initial
-        # ones given at inception.
-        debug "addrs list complete; clearing init addrs"
-        @init.clear
-      end
     end
 
     # What happens when a connection is closed for any reason.
     def unbind
       warn "disconnected from #{@addr}"
-
-      # Shun the address we were currently attempting/connected to.
-      @shun[@addr] = Time.now
-      @addrs.delete_if {|_, v| v == @addr }
-
-      # We don't want the timer to race us while
-      # we're trying to reconnect.  Once the reconnect
-      # has been complete, we'll start the timer again.
-      EM.cancel_timer(@timer)
-
-      # Attempt to use an addr given to us by a Doozer
-      _, @addr = @addrs.shift
-
-      if ! @addr
-        # As a last resort, try one of the addresses given
-        # at inception.
-        @addr = @init.shift
-      end
-
-      if ! @addr
-        # We are all out of addresses to try
-        raise NoAddrs
-      end
-
-      host, port = @addr.split(":")
-      info "attempting reconnect to #{host}:#{port}"
-      reconnect(host, port.to_i)
-      post_init
     end
 
     def casify(cas)
