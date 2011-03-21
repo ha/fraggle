@@ -139,11 +139,11 @@ class FraggleClientTest < Test::Unit::TestCase
 
   # WATCH    path             => {cas, path, value}+
   def test_watch
-    req = c.watch("/foo/*").valid(&blk)
+    req = c.watch(123, "/foo/*").valid(&blk)
 
     assert_respond_to req, :cancel
 
-    assert_sent(req.tag, :verb => V::WATCH, :path => "/foo/*")
+    assert_sent(req.tag, :rev => 123, :verb => V::WATCH, :path => "/foo/*")
     assert_recv(reply(req.tag, :cas => 123, :path => "/foo/a", :value => "1"))
     assert_recv(reply(req.tag, :cas => 456, :path => "/foo/b", :value => "2"))
     assert_recv(reply(req.tag, :cas => 789, :path => "/foo/c", :value => "3"))
@@ -186,7 +186,7 @@ class FraggleClientTest < Test::Unit::TestCase
   end
 
   def test_cancel_does_not_prematurely_remove_callback
-    x = c.watch("/foo/*").valid(&blk)
+    x = c.watch(123, "/foo/*").valid(&blk)
     y = x.cancel
 
     assert_not_equal x.object_id, y.object_id
@@ -194,7 +194,7 @@ class FraggleClientTest < Test::Unit::TestCase
   end
 
   def test_cancel_discards_further_replies
-    x = c.watch("/foo/*").valid(&blk)
+    x = c.watch(123, "/foo/*").valid(&blk)
     x.cancel
 
     reply!(x.tag)
@@ -205,7 +205,7 @@ class FraggleClientTest < Test::Unit::TestCase
   end
 
   def test_tag_pending_cancel_is_not_useable
-    x = c.watch("/foo/*").valid(&blk)
+    x = c.watch(123, "/foo/*").valid(&blk)
     y = x.cancel
 
     # Force a reset of tag so that `send` will attempt
@@ -219,7 +219,7 @@ class FraggleClientTest < Test::Unit::TestCase
   end
 
   def test_reuse_canceled_tag
-    x = c.watch("/foo/*").valid(&blk)
+    x = c.watch(123, "/foo/*").valid(&blk)
     y = x.cancel
 
     reply!(y.tag)

@@ -147,12 +147,41 @@ module Fraggle
       cancelable(resend(req))
     end
 
-    def watch(glob)
+    def watch(rev, glob)
       req = Request.new
+      req.rev  = rev
       req.verb = Request::Verb::WATCH
       req.path = glob
 
       cancelable(resend(req))
+    end
+
+    def monitor(rev, glob)
+      req = Request.new
+      req.rev  = rev
+      req.path = path
+
+      wt = nil
+      wk = nil
+
+      req.metadef :cancel do
+        wt.cancel if wt
+        wk.cancel if wk
+      end
+
+      wk = walk(rev, glob).valid do |e|
+        req.emit(:valid, e)
+      end.error do |e|
+        req.emit(:error)
+      end.done do
+        wt = watch(rev+1, glob).valid do
+          req.emit(:valid, e)
+        end.error do |e|
+          req.emit(:error, e)
+        end
+      end
+
+      req
     end
 
     def noop(&blk)
