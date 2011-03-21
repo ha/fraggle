@@ -21,7 +21,7 @@ module Fraggle
 
     Nibbles = "0123456789abcdef"
 
-    def initialize(addr, addrs, opts={})
+    def initialize(addr, addrs=[], opts={})
       @cbx   = {}
 
       @addr  = addr
@@ -59,7 +59,7 @@ module Fraggle
       end
     end
 
-    def checkin(path, rev, &blk)
+    def checkin(path, rev)
       req = Request.new
       req.verb = Request::Verb::CHECKIN
       req.path = path
@@ -82,13 +82,13 @@ module Fraggle
         estab = true
 
         # Get back to the server ASAP
-        checkin(name, e.rev, &f)
+        checkin(name, e.rev).valid(&f)
       end
 
-      checkin(name, 0, &f)
+      checkin(name, 0).valid(&f)
     end
 
-    def get(sid, path, &blk)
+    def get(sid, path)
       req = Request.new
       req.verb = Request::Verb::GET
       req.id   = sid if sid != 0 # wire optimization
@@ -97,7 +97,7 @@ module Fraggle
       resend(req)
     end
 
-    def stat(sid, path, &blk)
+    def stat(sid, path)
       req = Request.new
       req.verb = Request::Verb::STAT
       req.id   = sid if sid != 0 # wire optimization
@@ -106,7 +106,7 @@ module Fraggle
       resend(req)
     end
 
-    def getdir(sid, path, offset, limit, &blk)
+    def getdir(sid, path, offset, limit)
       req = Request.new
       req.verb   = Request::Verb::GETDIR
       req.id     = sid    if sid != 0
@@ -117,7 +117,7 @@ module Fraggle
       resend(req)
     end
 
-    def set(path, value, rev, &blk)
+    def set(path, value, rev)
       req = Request.new
       req.verb  = Request::Verb::SET
       req.path  = path
@@ -127,7 +127,7 @@ module Fraggle
       send(req)
     end
 
-    def del(path, rev, &blk)
+    def del(path, rev)
       req = Request.new
       req.verb  = Request::Verb::DEL
       req.path  = path
@@ -136,7 +136,7 @@ module Fraggle
       send(req)
     end
 
-    def walk(rev, glob, offset=nil, limit=nil, &blk)
+    def walk(rev, glob, offset=nil, limit=nil)
       req = Request.new
       req.verb   = Request::Verb::WALK
       req.rev    = rev
@@ -147,7 +147,7 @@ module Fraggle
       cancelable(resend(req))
     end
 
-    def watch(glob, &blk)
+    def watch(glob)
       req = Request.new
       req.verb = Request::Verb::WATCH
       req.path = glob
@@ -165,7 +165,7 @@ module Fraggle
     # Be careful with this.  It is recommended you use #cancel on the Request
     # returned to ensure you don't run into a race-condition where you cancel an
     # operation you may have thought was something else.
-    def __cancel__(what, &blk)
+    def __cancel__(what)
       req = Request.new
       req.verb = Request::Verb::CANCEL
       req.id = what.tag
@@ -176,7 +176,7 @@ module Fraggle
       send(req).valid do |res|
         # Do not send any more responses from the server to this request.
         @cbx.delete(what.tag)
-        blk.call(res) if blk
+        what.emit(:valid, res)
       end
     end
 
