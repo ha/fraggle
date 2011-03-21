@@ -21,15 +21,18 @@ module Fraggle
 
     Nibbles = "0123456789abcdef"
 
-    def initialize(addrs)
-      @addr  = addrs.shift
-      @init  = addrs
-      @addrs = {}
-      @shun  = {}
+    def initialize(addr, addrs, opts={})
       @cbx   = {}
 
+      @addr  = addr
+      @addrs = {}
+
+      addrs.each_with_index do |addr, i|
+        @addrs[i] = addr
+      end
+
       # Logging
-      @level   = ERROR
+      @level   = opts[:level] || ERROR
       @writer  = $stderr
     end
 
@@ -79,7 +82,7 @@ module Fraggle
         estab = true
 
         # Get back to the server ASAP
-        checkin(name, e.cas, &f)
+        checkin(name, e.rev, &f)
       end
 
       checkin(name, 0, &f)
@@ -230,8 +233,8 @@ module Fraggle
         end
       end
 
-      req.done do |e|
-        wrap.emit(:done, e)
+      req.done do
+        wrap.emit(:done)
       end
 
       send(req)
@@ -259,11 +262,30 @@ module Fraggle
 
     def post_init
       info "successfully connected to #{@addr}"
+
+      res = Response.new(:err_code => Errno::ECONNREFUSED::Errno)
+      @cbx.values.compact.each do |req|
+        debug "sending disconnected error to #{req.inspect}"
+        req.emit(:error, res)
+      end
     end
 
     # What happens when a connection is closed for any reason.
     def unbind
-      warn "disconnected from #{@addr}"
+      info "disconnected from #{@addr}"
+
+      _, @addr = @addrs.shift
+      if ! @addr
+        raise "No more addrs"
+      end
+
+      host, port = @addr.split(":")
+
+      info "attempting connection to #{@addr}"
+
+      reconnect(host, port.to_i)
+
+      post_init
     end
 
     def casify(cas)

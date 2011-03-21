@@ -1,3 +1,4 @@
+require 'fraggle/client'
 require 'fraggle/errors'
 require 'fraggle/logger'
 require 'uri'
@@ -14,10 +15,13 @@ module Fraggle
     "ca=127.0.0.1:8042&"+
     "ca=127.0.0.1:8043"
 
-  def self.connect(uri=ENV["DOOZER_URI"] || DefaultUri)
+  def self.connect(*args)
+    opts  = args.last.is_a?(Hash) ? args.pop : {}
+    uri   = args.shift || ENV["DOOZER_URI"] || DefaultUri
     addrs = addrs_for(uri)
+
     host, port = addrs.first.split(":")
-    EM.connect(host, port, Client, addrs)
+    EM.connect(host, port, Client, addrs.shift, addrs, opts)
   end
 
   def self.addrs_for(uri)

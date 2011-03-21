@@ -8,8 +8,7 @@ EM.run do
     $stderr.puts e.message + "\n" + (e.backtrace * "\n")
   end
 
-  c = Fraggle.connect
-  c.level = Fraggle::Client::DEBUG
+  c = Fraggle.connect :level => Fraggle::Client::DEBUG
 
   c.session "example." do |session_id|
     c.debug "established session (#{session_id})!"
