@@ -59,6 +59,13 @@ module Fraggle
       end
     end
 
+    def rev
+      req = Request.new
+      req.verb = Request::Verb::REV
+
+      resend(req)
+    end
+
     def checkin(path, rev)
       req = Request.new
       req.verb = Request::Verb::CHECKIN
@@ -159,7 +166,7 @@ module Fraggle
     def monitor(rev, glob)
       req = Request.new
       req.rev  = rev
-      req.path = path
+      req.path = glob
 
       wt = nil
       wk = nil
@@ -172,9 +179,11 @@ module Fraggle
       wk = walk(rev, glob).valid do |e|
         req.emit(:valid, e)
       end.error do |e|
-        req.emit(:error)
+        req.emit(:error, e)
       end.done do
-        wt = watch(rev+1, glob).valid do
+        req.emit(:done)
+
+        wt = watch(rev+1, glob).valid do |e|
           req.emit(:valid, e)
         end.error do |e|
           req.emit(:error, e)
@@ -296,6 +305,30 @@ module Fraggle
       @cbx.values.compact.each do |req|
         debug "sending disconnected error to #{req.inspect}"
         req.emit(:error, res)
+      end
+
+      if ! @tracking
+        trackaddrs
+        @tracking = true
+      end
+    end
+
+    # Track addresses of doozers in a cluster.  This will retry
+    # in the event of a new connection.
+    def trackaddrs
+      rev.valid do |v|
+        monitor(v.rev, "/doozer/slot/*").valid do |e|
+          if e.value == ""
+            @addrs.delete(e.path)
+          else
+            get(e.rev, "/doozer/info/#{e.value}/addr").valid do |g|
+              next if g.value == @addr
+              @addrs[e.path] = g.value
+            end
+          end
+        end.error do |err|
+          error "address tracking: #{err.inspect} for #{req.inspect}"
+        end
       end
     end
 
