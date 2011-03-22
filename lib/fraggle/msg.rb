@@ -58,6 +58,8 @@ module Fraggle
     module Flag
       VALID = 1
       DONE  = 2
+      SET   = 4
+      DEL   = 8
     end
 
     module Err

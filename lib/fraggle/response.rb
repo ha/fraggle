@@ -12,17 +12,17 @@ module Fraggle
     Missing =  0
     Clobber = -1
     Dir     = -2
-    Dummy   = -3
+    Nop   = -3
 
     Refused = -1
 
     # CAS
-    def missing?  ; cas == Missing ; end
-    def dir?      ; cas == Dir     ; end
-    def dummy?    ; cas == Dummy   ; end
+    def missing?  ; rev == Missing ; end
+    def dir?      ; rev == Dir     ; end
+    def dummy?    ; rev == Nop     ; end
 
-    def del?      ; missing?       ; end
-    def set?      ; !del?          ; end
+    def del?      ; (flags & Flag::Del) > 0 ; end
+    def set?      ; (flags & Flag::Set) > 0 ; end
 
     # ERR
     def ok?           ; err_code != 0                 ; end
