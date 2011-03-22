@@ -95,28 +95,28 @@ module Fraggle
       checkin(name, 0).valid(&f)
     end
 
-    def get(sid, path)
+    def get(rev, path)
       req = Request.new
+      req.rev  = rev
       req.verb = Request::Verb::GET
-      req.id   = sid if sid != 0 # wire optimization
       req.path = path
 
       resend(req)
     end
 
-    def stat(sid, path)
+    def stat(rev, path)
       req = Request.new
+      req.rev  = rev
       req.verb = Request::Verb::STAT
-      req.id   = sid if sid != 0 # wire optimization
       req.path = path
 
       resend(req)
     end
 
-    def getdir(sid, path, offset, limit)
+    def getdir(rev, path, offset, limit)
       req = Request.new
+      req.rev    = rev
       req.verb   = Request::Verb::GETDIR
-      req.id     = sid    if sid != 0
       req.offset = offset if offset != 0
       req.limit  = limit  if limit  != 0
       req.path   = path

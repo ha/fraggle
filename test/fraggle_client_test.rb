@@ -84,7 +84,7 @@ class FraggleClientTest < Test::Unit::TestCase
   def test_get
     req = c.get(0, "/ping").valid(&blk)
 
-    assert_sent req.tag, :verb => V::GET, :path => "/ping"
+    assert_sent req.tag, :rev => 0, :verb => V::GET, :path => "/ping"
     assert_recv reply(req.tag, :cas => 123, :value => "pong")
   end
 
@@ -92,20 +92,20 @@ class FraggleClientTest < Test::Unit::TestCase
   def test_stat
     req = c.stat(0, "/ping").valid(&blk)
 
-    assert_sent req.tag, :verb => V::STAT, :path => "/ping"
+    assert_sent req.tag, :rev => 0, :verb => V::STAT, :path => "/ping"
     assert_recv reply(req.tag, :cas => 123, :len => 4)
   end
 
   # GETDIR     id, path, offset, limit         => {cas, value}+
   def test_getdir
-    req = c.getdir(0, "/test", 0, 0).valid(&blk)
+    req = c.getdir(0, "/test", nil, nil).valid(&blk)
 
-    assert_sent req.tag, :verb => V::GETDIR, :path => "/test"
-    assert_recv reply(req.tag, :cas => 123, :value => "a")
+    assert_sent req.tag, :rev => 0, :verb => V::GETDIR, :path => "/test"
+    assert_recv reply(req.tag, :rev => 123, :value => "a")
 
     req = c.getdir(0, "/test", 1, 2).valid(&blk)
 
-    assert_sent req.tag, :verb => V::GETDIR, :path => "/test", :offset => 1, :limit => 2
+    assert_sent req.tag, :rev => 0, :verb => V::GETDIR, :path => "/test", :offset => 1, :limit => 2
     assert_recv reply(req.tag, :cas => 123, :value => "b")
   end
 
