@@ -55,13 +55,6 @@ module Fraggle
     optional :id,    :int32,  7
     optional :len,   :int32,  8
 
-    module Flag
-      VALID = 1
-      DONE  = 2
-      SET   = 4
-      DEL   = 8
-    end
-
     module Err
       # don't use value 0
       OTHER        = 127

@@ -9,6 +9,14 @@ module Fraggle
 
   class Response
 
+    module Flag
+      VALID = 1
+      DONE  = 2
+      SET   = 4
+      DEL   = 8
+    end
+
+
     Missing =  0
     Clobber = -1
     Dir     = -2
