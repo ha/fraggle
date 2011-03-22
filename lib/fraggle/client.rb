@@ -321,7 +321,7 @@ module Fraggle
           if e.value == ""
             @addrs.delete(e.path)
           else
-            get(e.rev, "/doozer/info/#{e.value}/addr").valid do |g|
+            get(v.rev, "/doozer/info/#{e.value}/addr").valid do |g|
               next if g.value == @addr
               @addrs[e.path] = g.value
             end
