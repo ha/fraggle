@@ -1,16 +1,28 @@
-require 'beefcake'
 require 'fraggle/msg.pb'
-require 'fraggle/emitter'
-
-##
-# An extension to Request in msg.rb. I want to keep these seperated so when
-# future versions of Beefcake can generate code, we don't have to manually add
-# this back in for each generation.
 
 module Fraggle
-
   class Request
-    include Emitter
-  end
 
+    def initialize(attrs={})
+      super(attrs)
+      @cb = Hash.new(lambda {})
+    end
+
+    def valid(&blk)
+      @cb[:valid] = blk
+    end
+
+    def done(&blk)
+      @cb[:done] = blk
+    end
+
+    def error(&blk)
+      @cb[:error] = blk
+    end
+
+    def emit(name, *args)
+      @cb[name].call(*args)
+    end
+
+  end
 end

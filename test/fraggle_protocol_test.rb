@@ -1,13 +1,11 @@
-require 'fraggle/client'
-require 'fraggle/protocol'
-require 'fraggle/response'
-require 'fraggle/test'
+require 'fraggle/connection'
 
 class FraggleProtocolTest < Test::Unit::TestCase
-  include Fraggle::Test
+  V = Fraggle::Request::Verb
+  F = Fraggle::Request
 
   class TestConn < Array
-    include Fraggle::Protocol
+    include Fraggle::Connection
     alias :receive_response :<<
   end
 
@@ -23,23 +21,23 @@ class FraggleProtocolTest < Test::Unit::TestCase
   end
 
   def test_simple
-    req = Fraggle::Response.new :tag => 0, :verb => V::NOOP, :flags => F::VALID
+    req = Fraggle::Response.new :tag => 0, :verb => V::NOP, :flags => F::VALID
     cn.receive_data(encode(req))
 
     assert_equal [req], cn
   end
 
   def test_multiple_single
-    a = Fraggle::Response.new :tag => 0, :verb => V::NOOP, :flags => F::VALID
-    b = Fraggle::Response.new :tag => 1, :verb => V::NOOP, :flags => F::VALID
+    a = Fraggle::Response.new :tag => 0, :verb => V::NOP, :flags => F::VALID
+    b = Fraggle::Response.new :tag => 1, :verb => V::NOP, :flags => F::VALID
     cn.receive_data(encode(a) + encode(b))
 
     assert_equal [a, b], cn
   end
 
   def test_multiple_double
-    a = Fraggle::Response.new :tag => 0, :verb => V::NOOP, :flags => F::VALID
-    b = Fraggle::Response.new :tag => 1, :verb => V::NOOP, :flags => F::VALID
+    a = Fraggle::Response.new :tag => 0, :verb => V::NOP, :flags => F::VALID
+    b = Fraggle::Response.new :tag => 1, :verb => V::NOP, :flags => F::VALID
     cn.receive_data(encode(a))
     cn.receive_data(encode(b))
 
@@ -47,7 +45,7 @@ class FraggleProtocolTest < Test::Unit::TestCase
   end
 
   def test_small_chunks
-    req = Fraggle::Response.new :tag => 0, :verb => V::NOOP, :flags => F::VALID
+    req = Fraggle::Response.new :tag => 0, :verb => V::NOP, :flags => F::VALID
 
     bytes = encode(req) * 3
     len   = bytes.length
@@ -61,7 +59,7 @@ class FraggleProtocolTest < Test::Unit::TestCase
   end
 
   def test_big_chunks
-    req = Fraggle::Response.new :tag => 0, :verb => V::NOOP, :flags => F::VALID
+    req = Fraggle::Response.new :tag => 0, :verb => V::NOP, :flags => F::VALID
 
     bytes = encode(req) * 3
     len   = bytes.length
@@ -75,26 +73,20 @@ class FraggleProtocolTest < Test::Unit::TestCase
   end
 
   def test_send_request
-    c = Class.new do
-      include Fraggle::Client
-
-      attr_reader :data
-
-      def initialize
-        @data = ""
-        super(["127.0.0.1:8046"])
-      end
-
-      def send_data(data)
-        @data << data
-      end
-    end.new
-
-    req   = c.noop
+    req   = Fraggle::Request.new :tag => 0, :verb => V::NOP
     bytes = req.encode
     head  = [bytes.length].pack("N")
 
-    assert_equal head+bytes, c.data
+    sent  = ""
+    (class << cn ; self ; end).instance_eval do
+      define_method(:send_data) do |data|
+        sent << data
+      end
+    end
+
+    cn.send_request(req)
+
+    assert_equal head+bytes, sent
   end
 
 end

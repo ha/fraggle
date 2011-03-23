@@ -1,10 +1,25 @@
+require 'fraggle/request'
 require 'fraggle/response'
 
 module Fraggle
 
-  module Protocol
+  module Connection
+
+    class Error < StandardError
+      attr_accessor :req, :res
+
+      def initialize(req, res)
+        @req, @res = req, res
+      end
+    end
+
+    class Disconnected < Error ; end
 
     attr_reader :last_received
+
+    def initialize
+      @cb = {}
+    end
 
     def receive_data(data)
       @last_received = Time.now
@@ -28,14 +43,42 @@ module Fraggle
 
     # The default receive_response
     def receive_response(res)
-      p res
+      req = @cb[res.tag]
+
+      if ! req
+        return
+      end
+
+      if ! res.ok?
+        req.emit(:error, res)
+        return
+      end
+
+      if res.valid?
+        req.emit(:valid, res)
+      end
+
+      if res.done?
+        req.emit(:done)
+      end
     end
 
     def send_request(req)
+      req.tag = 0
+      while @cb.has_key?(req.tag)
+        req.tag += 1
+
+        req.tag %= 2**31
+      end
+
+      @cb[req.tag] = req
+
       data = req.encode
       head = [data.length].pack("N")
 
       send_data("#{head}#{data}")
+
+      req
     end
 
   end
