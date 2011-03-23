@@ -1,4 +1,5 @@
-require 'fraggle/msg'
+require 'beefcake'
+require 'fraggle/msg.pb'
 require 'fraggle/emitter'
 
 ##

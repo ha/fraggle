@@ -1,4 +1,5 @@
-require 'fraggle/msg'
+require 'beefcake'
+require 'fraggle/msg.pb'
 
 ##
 # An extension to Response in msg.rb. I want to keep these seperated so when
