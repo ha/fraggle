@@ -106,4 +106,44 @@ class FraggleProtocolTest < Test::Unit::TestCase
     end
   end
 
+  def test_done_deletes_callback
+    req = Fraggle::Request.new :verb => V::NOP
+    req = cn.send_request(req)
+
+    valid = []
+    req.valid {|e| valid << e }
+
+    cn.send_request(req)
+
+    res = Fraggle::Response.new(:tag => req.tag, :flags => F::VALID|F::DONE)
+    cn.receive_response(res)
+
+    # This should be ignored
+    cn.receive_response(res)
+
+    assert_equal [res], valid
+  end
+
+  def test_error_with_done_deletes_callback
+    req = Fraggle::Request.new :verb => V::NOP
+    req = cn.send_request(req)
+
+    error = []
+    req.error {|e| error << e }
+
+    cn.send_request(req)
+
+    res = Fraggle::Response.new(
+      :tag => req.tag,
+      :flags => F::VALID|F::DONE,
+      :err_code => E::OTHER
+    )
+    cn.receive_response(res)
+
+    # This should be ignored
+    cn.receive_response(res)
+
+    assert_equal [res], error
+  end
+
 end

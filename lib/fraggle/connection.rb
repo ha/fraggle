@@ -50,16 +50,18 @@ module Fraggle
       end
 
       if ! res.ok?
+        @cb.delete(req.tag)
         req.emit(:error, res)
         return
       end
 
-      if res.valid?
-        req.emit(:valid, res)
+      if res.done?
+        @cb.delete(req.tag)
+        req.emit(:done)
       end
 
-      if res.done?
-        req.emit(:done)
+      if res.valid?
+        req.emit(:valid, res)
       end
     end
 
