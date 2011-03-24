@@ -12,14 +12,35 @@ class FraggleProtocolTest < Test::Unit::TestCase
     end
   end
 
-  attr_reader :cn
+  attr_reader :cn, :tmp, :valid, :done, :error
+
+
+  def nop(attrs={})
+    req = Fraggle::Request.new(attrs)
+    req.verb = V::NOP
+
+    req.valid do |e|
+      @valid << e
+    end
+
+    req.error do |e|
+      @error << e
+    end
+
+    req.done do
+      @done << true
+    end
+  end
 
   def setup
-    @cn  = TestConn.new
+    @cn    = TestConn.new
+    @valid = []
+    @done  = []
+    @error = []
   end
 
   def test_tagging
-    req = Fraggle::Request.new :verb => V::NOP
+    req = nop
 
     assert_equal 0, cn.send_request(req).tag
     assert_equal 1, cn.send_request(req).tag
@@ -27,12 +48,7 @@ class FraggleProtocolTest < Test::Unit::TestCase
   end
 
   def test_valid
-    req = Fraggle::Request.new :verb => V::NOP
-    req = cn.send_request(req)
-
-    valid, done = [], []
-    req.valid {|e| valid << e }
-    req.done  { done << true }
+    req = cn.send_request(nop)
 
     res = Fraggle::Response.new :tag => req.tag, :flags => F::VALID
     cn.receive_response(res)
@@ -42,12 +58,7 @@ class FraggleProtocolTest < Test::Unit::TestCase
   end
 
   def test_done
-    req = Fraggle::Request.new :verb => V::NOP
-    req = cn.send_request(req)
-
-    valid, done = [], []
-    req.valid {|e| valid << e }
-    req.done  { done << true }
+    req = cn.send_request(nop)
 
     res = Fraggle::Response.new :tag => req.tag, :flags => F::DONE
     cn.receive_response(res)
@@ -57,12 +68,7 @@ class FraggleProtocolTest < Test::Unit::TestCase
   end
 
   def test_valid_and_done
-    req = Fraggle::Request.new :verb => V::NOP
-    req = cn.send_request(req)
-
-    valid, done = [], []
-    req.valid {|e| valid << e }
-    req.done  { done << true }
+    req = cn.send_request(nop)
 
     res = Fraggle::Response.new :tag => req.tag, :flags => F::VALID|F::DONE
     cn.receive_response(res)
@@ -73,13 +79,7 @@ class FraggleProtocolTest < Test::Unit::TestCase
 
 
   def test_error
-    req = Fraggle::Request.new :verb => V::NOP
-    req = cn.send_request(req)
-
-    valid, done, error = [], [], []
-    req.valid {|e| valid << e }
-    req.done  { done << true }
-    req.error {|e| error << e }
+    req = cn.send_request(nop)
 
     res = Fraggle::Response.new(
       :tag => req.tag,
@@ -107,11 +107,7 @@ class FraggleProtocolTest < Test::Unit::TestCase
   end
 
   def test_done_deletes_callback
-    req = Fraggle::Request.new :verb => V::NOP
-    req = cn.send_request(req)
-
-    valid = []
-    req.valid {|e| valid << e }
+    req = cn.send_request(nop)
 
     cn.send_request(req)
 
@@ -125,11 +121,7 @@ class FraggleProtocolTest < Test::Unit::TestCase
   end
 
   def test_error_with_done_deletes_callback
-    req = Fraggle::Request.new :verb => V::NOP
-    req = cn.send_request(req)
-
-    error = []
-    req.error {|e| error << e }
+    req = cn.send_request(nop)
 
     cn.send_request(req)
 
@@ -138,6 +130,7 @@ class FraggleProtocolTest < Test::Unit::TestCase
       :flags => F::VALID|F::DONE,
       :err_code => E::OTHER
     )
+
     cn.receive_response(res)
 
     # This should be ignored
