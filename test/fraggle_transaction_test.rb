@@ -8,6 +8,12 @@ class FraggleTransactionTest < Test::Unit::TestCase
   class TestConn
     include Fraggle::Connection
 
+    attr_accessor :error
+
+    def error?
+      !!@error
+    end
+
     def send_data(_)
     end
   end
@@ -37,7 +43,7 @@ class FraggleTransactionTest < Test::Unit::TestCase
   end
 
   def setup
-    @cn    = TestConn.new
+    @cn    = TestConn.new("127.0.0.1:0")
     @valid = []
     @done  = []
     @error = []
@@ -173,6 +179,33 @@ class FraggleTransactionTest < Test::Unit::TestCase
     cn.receive_response(canx)
 
     assert_equal [true], done
+  end
+
+  def test_diconnected
+    req = [
+      cn.send_request(nop),
+      cn.send_request(nop),
+      cn.send_request(nop),
+    ]
+
+    cn.unbind
+
+    assert_equal req.length, error.length
+
+    error.each_with_index do |err, i|
+      err = error[i]
+      assert_instance_of Fraggle::Connection::Disconnected, err
+      assert_equal req[i], err.req
+    end
+  end
+
+  def test_send_request_in_error_state
+    cn.error = true
+
+    req = cn.send_request(nop)
+    assert_equal nil, req.tag
+
+    assert_instance_of Fraggle::Connection::Disconnected, error.first
   end
 
 end

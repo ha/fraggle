@@ -7,12 +7,16 @@ class FraggleProtocolTest < Test::Unit::TestCase
   class TestConn < Array
     include Fraggle::Connection
     alias :receive_response :<<
+
+    def error?
+      false
+    end
   end
 
   attr_reader :cn
 
   def setup
-    @cn  = TestConn.new
+    @cn  = TestConn.new("127.0.0.1:0")
   end
 
   def encode(req)

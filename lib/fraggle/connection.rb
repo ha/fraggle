@@ -27,10 +27,11 @@ module Fraggle
     end
 
 
-    attr_reader :last_received
+    attr_reader :last_received, :addr
 
-    def initialize
-      @cb = {}
+    def initialize(addr)
+      @addr = addr
+      @cb   = {}
     end
 
     def receive_data(data)
@@ -82,6 +83,11 @@ module Fraggle
         raise SendError, "Already sent #{req.inspect}"
       end
 
+      if error?
+        req.emit(:error, Disconnected.new(req, addr))
+        return req
+      end
+
       req.tag = 0
       while @cb.has_key?(req.tag)
         req.tag += 1
@@ -99,6 +105,13 @@ module Fraggle
       send_data("#{head}#{data}")
 
       req
+    end
+
+    def unbind
+      @cb.values.each do |req|
+        err = Disconnected.new(req, addr)
+        req.emit(:error, err)
+      end
     end
 
   end
