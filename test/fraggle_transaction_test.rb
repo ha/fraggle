@@ -165,4 +165,14 @@ class FraggleTransactionTest < Test::Unit::TestCase
     end
   end
 
+  def test_cancel_emits_done
+    req = cn.send_request(nop)
+    can = req.cancel
+
+    canx = Fraggle::Response.new(:tag => can.tag, :flags => F::VALID|F::DONE)
+    cn.receive_response(canx)
+
+    assert_equal [true], done
+  end
+
 end
