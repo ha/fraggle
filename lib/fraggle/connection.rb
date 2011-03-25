@@ -13,7 +13,8 @@ module Fraggle
       end
     end
 
-    class Disconnected < Error ; end
+    class Disconnected < Error         ; end
+    class SendError < StandardError ; end
 
     attr_reader :last_received
 
@@ -66,12 +67,18 @@ module Fraggle
     end
 
     def send_request(req)
+      if req.tag
+        raise SendError, "Already sent #{req.inspect}"
+      end
+
       req.tag = 0
       while @cb.has_key?(req.tag)
         req.tag += 1
 
         req.tag %= 2**31
       end
+
+      req.cn = self
 
       @cb[req.tag] = req
 

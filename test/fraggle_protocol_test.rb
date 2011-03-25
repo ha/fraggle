@@ -2,7 +2,7 @@ require 'fraggle/connection'
 
 class FraggleProtocolTest < Test::Unit::TestCase
   V = Fraggle::Request::Verb
-  F = Fraggle::Request
+  F = Fraggle::Response
 
   class TestConn < Array
     include Fraggle::Connection
@@ -76,17 +76,19 @@ class FraggleProtocolTest < Test::Unit::TestCase
     req   = Fraggle::Request.new :tag => 0, :verb => V::NOP
     bytes = req.encode
     head  = [bytes.length].pack("N")
+    exp   = head+bytes
 
-    sent  = ""
+    got = ""
     (class << cn ; self ; end).instance_eval do
       define_method(:send_data) do |data|
-        sent << data
+        got << data
       end
     end
 
-    cn.send_request(req)
+    nop = Fraggle::Request.new :verb => V::NOP
+    cn.send_request(nop)
 
-    assert_equal head+bytes, sent
+    assert_equal head+bytes, got
   end
 
 end

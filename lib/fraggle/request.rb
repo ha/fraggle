@@ -3,6 +3,8 @@ require 'fraggle/msg.pb'
 module Fraggle
   class Request
 
+    attr_accessor :cn
+
     def initialize(attrs={})
       super(attrs)
       @cb = Hash.new(lambda {})
@@ -25,6 +27,11 @@ module Fraggle
 
     def emit(name, *args)
       @cb[name].call(*args)
+    end
+
+    def cancel
+      can = Request.new(:verb => Verb::CANCEL, :other_tag => self.tag)
+      cn.send_request(can)
     end
 
   end

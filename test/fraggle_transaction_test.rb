@@ -1,6 +1,6 @@
 require 'fraggle/connection'
 
-class FraggleProtocolTest < Test::Unit::TestCase
+class FraggleTransactionTest < Test::Unit::TestCase
   V = Fraggle::Request::Verb
   F = Fraggle::Response
   E = Fraggle::Response::Err
@@ -16,8 +16,12 @@ class FraggleProtocolTest < Test::Unit::TestCase
 
 
   def nop(attrs={})
+    r(V::NOP, attrs)
+  end
+
+  def r(verb, attrs={})
     req = Fraggle::Request.new(attrs)
-    req.verb = V::NOP
+    req.verb = verb
 
     req.valid do |e|
       @valid << e
@@ -41,9 +45,10 @@ class FraggleProtocolTest < Test::Unit::TestCase
 
   def test_tagging
     req = nop
-
     assert_equal 0, cn.send_request(req).tag
+    req = nop
     assert_equal 1, cn.send_request(req).tag
+    req = nop
     assert_equal 2, cn.send_request(req).tag
   end
 
@@ -109,8 +114,6 @@ class FraggleProtocolTest < Test::Unit::TestCase
   def test_done_deletes_callback
     req = cn.send_request(nop)
 
-    cn.send_request(req)
-
     res = Fraggle::Response.new(:tag => req.tag, :flags => F::VALID|F::DONE)
     cn.receive_response(res)
 
@@ -122,8 +125,6 @@ class FraggleProtocolTest < Test::Unit::TestCase
 
   def test_error_with_done_deletes_callback
     req = cn.send_request(nop)
-
-    cn.send_request(req)
 
     res = Fraggle::Response.new(
       :tag => req.tag,
@@ -137,6 +138,22 @@ class FraggleProtocolTest < Test::Unit::TestCase
     cn.receive_response(res)
 
     assert_equal [res], error
+  end
+
+  def test_cancel
+    req = cn.send_request(nop)
+    can = req.cancel
+
+    canx = Fraggle::Response.new(:tag => can.tag, :flags => F::VALID|F::DONE)
+    cn.receive_response(canx)
+  end
+
+  def test_cannot_reuse_sent_request
+    req = cn.send_request(nop)
+
+    assert_raises Fraggle::Connection::SendError do
+      cn.send_request(req)
+    end
   end
 
 end
