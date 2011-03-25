@@ -93,7 +93,6 @@ class FraggleTransactionTest < Test::Unit::TestCase
     assert_equal [true], done
   end
 
-
   def test_error
     req = cn.send_request(nop)
 
