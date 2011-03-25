@@ -107,11 +107,31 @@ module Fraggle
       req
     end
 
+    def post_init
+      last = 0
+      rev  = Request.new :verb => Request::Verb::REV
+
+      rev.valid do |e|
+        if e.rev <= last
+          close_connection
+        else
+          timer(5) { send_request(rev.dup) }
+          last = e.rev
+        end
+      end
+
+      send_request(rev.dup)
+    end
+
     def unbind
       @cb.values.each do |req|
         err = Disconnected.new(req, addr)
         req.emit(:error, err)
       end
+    end
+
+    def timer(n, &blk)
+      EM.add_timer(n, &blk)
     end
 
   end

@@ -16,6 +16,11 @@ class FraggleTransactionTest < Test::Unit::TestCase
 
     def send_data(_)
     end
+
+    def close_connection
+      @error = true
+      unbind
+    end
   end
 
   attr_reader :cn, :tmp, :valid, :done, :error
@@ -206,6 +211,39 @@ class FraggleTransactionTest < Test::Unit::TestCase
     assert_equal nil, req.tag
 
     assert_instance_of Fraggle::Connection::Disconnected, error.first
+  end
+
+  def test_liveness
+    live = cn.post_init
+
+    def cn.timer(_, &blk)
+      blk.call
+    end
+
+    res = Fraggle::Response.new(:tag => live.tag, :rev => 1, :flags => F::VALID|F::DONE)
+    cn.receive_response(res)
+    assert ! cn.error?
+
+    # Connections reuse tags and we're only responding to one request in this
+    # test, so we know the next rev will use the previous tag
+    res = Fraggle::Response.new(:tag => live.tag, :rev => 2, :flags => F::VALID|F::DONE)
+    cn.receive_response(res)
+    assert ! cn.error?
+  end
+
+  def test_not_alive
+    live = cn.post_init
+
+    def cn.timer(_, &blk)
+      blk.call
+    end
+
+    res = Fraggle::Response.new(:tag => live.tag, :rev => 1, :flags => F::VALID|F::DONE)
+    cn.receive_response(res)
+    assert ! cn.error?
+
+    cn.receive_response(res)
+    assert cn.error?
   end
 
 end
