@@ -140,20 +140,20 @@ class FraggleTransactionTest < Test::Unit::TestCase
     assert_equal [res], error
   end
 
-  def test_cancel
-    req = cn.send_request(nop)
-    can = req.cancel
-
-    canx = Fraggle::Response.new(:tag => can.tag, :flags => F::VALID|F::DONE)
-    cn.receive_response(canx)
-  end
-
   def test_cannot_reuse_sent_request
     req = cn.send_request(nop)
 
     assert_raises Fraggle::Connection::SendError do
       cn.send_request(req)
     end
+  end
+
+  def test_cancel
+    req = cn.send_request(nop)
+    can = req.cancel
+
+    canx = Fraggle::Response.new(:tag => can.tag, :flags => F::VALID|F::DONE)
+    cn.receive_response(canx)
   end
 
 end
