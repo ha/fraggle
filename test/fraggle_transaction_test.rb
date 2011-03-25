@@ -156,4 +156,13 @@ class FraggleTransactionTest < Test::Unit::TestCase
     cn.receive_response(canx)
   end
 
+  def test_cannot_cancel_more_than_once
+    req = cn.send_request(nop)
+    req.cancel
+
+    assert_raises Fraggle::Connection::SendError do
+      req.cancel
+    end
+  end
+
 end

@@ -30,8 +30,8 @@ module Fraggle
     end
 
     def cancel
-      can = Request.new(:verb => Verb::CANCEL, :other_tag => self.tag)
-      cn.send_request(can)
+      @can ||= Request.new(:verb => Verb::CANCEL, :other_tag => self.tag)
+      cn.send_request(@can)
     end
 
   end
