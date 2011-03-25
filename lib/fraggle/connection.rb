@@ -5,16 +5,27 @@ module Fraggle
 
   module Connection
 
+    # Base class for all Connection errors
     class Error < StandardError
-      attr_accessor :req, :res
+      attr_accessor :req
 
-      def initialize(req, res)
-        @req, @res = req, res
+      def initialize(req, msg=nil)
+        @req = req
+        super(msg)
       end
     end
 
-    class Disconnected < Error         ; end
-    class SendError < StandardError ; end
+    # Emitted to requests when a connection is disconnected
+    class Disconnected < Error
+      def initialize(req, addr)
+        super(req, "disconnected from #{addr}")
+      end
+    end
+
+    # Raised when a request is invalid
+    class SendError < Error
+    end
+
 
     attr_reader :last_received
 
