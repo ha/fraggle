@@ -1,17 +1,7 @@
+require File.dirname(__FILE__)+"/helper"
 require 'fraggle/connection'
 
 class FraggleProtocolTest < Test::Unit::TestCase
-  V = Fraggle::Request::Verb
-  F = Fraggle::Response
-
-  class TestConn < Array
-    include Fraggle::Connection
-    alias :receive_response :<<
-
-    def error?
-      false
-    end
-  end
 
   attr_reader :cn
 
@@ -28,7 +18,7 @@ class FraggleProtocolTest < Test::Unit::TestCase
     req = Fraggle::Response.new :tag => 0, :verb => V::NOP, :flags => F::VALID
     cn.receive_data(encode(req))
 
-    assert_equal [req], cn
+    assert_equal [req], cn.received
   end
 
   def test_multiple_single
@@ -36,7 +26,7 @@ class FraggleProtocolTest < Test::Unit::TestCase
     b = Fraggle::Response.new :tag => 1, :verb => V::NOP, :flags => F::VALID
     cn.receive_data(encode(a) + encode(b))
 
-    assert_equal [a, b], cn
+    assert_equal [a, b], cn.received
   end
 
   def test_multiple_double
@@ -45,7 +35,7 @@ class FraggleProtocolTest < Test::Unit::TestCase
     cn.receive_data(encode(a))
     cn.receive_data(encode(b))
 
-    assert_equal [a, b], cn
+    assert_equal [a, b], cn.received
   end
 
   def test_small_chunks
@@ -59,7 +49,7 @@ class FraggleProtocolTest < Test::Unit::TestCase
       cn.receive_data(data)
     end
 
-    assert_equal [req, req, req], cn
+    assert_equal [req, req, req], cn.received
   end
 
   def test_big_chunks
@@ -73,7 +63,7 @@ class FraggleProtocolTest < Test::Unit::TestCase
       cn.receive_data(data)
     end
 
-    assert_equal [req, req, req], cn
+    assert_equal [req, req, req], cn.received
   end
 
   def test_send_request
