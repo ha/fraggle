@@ -22,9 +22,8 @@ module Fraggle
 
     attr_reader :last_received, :addr
 
-    def initialize(addr)
-      @addr = addr
-      @cb   = {}
+    def initialize(addr, addrs=[])
+      @addr, @addrs, @cb = addr, addrs, {}
     end
 
     def receive_data(data)

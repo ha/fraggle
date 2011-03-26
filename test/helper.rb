@@ -7,8 +7,8 @@ class TestConn
   attr_reader :sent, :received
   attr_writer :error
 
-  def initialize(addr)
-    super(addr)
+  def initialize(addr, addrs=[])
+    super(addr, addrs)
     @sent = []
     @received = []
   end
