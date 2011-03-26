@@ -77,7 +77,7 @@ module Fraggle
       end
 
       if error?
-        req.emit(:error, disconnected)
+        req.emit(:error, nil)
         return req
       end
 
@@ -118,18 +118,12 @@ module Fraggle
 
     def unbind
       @cb.values.each do |req|
-        req.emit(:error, disconnected)
+        req.emit(:error, nil)
       end
     end
 
     def timer(n, &blk)
       EM.add_timer(n, &blk)
-    end
-
-    def disconnected
-      res = Response.new
-      res.disconnected, res.addr = true, @addr
-      res
     end
 
   end

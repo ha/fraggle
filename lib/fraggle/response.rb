@@ -3,8 +3,6 @@ require 'fraggle/msg.pb'
 module Fraggle
   class Response
 
-    attr_accessor :disconnected, :addr
-
     VALID = 1
     DONE  = 2
 
@@ -20,10 +18,6 @@ module Fraggle
 
     def ok?
       err_code.nil?
-    end
-
-    def disconnected?
-      !!@disconnected
     end
 
   end
