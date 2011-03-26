@@ -7,7 +7,7 @@ module Fraggle
 
     def initialize(attrs={})
       super(attrs)
-      @cb = Hash.new(lambda {})
+      @cb = Hash.new(Proc.new{})
     end
 
     def valid(&blk)
