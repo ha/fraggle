@@ -154,7 +154,7 @@ class FraggleTransactionTest < Test::Unit::TestCase
     assert_equal [req], log.done
   end
 
-  def test_diconnected
+  def test_disconnected
     a, al = nop
     a = cn.send_request(a)
     b, bl = nop
@@ -165,16 +165,13 @@ class FraggleTransactionTest < Test::Unit::TestCase
     cn.unbind
 
     assert_equal 1, al.error.length
-    assert_instance_of Fraggle::Connection::Disconnected, al.error.first
-    assert_equal a, al.error.first.req
+    assert cn.disconnected, al.error.first
 
     assert_equal 1, bl.error.length
-    assert_instance_of Fraggle::Connection::Disconnected, bl.error.first
-    assert_equal b, bl.error.first.req
+    assert_equal cn.disconnected, bl.error.first
 
     assert_equal 1, cl.error.length
-    assert_instance_of Fraggle::Connection::Disconnected, cl.error.first
-    assert_equal c, cl.error.first.req
+    assert_equal cn.disconnected,  cl.error.first
   end
 
   def test_send_request_in_error_state
@@ -184,7 +181,7 @@ class FraggleTransactionTest < Test::Unit::TestCase
     req = cn.send_request(req)
     assert_equal nil, req.tag
 
-    assert_instance_of Fraggle::Connection::Disconnected, log.error.first
+    assert_equal cn.disconnected, log.error.first
   end
 
   def test_liveness

@@ -15,13 +15,6 @@ module Fraggle
       end
     end
 
-    # Emitted to requests when a connection is disconnected
-    class Disconnected < Error
-      def initialize(req, addr)
-        super(req, "disconnected from #{addr}")
-      end
-    end
-
     # Raised when a request is invalid
     class SendError < Error
     end
@@ -84,7 +77,7 @@ module Fraggle
       end
 
       if error?
-        req.emit(:error, Disconnected.new(req, addr))
+        req.emit(:error, disconnected)
         return req
       end
 
@@ -125,13 +118,18 @@ module Fraggle
 
     def unbind
       @cb.values.each do |req|
-        err = Disconnected.new(req, addr)
-        req.emit(:error, err)
+        req.emit(:error, disconnected)
       end
     end
 
     def timer(n, &blk)
       EM.add_timer(n, &blk)
+    end
+
+    def disconnected
+      res = Response.new
+      res.disconnected, res.addr = true, @addr
+      res
     end
 
   end
