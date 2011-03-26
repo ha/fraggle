@@ -10,7 +10,7 @@ class FraggleTransactionTest < Test::Unit::TestCase
   end
 
   def setup
-    @cn    = TestConn.new("127.0.0.1:0")
+    @cn = TestConn.new("127.0.0.1:0")
   end
 
   def test_tagging
@@ -175,7 +175,7 @@ class FraggleTransactionTest < Test::Unit::TestCase
   end
 
   def test_send_request_in_error_state
-    cn.error = true
+    cn.err = true
 
     req, log = nop
     req = cn.send_request(req)
@@ -193,13 +193,13 @@ class FraggleTransactionTest < Test::Unit::TestCase
 
     res = Fraggle::Response.new(:tag => live.tag, :rev => 1, :flags => F::VALID|F::DONE)
     cn.receive_response(res)
-    assert ! cn.error?
+    assert ! cn.err?
 
     # Connections reuse tags and we're only responding to one request in this
     # test, so we know the next rev will use the previous tag
     res = Fraggle::Response.new(:tag => live.tag, :rev => 2, :flags => F::VALID|F::DONE)
     cn.receive_response(res)
-    assert ! cn.error?
+    assert ! cn.err?
   end
 
   def test_not_alive
@@ -211,10 +211,10 @@ class FraggleTransactionTest < Test::Unit::TestCase
 
     res = Fraggle::Response.new(:tag => live.tag, :rev => 1, :flags => F::VALID|F::DONE)
     cn.receive_response(res)
-    assert ! cn.error?
+    assert ! cn.err?
 
     cn.receive_response(res)
-    assert cn.error?
+    assert cn.err?
   end
 
 end

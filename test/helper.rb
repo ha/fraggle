@@ -5,12 +5,13 @@ class TestConn
   include Fraggle::Connection
 
   attr_reader :sent, :received
-  attr_writer :error
+  attr_writer :err
 
-  def initialize(addr, addrs=[])
-    super(addr, addrs)
+  def initialize(addr)
+    super(addr)
     @sent = []
     @received = []
+    @ticks = []
   end
 
   def send_request(req)
@@ -23,10 +24,6 @@ class TestConn
     super(res)
   end
 
-  def error?
-    !!@error
-  end
-
   def send_data(_)
   end
 
@@ -34,6 +31,18 @@ class TestConn
     @error = true
     unbind
   end
+
+  # Mimic EMs next_tick
+  def next_tick(&blk)
+    @ticks << blk
+  end
+
+  # Mimic a turn in the reactor
+  def tick!
+    @ticks.each {|blk| blk.call }
+    @ticks.clear
+  end
+
 end
 
 class Test::Unit::TestCase

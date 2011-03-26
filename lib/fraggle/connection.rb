@@ -22,8 +22,8 @@ module Fraggle
 
     attr_reader :last_received, :addr
 
-    def initialize(addr, addrs=[])
-      @addr, @addrs, @cb = addr, addrs, {}
+    def initialize(addr)
+      @addr, @cb = addr, {}
     end
 
     def receive_data(data)
@@ -75,8 +75,8 @@ module Fraggle
         raise SendError, "Already sent #{req.inspect}"
       end
 
-      if error?
-        req.emit(:error, nil)
+      if err?
+        next_tick { req.emit(:error, nil) }
         return req
       end
 
@@ -116,13 +116,22 @@ module Fraggle
     end
 
     def unbind
+      @err = true
       @cb.values.each do |req|
         req.emit(:error, nil)
       end
     end
 
+    def err?
+      !!@err
+    end
+
     def timer(n, &blk)
       EM.add_timer(n, &blk)
+    end
+
+    def next_tick(&blk)
+      EM.next_tick(&blk)
     end
 
   end
