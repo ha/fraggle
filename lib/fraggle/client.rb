@@ -24,6 +24,10 @@ module Fraggle
           req.offset += 1
         end
 
+        if req.limit
+          req.limit -= 1
+        end
+
         req.emit(:valid, e)
       end
 

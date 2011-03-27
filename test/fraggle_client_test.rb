@@ -103,13 +103,16 @@ class FraggleClientTest < Test::Unit::TestCase
   end
 
   def test_manage_limit
-    req, log = request(V::WALK, :path => "/foo/*", :offset => 3)
+    req, log = request(V::WALK, :path => "/foo/*", :limit => 4)
     req = c.resend(req)
 
-    res = Fraggle::Response.new :tag => req.tag, :flags => F::VALID|F::DONE
+    res = Fraggle::Response.new :tag => req.tag, :flags => F::VALID
     c.cn.receive_response(res)
 
-    assert_equal 4, req.offset
+    c.cn.close_connection
+
+    exp, _ = request(V::WALK, :tag => req.tag, :path => "/foo/*", :limit => 3)
+    assert_equal [exp], c.cn.sent
   end
 
   # retry + rev (i.e. watch)
