@@ -57,6 +57,18 @@ module Fraggle
       send(req)
     end
 
+    def walk(rev, path, offset=nil, limit=nil, &blk)
+      req = Request.new
+      req.verb = WALK
+      req.rev  = rev
+      req.path = path
+      req.offset = offset
+      req.limit  = limit
+      req.valid(&blk)
+
+      send(req)
+    end
+
     def rev(&blk)
       req = Request.new
       req.verb = REV

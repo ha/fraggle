@@ -234,4 +234,16 @@ class FraggleClientTest < Test::Unit::TestCase
     assert_verb exp, :rev
   end
 
+  def test_walk
+    exp = {
+      :verb => V::WALK,
+      :rev => 0,
+      :path => "/foo/*",
+      :offset => 0,
+      :limit => 5
+    }
+
+    assert_verb exp, :walk, 0, "/foo/*", 0, 5
+  end
+
 end
