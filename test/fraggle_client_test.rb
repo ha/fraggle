@@ -226,4 +226,12 @@ class FraggleClientTest < Test::Unit::TestCase
     assert_verb exp, :getdir, 0, "/foo", 0, 5
   end
 
+  def test_rev
+    exp = {
+      :verb => V::REV
+    }
+
+    assert_verb exp, :rev
+  end
+
 end
