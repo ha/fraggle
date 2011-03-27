@@ -115,7 +115,39 @@ class FraggleClientTest < Test::Unit::TestCase
     assert_equal [exp], c.cn.sent
   end
 
-  # retry + rev (i.e. watch)
+  def test_manage_rev
+    req, log = request(V::WALK, :path => "/foo/*", :rev => 4)
+    req = c.resend(req)
+
+    # nil rev
+    res = Fraggle::Response.new :tag => req.tag, :flags => F::VALID
+    c.cn.receive_response(res)
+    assert_equal 4, req.rev
+
+    # equal to rev
+    res = Fraggle::Response.new :tag => req.tag, :rev => 4, :flags => F::VALID
+    c.cn.receive_response(res)
+    assert_equal 4, req.rev
+
+    # less than rev
+    res = Fraggle::Response.new :tag => req.tag, :rev => 3, :flags => F::VALID
+    c.cn.receive_response(res)
+    assert_equal 4, req.rev
+
+    # greater than rev
+    # NOTE: This will never happen in life on a WALK, this is purely a
+    # test.
+    res = Fraggle::Response.new :tag => req.tag, :rev => 5, :flags => F::VALID
+    c.cn.receive_response(res)
+    assert_equal 5, req.rev
+
+    # force retry
+    c.cn.close_connection
+
+    exp, _ = request(V::WALK, :tag => req.tag, :rev => 5, :path => "/foo/*")
+    assert_equal [exp], c.cn.sent
+  end
+
   # liveness check
   # monitor addrs
   # redirect

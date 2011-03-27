@@ -28,6 +28,10 @@ module Fraggle
           req.limit -= 1
         end
 
+        if (req.rev || 0) < (e.rev || 0)
+          req.rev = e.rev
+        end
+
         req.emit(:valid, e)
       end
 
