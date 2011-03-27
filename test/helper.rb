@@ -53,8 +53,11 @@ class Test::Unit::TestCase
   Log = Struct.new(:valid, :error, :done)
 
   def request(verb, attrs={})
+    logable(Fraggle::Request.new(attrs.merge(:verb => verb)))
+  end
+
+  def logable(req)
     log = Log.new([], [], [])
-    req = Fraggle::Request.new(attrs.merge(:verb => verb))
     req.valid do |e|
       log.valid << e
     end

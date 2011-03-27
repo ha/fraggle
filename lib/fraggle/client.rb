@@ -40,7 +40,8 @@ module Fraggle
       end
 
       wr.error do |e|
-        if cn.err?
+        case true
+        when cn.err? || e.redirect?
           reconnect!
           onre.call if onre
         else
@@ -60,14 +61,14 @@ module Fraggle
 
     def reconnect!
       if addr = @addrs.shift
-        host, port = addr.split(":")
-        reconnect(host, port)
+        reconnect(addr)
       else
         raise NoMoreAddrs
       end
     end
 
-    def reconnect(host, port)
+    def reconnect(addr)
+      host, port = addr.split(":")
       @cn = EM.connect(host, port, Fraggle::Connection, @addrs)
     end
 

@@ -20,5 +20,9 @@ module Fraggle
       err_code.nil?
     end
 
+    def redirect?
+      err_code == Err::REDIRECT
+    end
+
   end
 end

@@ -12,8 +12,8 @@ class FraggleClientTest < Test::Unit::TestCase
     @addrs =["1.1.1.1:1", "2.2.2.2:2", "3.3.3.3:3"]
     @c  = Fraggle::Client.new(cn, @addrs)
 
-    def @c.reconnect(host, port)
-      @cn = TestConn.new("#{host}:#{port}")
+    def @c.reconnect(addr)
+      @cn = TestConn.new(addr)
     end
   end
 
@@ -148,8 +148,20 @@ class FraggleClientTest < Test::Unit::TestCase
     assert_equal [exp], c.cn.sent
   end
 
-  # liveness check
-  # monitor addrs
-  # redirect
+  def test_redirect
+    req, log = request(V::SET, :rev => 0, :path => "/foo", :value => "bar")
+    req = c.send(req)
+
+    res = Fraggle::Response.new(
+      :tag => req.tag,
+      :err_code => E::REDIRECT,
+      :err_detail => "9.9.9.9:9",
+      :flags => F::VALID|F::DONE
+    )
+
+    c.cn.receive_response(res)
+
+    assert_equal "1.1.1.1:1", c.cn.addr
+  end
 
 end
