@@ -3,6 +3,7 @@ require 'fraggle/connection'
 
 module Fraggle
   class Client
+    include Request::Verb
 
     class NoMoreAddrs < StandardError
     end
@@ -11,6 +12,27 @@ module Fraggle
 
     def initialize(cn, addrs)
       @cn, @addrs = cn, addrs
+    end
+
+    def set(rev, path, value, &blk)
+      req = Request.new
+      req.verb  = SET
+      req.rev   = rev
+      req.path  = path
+      req.value = value
+      req.valid(&blk)
+
+      send(req)
+    end
+
+    def get(rev, path, &blk)
+      req = Request.new
+      req.rev  = rev
+      req.verb = GET
+      req.path = path
+      req.valid(&blk)
+
+      send(req)
     end
 
     def send(req, &onre)

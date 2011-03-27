@@ -3,14 +3,14 @@ require 'fraggle/client'
 
 class FraggleClientTest < Test::Unit::TestCase
 
-  attr_reader :c, :addrs
+  attr_reader :c, :addrs, :blk, :called
 
   def setup
-    addr  = "127.0.0.1:0"
-    cn = TestConn.new(addr)
+    addr = "127.0.0.1:0"
+    cn   = TestConn.new(addr)
 
-    @addrs =["1.1.1.1:1", "2.2.2.2:2", "3.3.3.3:3"]
-    @c  = Fraggle::Client.new(cn, @addrs)
+    @addrs  = ["1.1.1.1:1", "2.2.2.2:2", "3.3.3.3:3"]
+    @c      = Fraggle::Client.new(cn, @addrs)
 
     def @c.reconnect(addr)
       @cn = TestConn.new(addr)
@@ -162,6 +162,53 @@ class FraggleClientTest < Test::Unit::TestCase
     c.cn.receive_response(res)
 
     assert_equal "1.1.1.1:1", c.cn.addr
+  end
+
+
+  ###
+  # Sugar
+
+  def last_sent
+    c.cn.sent.last
+  end
+
+  def assert_verb(exp, name, *args)
+    called = false
+    blk = Proc.new { called = true }
+    req = c.__send__(name, *args, &blk)
+    exp[:tag] = req.tag
+    assert_equal exp, last_sent.to_hash
+
+    c.cn.receive_response(reply(req.tag))
+    assert called
+  end
+
+  def test_set
+    exp = {
+      :verb => V::SET,
+      :rev => 0,
+      :path => "/foo",
+      :value => "bar"
+    }
+
+    assert_verb exp, :set, 0, "/foo", "bar"
+  end
+
+  def test_get
+    called = false
+    blk = Proc.new { called = true }
+    req = c.get(0, "/foo", &blk)
+
+    exp = {
+      :tag => req.tag,
+      :verb => V::GET,
+      :rev => 0,
+      :path => "/foo"
+    }
+
+    assert_equal exp, last_sent.to_hash
+
+    c.cn.close_connection
   end
 
 end

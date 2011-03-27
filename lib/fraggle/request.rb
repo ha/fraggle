@@ -4,6 +4,7 @@ module Fraggle
   class Request
 
     attr_accessor :cn
+    attr_reader   :cb
 
     def initialize(attrs={})
       super(attrs)
