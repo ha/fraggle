@@ -214,4 +214,16 @@ class FraggleClientTest < Test::Unit::TestCase
     assert_verb exp, :del, 0, "/foo"
   end
 
+  def test_getdir
+    exp = {
+      :verb => V::GETDIR,
+      :rev => 0,
+      :path => "/foo",
+      :offset => 0,
+      :limit => 5
+    }
+
+    assert_verb exp, :getdir, 0, "/foo", 0, 5
+  end
+
 end

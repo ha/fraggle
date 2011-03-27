@@ -45,6 +45,18 @@ module Fraggle
       send(req)
     end
 
+    def getdir(rev, path, offset=nil, limit=nil, &blk)
+      req = Request.new
+      req.rev  = rev
+      req.verb = GETDIR
+      req.path = path
+      req.offset = offset
+      req.limit  = limit
+      req.valid(&blk)
+
+      send(req)
+    end
+
     def send(req, &onre)
       wr = Request.new(req.to_hash)
       wr = cn.send_request(wr)
