@@ -27,8 +27,8 @@ module Fraggle
 
     def get(rev, path, &blk)
       req = Request.new
-      req.rev  = rev
       req.verb = GET
+      req.rev  = rev
       req.path = path
       req.valid(&blk)
 
@@ -37,8 +37,8 @@ module Fraggle
 
     def del(rev, path, &blk)
       req = Request.new
-      req.rev  = rev
       req.verb = DEL
+      req.rev  = rev
       req.path = path
       req.valid(&blk)
 
@@ -47,8 +47,8 @@ module Fraggle
 
     def getdir(rev, path, offset=nil, limit=nil, &blk)
       req = Request.new
-      req.rev  = rev
       req.verb = GETDIR
+      req.rev  = rev
       req.path = path
       req.offset = offset
       req.limit  = limit
