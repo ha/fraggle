@@ -89,7 +89,29 @@ class FraggleClientTest < Test::Unit::TestCase
     assert_equal [req], c.cn.sent
   end
 
-  # retry + offset + limit
+  def test_manage_offset
+    req, log = request(V::WALK, :path => "/foo/*", :offset => 3)
+    req = c.resend(req)
+
+    res = Fraggle::Response.new :tag => req.tag, :flags => F::VALID
+    c.cn.receive_response(res)
+
+    c.cn.close_connection
+
+    exp, _ = request(V::WALK, :tag => req.tag, :path => "/foo/*", :offset => 4)
+    assert_equal [exp], c.cn.sent
+  end
+
+  def test_manage_limit
+    req, log = request(V::WALK, :path => "/foo/*", :offset => 3)
+    req = c.resend(req)
+
+    res = Fraggle::Response.new :tag => req.tag, :flags => F::VALID|F::DONE
+    c.cn.receive_response(res)
+
+    assert_equal 4, req.offset
+  end
+
   # retry + rev (i.e. watch)
   # liveness check
   # monitor addrs

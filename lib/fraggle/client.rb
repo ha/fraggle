@@ -13,23 +13,33 @@ module Fraggle
       @cn, @addrs = cn, addrs
     end
 
-    def send(req, &onerr)
+    def send(req, &onre)
       wr = Request.new(req.to_hash)
       wr = cn.send_request(wr)
 
-      wr.valid {|e| req.emit(:valid, e) }
-      wr.done  {    req.emit(:done) }
+      req.tag = wr.tag
+
+      wr.valid do |e|
+        if req.offset
+          req.offset += 1
+        end
+
+        req.emit(:valid, e)
+      end
+
+      wr.done  do
+        req.emit(:done)
+      end
+
       wr.error do |e|
         if cn.err?
           reconnect!
-          onerr.call(e) if onerr
+          onre.call if onre
         else
           req.emit(:error, e)
         end
       end
 
-
-      req.tag = wr.tag
       req
     end
 

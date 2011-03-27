@@ -28,7 +28,6 @@ class TestConn
   end
 
   def close_connection
-    @error = true
     unbind
   end
 
