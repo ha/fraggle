@@ -195,20 +195,23 @@ class FraggleClientTest < Test::Unit::TestCase
   end
 
   def test_get
-    called = false
-    blk = Proc.new { called = true }
-    req = c.get(0, "/foo", &blk)
-
     exp = {
-      :tag => req.tag,
       :verb => V::GET,
       :rev => 0,
       :path => "/foo"
     }
 
-    assert_equal exp, last_sent.to_hash
+    assert_verb exp, :get, 0, "/foo"
+  end
 
-    c.cn.close_connection
+  def test_del
+    exp = {
+      :verb => V::DEL,
+      :rev => 0,
+      :path => "/foo"
+    }
+
+    assert_verb exp, :del, 0, "/foo"
   end
 
 end
