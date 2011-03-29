@@ -18,7 +18,7 @@
       # AssemlyError will be raised if that later happens.
       c = Fraggle.connect "doozerd://127.0.0.1:8046"
 
-      req = c.get "/foo" do |e|
+      req = c.get(nil, "/foo") do |e|
         e.value   # => "bar"
         e.cas     # => "123"
         e.dir?    # => false
@@ -30,7 +30,7 @@
         e.err_detail # => nil
       end
 
-      watch = c.watch "/foo" do |e|
+      watch = c.watch(nil, "/foo") do |e|
         # The event has:
         # ------------------------
         e.err_code   # => nil
@@ -38,8 +38,6 @@
         e.path       # => "/foo"
         e.value      # => "bar"
         e.cas        # => "123"
-        e.dir?       # => false
-        e.notdir?    # => true
         e.set?       # => true
         e.del?       # => false
 
@@ -52,7 +50,7 @@
       end
 
       ## Setting a key (this will trigger the watch above)
-      req = c.set "/foo", "zomg!", :missing do |e|
+      req = c.set(0, "/foo", "zomg!") do |e|
         case true
         when e.mismatch? # CAS mis-match
           # retry if we must
@@ -61,9 +59,7 @@
         else
           raise e.err_detail
         end
-      end
-
-      req.error do |e|
+      end.error do
         # This is the default behavior for fraggle.
         # I'm showing this to bring attention to the use of the
         # error callback.
@@ -75,9 +71,7 @@
       ents = []
       req = c.getdir("/test") do |e|
         ents << e
-      end
-
-      req.done do
+      end.done do
         p ents
       end
 
