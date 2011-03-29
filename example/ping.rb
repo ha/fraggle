@@ -11,7 +11,7 @@ EM.run do
   c = Fraggle.connect
 
   EM.add_periodic_timer(1) do
-    c.get "/ping" do |e|
+    c.get nil, "/ping" do |e|
       p [:e, e]
     end
   end
