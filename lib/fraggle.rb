@@ -2,7 +2,7 @@ require 'fraggle/client'
 
 module Fraggle
 
-  DEFAULT_URI = "doozerd:?" + [
+  DEFAULT_URI = "doozer:?" + [
     "ca=127.0.0.1:8046",
     "ca=127.0.0.1:8041",
     "ca=127.0.0.1:8042",
@@ -26,7 +26,7 @@ module Fraggle
   end
 
   def self.uri(u)
-    if u =~ /^doozerd:\?(.*)$/
+    if u =~ /^doozer:\?(.*)$/
       parts = $1.split("&")
       parts.inject([]) do |m, pt|
         k, v = pt.split("=")
@@ -36,7 +36,7 @@ module Fraggle
         m
       end
     else
-      raise ArgumentError, "invalid doozerd uri"
+      raise ArgumentError, "invalid doozer uri"
     end
   end
 
