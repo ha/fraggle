@@ -1,6 +1,9 @@
 # Fraggle
 **An EventMachine based Doozer client**
 
+# This README is out of sync with the 0.4.0 gem.  There
+# will be an updated release soon.
+
 ## Install
 
     $ gem install fraggle
