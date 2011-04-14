@@ -62,7 +62,11 @@ module Fraggle
       req.verb = WALK
       req.rev  = rev
       req.path = path
-      req.offset = offset
+
+      # To reliably pick-up where we left off in the event of a disconnect, we
+      # must default the offset to zero.  This is best done here and not in the
+      # param declaration because the user could override it to nil there.
+      req.offset = offset || 0
       req.limit  = limit
       req.valid(&blk)
 
