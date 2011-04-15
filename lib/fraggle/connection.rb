@@ -60,13 +60,13 @@ module Fraggle
         return
       end
 
+      if res.valid?
+        req.emit(:valid, res)
+      end
+
       if res.done?
         @cb.delete(req.tag)
         req.emit(:done)
-      end
-
-      if res.valid?
-        req.emit(:valid, res)
       end
     end
 

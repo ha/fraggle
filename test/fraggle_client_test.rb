@@ -29,6 +29,24 @@ class FraggleClientTest < Test::Unit::TestCase
     assert_equal [], log.error
   end
 
+  def test_send_valid_called_before_done
+    req, _ = request(V::NOP)
+    req = c.send(req)
+
+    log = []
+    req.valid do
+      log << :valid
+    end
+    req.done do
+      log << :done
+    end
+
+    res = Fraggle::Response.new :tag => req.tag, :value => "ing", :flags => F::VALID|F::DONE
+    c.cn.receive_response(res)
+
+    assert_equal [:valid, :done], log
+  end
+
   def test_send_error
     req, log = request(V::NOP)
     req = c.send(req)

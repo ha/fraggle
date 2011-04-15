@@ -213,6 +213,7 @@ class FraggleTransactionTest < Test::Unit::TestCase
     cn.receive_response(res)
     assert ! cn.err?
 
+    res.tag += 1
     cn.receive_response(res)
     assert cn.err?
   end
