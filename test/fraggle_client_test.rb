@@ -97,7 +97,6 @@ class FraggleClientTest < Test::Unit::TestCase
     assert_equal [], log.error
   end
 
-  # retry
   def test_resend_pending_requests
     req, log = request(V::GET, :path => "/foo")
     req = c.resend(req)
