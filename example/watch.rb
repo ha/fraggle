@@ -4,19 +4,14 @@ require 'fraggle'
 
 EM.run do
 
-  EM.error_handler do |e|
-    $stderr.puts e.message + "\n" + (e.backtrace * "\n")
-  end
-
   c = Fraggle.connect
-  c.level = Fraggle::Logger::WARN
 
-  c.watch "/example/*" do |e|
+  c.watch 0, "/example/*" do |e|
     p e
   end
 
   EM.add_periodic_timer(0.5) do
-    c.set "/example/#{rand(10)}", "test", :clobber
+    c.set(-1, "/example/#{rand(10)}", "test")
   end
 
 end

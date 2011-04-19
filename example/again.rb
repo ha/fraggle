@@ -5,7 +5,6 @@ require 'fraggle'
 EM.run do
 
   c = Fraggle.connect
-  c.level = Fraggle::Logger::INFO
 
   paths = []
 
