@@ -3,12 +3,14 @@ require 'fraggle/msg.pb'
 module Fraggle
   class Request
 
+    DEFAULT_PROC = Proc.new {}
+
     attr_accessor :cn
     attr_reader   :cb
 
     def initialize(attrs={})
       super(attrs)
-      @cb = Hash.new(Proc.new{})
+      @cb = Hash.new
     end
 
     def valid(&blk)
@@ -27,7 +29,7 @@ module Fraggle
     end
 
     def emit(name, *args)
-      @cb[name].call(*args)
+      (@cb[name] || DEFAULT_PROC).call(*args)
     end
 
     def cancel
