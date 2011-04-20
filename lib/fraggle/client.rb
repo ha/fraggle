@@ -18,6 +18,10 @@ module Fraggle
       @cn, @addrs, @log = cn, addrs, log
     end
 
+    def addr
+      cn.addr
+    end
+
     def set(path, value, rev, &blk)
       req = Request.new
       req.verb  = SET
