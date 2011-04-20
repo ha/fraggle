@@ -18,7 +18,7 @@ module Fraggle
       @cn, @addrs, @log = cn, addrs, log
     end
 
-    def set(rev, path, value, &blk)
+    def set(path, value, rev=nil, &blk)
       req = Request.new
       req.verb  = SET
       req.rev   = rev
@@ -29,7 +29,7 @@ module Fraggle
       send(req)
     end
 
-    def get(rev, path, &blk)
+    def get(path, rev=nil, &blk)
       req = Request.new
       req.verb = GET
       req.rev  = rev
@@ -39,7 +39,7 @@ module Fraggle
       resend(req)
     end
 
-    def del(rev, path, &blk)
+    def del(path, rev=nil, &blk)
       req = Request.new
       req.verb = DEL
       req.rev  = rev
@@ -49,7 +49,7 @@ module Fraggle
       send(req)
     end
 
-    def getdir(rev, path, offset=nil, limit=nil, &blk)
+    def getdir(path, rev=nil, offset=nil, limit=nil, &blk)
       req = Request.new
       req.verb = GETDIR
       req.rev  = rev
@@ -65,7 +65,7 @@ module Fraggle
       resend(req)
     end
 
-    def walk(rev, path, offset=nil, limit=nil, &blk)
+    def walk(path, rev=nil, offset=nil, limit=nil, &blk)
       req = Request.new
       req.verb = WALK
       req.rev  = rev
@@ -81,7 +81,7 @@ module Fraggle
       resend(req)
     end
 
-    def watch(rev, path, &blk)
+    def watch(path, rev=nil, &blk)
       req = Request.new
       req.verb = WATCH
       req.rev  = rev
@@ -99,7 +99,7 @@ module Fraggle
       resend(req)
     end
 
-    def stat(rev, path, &blk)
+    def stat(path, rev=nil, &blk)
       req = Request.new
       req.rev  = rev
       req.verb = STAT
