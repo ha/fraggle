@@ -58,7 +58,7 @@ module Fraggle
       req.limit  = limit
       req.valid(&blk)
 
-      send(req)
+      resend(req)
     end
 
     def walk(rev, path, offset=nil, limit=nil, &blk)
@@ -74,7 +74,7 @@ module Fraggle
       req.limit  = limit
       req.valid(&blk)
 
-      send(req)
+      resend(req)
     end
 
     def watch(rev, path, &blk)
@@ -84,7 +84,7 @@ module Fraggle
       req.path = path
       req.valid(&blk)
 
-      send(req)
+      resend(req)
     end
 
     def rev(&blk)
@@ -92,7 +92,7 @@ module Fraggle
       req.verb = REV
       req.valid(&blk)
 
-      send(req)
+      resend(req)
     end
 
     def stat(rev, path, &blk)
@@ -102,7 +102,7 @@ module Fraggle
       req.path = path
       req.valid(&blk)
 
-      send(req)
+      resend(req)
     end
 
     def send(req, &onre)
