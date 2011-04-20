@@ -106,6 +106,24 @@ class FraggleClientTest < Test::Unit::TestCase
     assert_equal [req], c.cn.sent
   end
 
+  def test_idemp_pending_requests
+    one, olog = request(V::SET, :rev => 1, :path => "/foo", :value => "bar")
+    one = c.idemp(one)
+
+    zero, zlog = request(V::SET, :rev => 0, :path => "/foo", :value => "bar")
+    zero = c.idemp(zero)
+
+    neg, nlog = request(V::SET, :rev => -1, :path => "/foo", :value => "bar")
+    zero = c.idemp(neg)
+
+    c.cn.close_connection
+
+    assert_equal [one], c.cn.sent
+
+    assert_equal [Fraggle::Connection::Disconnected], zlog.error
+    assert_equal [Fraggle::Connection::Disconnected], nlog.error
+  end
+
   def test_manage_offset
     req, log = request(V::WALK, :path => "/foo/*", :offset => 3)
     req = c.resend(req)

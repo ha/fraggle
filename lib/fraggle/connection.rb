@@ -5,7 +5,7 @@ module Fraggle
 
   module Connection
 
-    Disconnected = Request.new(:disconnected => true)
+    Disconnected = Response.new(:disconnected => true)
 
     # Base class for all Connection errors
     class Error < StandardError

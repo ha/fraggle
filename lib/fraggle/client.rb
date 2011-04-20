@@ -26,7 +26,7 @@ module Fraggle
       req.value = value
       req.valid(&blk)
 
-      send(req)
+      idemp(req)
     end
 
     def get(path, rev=nil, &blk)
@@ -46,7 +46,24 @@ module Fraggle
       req.path = path
       req.valid(&blk)
 
-      send(req)
+      idemp(req)
+    end
+
+    def idemp(req)
+      send(req) do
+        if req.rev > 0
+          # If we're trying to update a value that isn't missing or that we're
+          # not trying to clobber, it's safe to retry.  We can't idempotently
+          # update missing values because there may be a race with another
+          # client that sets and/or deletes the key during the time between your
+          # read and write.
+          req.tag = nil
+          idemp(req)
+        else
+          # We can't safely retry the write.  Inform the user.
+          req.emit(:error, Disconnected)
+        end
+      end
     end
 
     def getdir(path, rev=nil, offset=nil, limit=nil, &blk)
