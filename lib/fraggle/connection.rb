@@ -5,6 +5,8 @@ module Fraggle
 
   module Connection
 
+    Disconnected = Request.new(:disconnected => true)
+
     # Base class for all Connection errors
     class Error < StandardError
       attr_accessor :req
@@ -76,7 +78,7 @@ module Fraggle
       end
 
       if err?
-        next_tick { req.emit(:error, nil) }
+        next_tick { req.emit(:error, Disconnected) }
         return req
       end
 
@@ -118,7 +120,7 @@ module Fraggle
     def unbind
       @err = true
       @cb.values.each do |req|
-        req.emit(:error, nil)
+        req.emit(:error, Disconnected)
       end
     end
 

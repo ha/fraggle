@@ -12,8 +12,6 @@ module Fraggle
     DefaultLog = Logger.new(STDERR)
     DefaultLog.level = Logger::UNKNOWN
 
-    Disconnected = Request.new(:disconnected => true)
-
     attr_reader :cn, :log
 
     def initialize(cn, addrs, log=DefaultLog)

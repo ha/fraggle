@@ -165,13 +165,13 @@ class FraggleTransactionTest < Test::Unit::TestCase
     cn.unbind
 
     assert_equal 1, al.error.length
-    assert_equal nil, al.error.first
+    assert_equal Fraggle::Connection::Disconnected, al.error.first
 
     assert_equal 1, bl.error.length
-    assert_equal nil, bl.error.first
+    assert_equal Fraggle::Connection::Disconnected, bl.error.first
 
     assert_equal 1, cl.error.length
-    assert_equal nil,  cl.error.first
+    assert_equal Fraggle::Connection::Disconnected,  cl.error.first
   end
 
   def test_send_request_in_error_state
