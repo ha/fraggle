@@ -18,7 +18,7 @@ module Fraggle
       @cn, @addrs, @log = cn, addrs, log
     end
 
-    def set(path, value, rev=nil, &blk)
+    def set(path, value, rev, &blk)
       req = Request.new
       req.verb  = SET
       req.rev   = rev
@@ -39,7 +39,7 @@ module Fraggle
       resend(req)
     end
 
-    def del(path, rev=nil, &blk)
+    def del(path, rev, &blk)
       req = Request.new
       req.verb = DEL
       req.rev  = rev
