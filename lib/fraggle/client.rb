@@ -130,6 +130,9 @@ module Fraggle
       resend(req)
     end
 
+    # Sends a request to the server.  Returns the request with a new tag
+    # assigned. If `onre` is supplied, it will be invoked when a new connection
+    # is established
     def send(req, &onre)
       wr = Request.new(req.to_hash)
       wr = cn.send_request(wr)
