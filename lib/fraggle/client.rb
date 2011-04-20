@@ -95,6 +95,16 @@ module Fraggle
       send(req)
     end
 
+    def stat(rev, path, &blk)
+      req = Request.new
+      req.rev  = rev
+      req.verb = STAT
+      req.path = path
+      req.valid(&blk)
+
+      send(req)
+    end
+
     def send(req, &onre)
       wr = Request.new(req.to_hash)
       wr = cn.send_request(wr)

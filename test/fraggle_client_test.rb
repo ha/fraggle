@@ -251,6 +251,16 @@ class FraggleClientTest < Test::Unit::TestCase
     assert_verb exp, :rev
   end
 
+  def test_stat
+    exp = {
+      :rev  => 0,
+      :verb => V::STAT,
+      :path => "/foo"
+    }
+
+    assert_verb exp, :stat, 0, "/foo"
+  end
+
   def test_walk
     exp = {
       :verb => V::WALK,
