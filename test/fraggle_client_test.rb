@@ -179,9 +179,6 @@ class FraggleClientTest < Test::Unit::TestCase
     c.cn.receive_response(res)
 
     assert_equal "1.1.1.1:1", c.cn.addr
-
-    # Make sure it was resent
-    assert_equal [req], c.cn.sent
   end
 
 

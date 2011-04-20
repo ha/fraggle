@@ -6,6 +6,8 @@ module Fraggle
     VALID = 1
     DONE  = 2
 
+    attr_accessor :disconnected
+
     def valid?
       return false if !flags
       (flags & VALID) > 0
@@ -22,6 +24,10 @@ module Fraggle
 
     def redirect?
       err_code == Err::REDIRECT
+    end
+
+    def disconnected?
+      @disconnected
     end
 
   end

@@ -12,6 +12,8 @@ module Fraggle
     DefaultLog = Logger.new(STDERR)
     DefaultLog.level = Logger::UNKNOWN
 
+    Disconnected = Request.new(:disconnected => true)
+
     attr_reader :cn, :log
 
     def initialize(cn, addrs, log=DefaultLog)
@@ -139,17 +141,10 @@ module Fraggle
 
       wr.error do |e|
         case true
-        when cn.err?
+        when cn.err? || e.redirect?
           log.error("conn error: #{req.inspect}")
           reconnect!
           onre.call if onre
-        when e.redirect?
-          # Only write operations are redirected by Doozers that are incapable
-          # of performing them.  This means all requests can be safely resent to
-          # the new server.
-          reconnect!
-          req.tag = nil
-          send(req)
         else
           log.error("resp error: #{req.inspect}")
           req.emit(:error, e)
