@@ -139,10 +139,17 @@ module Fraggle
 
       wr.error do |e|
         case true
-        when cn.err? || e.redirect?
+        when cn.err?
           log.error("conn error: #{req.inspect}")
           reconnect!
           onre.call if onre
+        when e.redirect?
+          # Only write operations are redirected by Doozers that are incapable
+          # of performing them.  This means all requests can be safely resent to
+          # the new server.
+          reconnect!
+          req.tag = nil
+          send(req)
         else
           log.error("resp error: #{req.inspect}")
           req.emit(:error, e)
