@@ -32,7 +32,7 @@ module Fraggle
       req.path = path
       req.valid(&blk)
 
-      send(req)
+      resend(req)
     end
 
     def del(rev, path, &blk)
@@ -106,6 +106,7 @@ module Fraggle
     end
 
     def send(req, &onre)
+      p [:send, req]
       wr = Request.new(req.to_hash)
       wr = cn.send_request(wr)
 
@@ -127,16 +128,18 @@ module Fraggle
         req.emit(:valid, e)
       end
 
-      wr.done  do
+      wr.done do
         req.emit(:done)
       end
 
       wr.error do |e|
         case true
         when cn.err? || e.redirect?
+          p [:conn_err]
           reconnect!
           onre.call if onre
         else
+          p [:err, req, e]
           req.emit(:error, e)
         end
       end
@@ -160,6 +163,7 @@ module Fraggle
     end
 
     def reconnect(addr)
+      p [:reconnect, addr]
       host, port = addr.split(":")
       @cn = EM.connect(host, port, Fraggle::Connection, @addrs)
     end
