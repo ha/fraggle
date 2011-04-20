@@ -184,7 +184,7 @@ module Fraggle
           idemp(req)
         else
           # We can't safely retry the write.  Inform the user.
-          req.emit(:error, Disconnected)
+          req.emit(:error, Connection::Disconnected)
         end
       end
     end
