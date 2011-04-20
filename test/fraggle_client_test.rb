@@ -75,7 +75,7 @@ class FraggleClientTest < Test::Unit::TestCase
     assert exp.include?(c.cn.addr), "#{c.cn.addr.inspect} not in #{exp.inspect}"
 
     # If the client can handle an error, it should not mention it to the user.
-    assert_equal [], log.error
+    assert_equal [Fraggle::Connection::Disconnected], log.error
   end
 
   def test_reconnect_with_pending_request
@@ -93,8 +93,33 @@ class FraggleClientTest < Test::Unit::TestCase
 
     assert exp.include?(c.cn.addr), "#{c.cn.addr.inspect} not in #{exp.inspect}"
 
+    assert_equal [Fraggle::Connection::Disconnected], log.error
+  end
+
+  def test_reconnect_with_multiple_pending_requests
+    exp = @addrs.dup
+
+    # Send a request to invoke reconnect
+    req, loga = request(V::NOP)
+    req = c.send(req)
+
+    req, logb = request(V::NOP)
+    req = c.send(req)
+
+    # Disconnect from 127.0.0.1:0
+    c.cn.close_connection
+
+    # Fake reactor turn (only available in tests)
+    c.cn.tick!
+
+    assert exp.include?(c.cn.addr), "#{c.cn.addr.inspect} not in #{exp.inspect}"
+
+    # Reconnect should only be called once.
+    assert_equal exp.length - 1, c.addrs.length
+
     # If the client can handle an error, it should not mention it to the user.
-    assert_equal [], log.error
+    assert_equal [Fraggle::Connection::Disconnected], loga.error
+    assert_equal [Fraggle::Connection::Disconnected], logb.error
   end
 
   def test_resend_pending_requests

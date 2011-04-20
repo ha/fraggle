@@ -12,7 +12,7 @@ module Fraggle
     DefaultLog = Logger.new(STDERR)
     DefaultLog.level = Logger::UNKNOWN
 
-    attr_reader :cn, :log
+    attr_reader :cn, :log, :addrs
 
     def initialize(cn, addrs, log=DefaultLog)
       @cn, @addrs, @log = cn, addrs, log
@@ -159,7 +159,12 @@ module Fraggle
         when cn.err? || e.redirect?
           log.error("conn error: #{req.inspect}")
           reconnect!
-          onre.call if onre
+          if onre
+            # Someone else will handle this
+            onre.call
+          else
+            req.emit(:error, e)
+          end
         else
           log.error("resp error: #{req.inspect}")
           req.emit(:error, e)
