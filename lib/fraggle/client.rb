@@ -146,17 +146,28 @@ module Fraggle
 
       wr.error do |e|
         case true
-        when cn.err? || e.redirect?
-          log.error("conn error: #{req.inspect}")
+        when cn.err?
+          log.error("conn err: #{req.inspect}")
           reconnect!
           if onre
             # Someone else will handle this
             onre.call
           else
-            req.emit(:error, e)
+            req.emit(:error, Connection::Disconnected)
+          end
+        when e.redirect?
+          log.error("redirect: #{req.inspect}")
+
+          # Closing the connection triggers a reconnect above.
+          cn.close_connection
+          if onre
+            # Someone else will handle this
+            onre.call
+          else
+            req.emit(:error, Connection::Disconnected)
           end
         else
-          log.error("resp error: #{req.inspect}")
+          log.error("error: #{e.inspect} for #{req.inspect}")
           req.emit(:error, e)
         end
       end

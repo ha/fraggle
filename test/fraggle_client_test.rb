@@ -209,11 +209,14 @@ class FraggleClientTest < Test::Unit::TestCase
   end
 
   def test_redirect
-    req, log = request(V::SET, :rev => 0, :path => "/foo", :value => "bar")
-    req = c.send(req)
+    a, al = request(V::SET, :rev => 0, :path => "/foo")
+    a = c.send(a)
+
+    b, bl = request(V::SET, :rev => 0, :path => "/foo")
+    b = c.send(b)
 
     res = Fraggle::Response.new(
-      :tag => req.tag,
+      :tag => a.tag,
       :err_code => E::REDIRECT,
       :err_detail => "9.9.9.9:9",
       :flags => F::VALID|F::DONE
@@ -222,8 +225,11 @@ class FraggleClientTest < Test::Unit::TestCase
     c.cn.receive_response(res)
 
     assert_equal "1.1.1.1:1", c.cn.addr
-  end
+    assert_equal ["2.2.2.2:2", "3.3.3.3:3"], c.addrs
 
+    assert_equal [Fraggle::Connection::Disconnected], al.error
+    assert_equal [Fraggle::Connection::Disconnected], bl.error
+  end
 
   ###
   # Sugar

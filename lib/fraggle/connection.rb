@@ -50,6 +50,10 @@ module Fraggle
 
     # The default receive_response
     def receive_response(res)
+      if err?
+        return
+      end
+
       req = @cb[res.tag]
 
       if ! req

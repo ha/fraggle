@@ -12,11 +12,17 @@ EM.run do
   c = Fraggle.connect("doozer:?ca=127.0.0.1:8042&ca=127.0.0.1:8041")
   c.log.level = Logger::DEBUG
 
-  # Wait for rev 100,000
-  c.set("/foo", "bar", -1) do |e|
-    p [:valid, e]
+  a = c.set("/foo", "bar", -1) do |e|
+    # This shouldn't happen
+    p [:valid, a, e]
+  end.error do |e|
+    p [:err, a, e]
+  end
+
+  b = c.set("/foo", "bar", 1) do |e|
+    p [:valid, b, e]
   end.error do |e|
     # This shouldn't happen
-    p [:err, e]
+    p [:err, b, e]
   end
 end

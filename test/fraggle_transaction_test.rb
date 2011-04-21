@@ -174,6 +174,18 @@ class FraggleTransactionTest < Test::Unit::TestCase
     assert_equal Fraggle::Connection::Disconnected,  cl.error.first
   end
 
+  def test_ignores_responses_in_err_state
+    a, al = nop
+    a = cn.send_request(a)
+
+    cn.unbind
+
+    res = Fraggle::Response.new(:tag => a.tag, :flags => F::VALID|F::DONE)
+    cn.receive_response(res)
+
+    assert_equal [], al.valid
+  end
+
   def test_send_request_in_error_state
     cn.err = true
 
