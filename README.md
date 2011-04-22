@@ -67,11 +67,11 @@
 
     end
 
-## Consitency
+## Consistency
 
 Fraggle read commands take an `rev`.  If no rev is given, Doozer will reply with
-the most up-to-date data.   If you need to do multiple reads at certian
-point in time for consistancy, use the `rev` command.
+the most up-to-date data.   If you need to do multiple reads at certain
+point in time for consistency, use the `rev` command.
 
     c.rev do |v|
       c.get("/a", v.rev) { ... }
@@ -84,9 +84,9 @@ This also means you can go back in time or into the future!
     # This will not return until the data store is at revision 100,000
     c.get("/a", 100_000) { ... }
 
-## High Availablity
+## High Availability
 
-  Fraggle has mechinisms built into to deal the connection loss.  They are:
+  Fraggle has mechanisms built into to deal the connection loss.  They are:
 
 *Monitoring cluster activity*
 
@@ -97,7 +97,7 @@ This also means you can go back in time or into the future!
 *Resend*
 
   Fraggle will resend most pending requests to a new connection.  This means you
-  will not miss events; Even events that happend while you were reconnecting!
+  will not miss events; Even events that happened while you were reconnecting!
   All read commands will pick up where they left off.  This is valuable to
   understand because it means you don't need to code for failure on reads;
   Fraggle gracefully handles it for you.
@@ -115,7 +115,7 @@ This also means you can go back in time or into the future!
   For commands with multiple responses (i.e. `walk`, `watch`, `getdir`), Fraggle
   will update their offset and limit as each response comes in.  This means
   if you disconnect in the middle of the responses, Fraggle will gracefully
-  resend the requests making it appear nothing happend and continue giving you
+  resend the requests making it appear nothing happened and continue giving you
   the remaining responses.
 
 ## Dev
