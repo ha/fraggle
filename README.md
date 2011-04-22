@@ -94,14 +94,15 @@ This also means you can go back in time or into the future!
   keep an up-to-date list of available nodes it can connect to in the case of
   a connection loss.
 
-*Resend*
+*Resend / Connection loss*
 
-  Fraggle will resend most pending requests to a new connection.  This means you
-  will not miss events; Even events that happened while you were disconnected!
-  All read commands will pick up where they left off.  This is valuable to
-  understand because it means you don't need to code for failure on reads;
-  Fraggle gracefully handles it for you.  This is really important for the
-  `WATCH` command.
+  When a connection is lost and Fraggle successfully reconnects to another
+  Doozer node, Fraggle will resend most pending requests to the new connection.
+  This means you will not miss events; Even events that happened while you were
+  disconnected!  All read commands will pick up where they left off.  This is
+  valuable to understand because it means you don't need to code for failure on
+  reads; Fraggle gracefully handles it for you.  This is really important for
+  the `WATCH` command.
 
   Write commands will be resent if their `rev` is greater than 0.  These are
   idempotent requests.  A rev of 0 or less will cause that request's error
