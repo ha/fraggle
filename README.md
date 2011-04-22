@@ -1,9 +1,6 @@
 # Fraggle
 **An EventMachine based Doozer client**
 
-# This README is out of sync with the 0.4.0 gem.  There
-# will be an updated release soon.
-
 ## Install
 
     $ gem install fraggle
@@ -21,11 +18,9 @@
       # AssemlyError will be raised if that later happens.
       c = Fraggle.connect "doozerd://127.0.0.1:8046"
 
-      req = c.get(nil, "/foo") do |e|
+      req = c.get("/foo") do |e|
         e.value   # => "bar"
-        e.cas     # => "123"
-        e.dir?    # => false
-        e.notdir? # => true
+        e.rev     # => 123
       end
 
       req.error do |e|
@@ -40,9 +35,7 @@
         e.err_detail # => nil
         e.path       # => "/foo"
         e.value      # => "bar"
-        e.cas        # => "123"
-        e.set?       # => true
-        e.del?       # => false
+        e.rev        # => 123
 
         do_something_with(e)
 
@@ -54,19 +47,13 @@
 
       ## Setting a key (this will trigger the watch above)
       req = c.set(0, "/foo", "zomg!") do |e|
-        case true
-        when e.mismatch? # CAS mis-match
-          # retry if we must
-        when e.ok?
-          e.cas # => "123"
+        # Success!
+      end.error do |e|
+        if e.mismatch?
+          # There was a rev mismatch, handle this.
         else
           raise e.err_detail
         end
-      end.error do
-        # This is the default behavior for fraggle.
-        # I'm showing this to bring attention to the use of the
-        # error callback.
-        raise e.err_detail
       end
 
       # Knowning when a command is done is useful in some cases.
@@ -80,6 +67,39 @@
 
     end
 
+## High Availablity
+
+  Fraggle has mechinisms built into to deal the connection loss.  They are:
+
+*Monitoring cluster activity*
+
+  Fraggle monitors new Doozer nodes that come and go.  This enables Doozer to
+  keep an up-to-date list of available nodes it can connect to in the case of
+  a connection loss.
+
+*Resend*
+
+  Fraggle will resend most pending requests to a new connection.  This means you
+  will not miss events; Even events that happend while you were reconnecting!
+  All read commands will pick up where they left off.  This is valuable to
+  understand because it means you don't need to code for failure on reads;
+  Fraggle gracefully handles it for you.
+
+  Write commands will be resent if their `rev` is greater than 0.  These are
+  idempotent requests.  A rev of 0 or less will cause that requests  error
+  callback will be invoked with a Fraggle::Connection::Disconnected response.
+  You will have to handle these yourself because Fraggle cannot know weather or
+  not it's safe to retry on your behalf.
+
+  You can use the `rev` on reads to inspect the data store on a reconnect to
+  determine if it is safe to retry.  It is possible you don't care about
+  retrying the write; in that case, you don't need to worry about the error.
+
+  For commands with multiple responses (i.e. `walk`, `watch`, `getdir`), Fraggle
+  will update their offset and limit as each response comes in.  This means
+  if you disconnect in the middle of the responses, Fraggle will gracefully
+  resend the requests making it appear nothing happend and continue giving you
+  the remaining responses.
 
 ## Dev
 
