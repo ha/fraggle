@@ -109,10 +109,6 @@ This also means you can go back in time or into the future!
   You will have to handle these yourself because Fraggle cannot know whether or
   not it's safe to retry on your behalf.
 
-  You can use the `rev` on reads to inspect the data store on a reconnect to
-  determine if it is safe to retry.  It is possible you don't care about
-  retrying the write; in that case, you don't need to worry about the error.
-
   For commands with multiple responses (i.e. `walk`, `watch`, `getdir`), Fraggle
   will update their offset and limit as each response comes in.  This means
   if you disconnect in the middle of the responses, Fraggle will gracefully
