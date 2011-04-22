@@ -15,7 +15,7 @@
       # Fraggle keeps track of this addr plus all others it finds once
       # connected.  In the event of a lost connection, fraggle will attempt
       # other doozers until one accepts or it runs out of options; A NoAddrs
-      # will be raised if that later happens.
+      # exception will be raised if that later happens.
       c = Fraggle.connect "doozerd://127.0.0.1:8046"
 
       req = c.get("/foo") do |e|
@@ -69,7 +69,7 @@
 
 ## Consistency
 
-Fraggle read commands take an `rev`.  If no rev is given, Doozer will reply with
+Fraggle read commands take a `rev`.  If no rev is given, Doozer will reply with
 the most up-to-date data.   If you need to do multiple reads at certain
 point in time for consistency, use the `rev` command.
 
@@ -81,12 +81,12 @@ point in time for consistency, use the `rev` command.
 
 This also means you can go back in time or into the future!
 
-    # This will not return until the data store is at revision 100,000
+    # This will not yield until the data store is at revision 100,000
     c.get("/a", 100_000) { ... }
 
 ## High Availability
 
-  Fraggle has mechanisms built into to deal the connection loss.  They are:
+  Fraggle has mechanisms to gracefully deal with connection loss.  They are:
 
 *Monitoring cluster activity*
 
@@ -97,15 +97,16 @@ This also means you can go back in time or into the future!
 *Resend*
 
   Fraggle will resend most pending requests to a new connection.  This means you
-  will not miss events; Even events that happened while you were reconnecting!
+  will not miss events; Even events that happened while you were disconnected!
   All read commands will pick up where they left off.  This is valuable to
   understand because it means you don't need to code for failure on reads;
-  Fraggle gracefully handles it for you.
+  Fraggle gracefully handles it for you.  This is really important for the
+  `WATCH` command.
 
   Write commands will be resent if their `rev` is greater than 0.  These are
-  idempotent requests.  A rev of 0 or less will cause that requests  error
-  callback will be invoked with a Fraggle::Connection::Disconnected response.
-  You will have to handle these yourself because Fraggle cannot know weather or
+  idempotent requests.  A rev of 0 or less will cause that request's error
+  callback to be invoked with a Fraggle::Connection::Disconnected response.
+  You will have to handle these yourself because Fraggle cannot know whether or
   not it's safe to retry on your behalf.
 
   You can use the `rev` on reads to inspect the data store on a reconnect to
