@@ -122,8 +122,11 @@ This also means you can go back in time or into the future!
 ## Dev
 
 **Clone**
+
     $ git clone http://github.com/bmizerany/fraggle.git
 
 **Test**
+
     $ gem install turn
+
     $ turn
