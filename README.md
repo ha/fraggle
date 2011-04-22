@@ -14,8 +14,8 @@
     EM.start do
       # Fraggle keeps track of this addr plus all others it finds once
       # connected.  In the event of a lost connection, fraggle will attempt
-      # other doozers until one accepts or it runs out of options; An
-      # NoAddrs will be raised if that later happens.
+      # other doozers until one accepts or it runs out of options; A NoAddrs
+      # will be raised if that later happens.
       c = Fraggle.connect "doozerd://127.0.0.1:8046"
 
       req = c.get("/foo") do |e|
