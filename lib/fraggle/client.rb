@@ -16,6 +16,7 @@ module Fraggle
 
     def initialize(cn, addrs, log=DefaultLog)
       @cn, @addrs, @log = cn, addrs, log
+      monitor_addrs
     end
 
     def addr
@@ -113,6 +114,41 @@ module Fraggle
       resend(req)
     end
 
+    def monitor_addrs
+      log.debug("monitor addrs")
+      rev do |v|
+        walk("/ctl/cal/*", v.rev) do |e|
+          get("/ctl/node/#{e.value}/addr", v.rev) do |a|
+            if a.value != ""
+              add_addr(a.value)
+            end
+          end
+        end.done do
+          watch("/ctl/cal/*", v.rev+1) do |e|
+            if e.value == ""
+              ## Look to see what it was before
+              get(e.path, e.rev-1) do |b|
+                if b.rev > 0
+                  # The node was cleared.  Delete it from the list of addrs.
+                  log.debug("del addr: #{addr}")
+                  @addrs.delete(b.value)
+                end
+              end
+            else
+              add_addr(e.value)
+            end
+          end
+        end
+      end
+    end
+
+    def add_addr(s)
+      return if s == self.addr
+      return if @addrs.include?(s)
+      log.debug("add addr: #{s}")
+      @addrs << addr
+    end
+
     # Sends a request to the server.  Returns the request with a new tag
     # assigned. If `onre` is supplied, it will be invoked when a new connection
     # is established
@@ -125,6 +161,8 @@ module Fraggle
       log.debug("sending: #{req.inspect}")
 
       wr.valid do |e|
+        log.debug("response: #{e.inspect} for #{req.inspect}")
+
         if req.offset
           req.offset += 1
         end
@@ -134,6 +172,7 @@ module Fraggle
         end
 
         if (req.rev || 0) < (e.rev || 0)
+          log.debug("updating rev: to #{e.rev} - #{req.inspect}")
           req.rev = e.rev
         end
 

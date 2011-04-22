@@ -10,11 +10,17 @@ class FraggleClientTest < Test::Unit::TestCase
     cn   = TestConn.new(addr)
 
     @addrs  = ["1.1.1.1:1", "2.2.2.2:2", "3.3.3.3:3"]
-    @c      = Fraggle::Client.new(cn, @addrs)
+    @c      = Fraggle::Client.allocate
 
     def @c.reconnect(addr)
       @cn = TestConn.new(addr)
     end
+
+    def @c.monitor_addrs
+      # do nothing
+    end
+
+    @c.__send__(:initialize, cn, @addrs)
   end
 
   def test_send_valid_done
