@@ -1,4 +1,4 @@
-# Fraggle
+# Fraggle (v1.0.0 is compatable with Doozer 0.5)
 **An EventMachine based Doozer client**
 
 ## Install
