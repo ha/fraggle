@@ -1,3 +1,3 @@
 module Fraggle
-  VERSION = "1.0.0pre"
+  VERSION = "1.0.0"
 end
