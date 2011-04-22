@@ -90,7 +90,7 @@ This also means you can go back in time or into the future!
 
 *Monitoring cluster activity*
 
-  Fraggle monitors new Doozer nodes that come and go.  This enables Doozer to
+  Fraggle monitors new Doozer nodes that come and go.  This enables Fraggle to
   keep an up-to-date list of available nodes it can connect to in the case of
   a connection loss.
 
