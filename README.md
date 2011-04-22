@@ -28,7 +28,7 @@
         e.err_detail # => nil
       end
 
-      watch = c.watch(nil, "/foo") do |e|
+      watch = c.watch("/foo") do |e|
         # The event has:
         # ------------------------
         e.err_code   # => nil
@@ -66,6 +66,23 @@
       end
 
     end
+
+## Consitency
+
+Fraggle read commands take an `rev`.  If no rev is given, Doozer will reply with
+the most up-to-date data.   If you need to do multiple reads at certian
+point in time for consistancy, use the `rev` command.
+
+    c.rev do |v|
+      c.get("/a", v.rev) { ... }
+      c.get("/b", v.rev) { ... }
+      c.get("/c", v.rev) { ... }
+    end
+
+This also means you can go back in time or into the future!
+
+    # This will not return until the data store is at revision 100,000
+    c.get("/a", 100_000) { ... }
 
 ## High Availablity
 
