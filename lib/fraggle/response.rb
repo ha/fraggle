@@ -27,7 +27,7 @@ module Fraggle
     end
 
     def disconnected?
-      @disconnected
+      !!@disconnected
     end
 
   end

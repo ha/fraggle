@@ -5,9 +5,10 @@ require 'fraggle'
 EM.run do
 
   c = Fraggle.connect
+  c.log.level = Logger::DEBUG
 
   ents = []
-  req = c.getdir(nil, "/") do |e|
+  c.getdir("/") do |e|
     ents << e.path
   end.done do
     p [:ents, ents]

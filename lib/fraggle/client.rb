@@ -154,11 +154,6 @@ module Fraggle
     # is established
     def send(req, &onre)
       wr = Request.new(req.to_hash)
-      wr = cn.send_request(wr)
-
-      req.tag = wr.tag
-
-      log.debug("sending: #{req.inspect}")
 
       wr.valid do |e|
         log.debug("response: #{e.inspect} for #{req.inspect}")
@@ -185,20 +180,29 @@ module Fraggle
 
       wr.error do |e|
         case true
-        when cn.err?
-          log.error("conn err: #{req.inspect}")
-          reconnect!
+        when e.disconnected?
+          p [:disconnected]
+          # If we haven't already reconnected, do so.
+          if cn.err?
+            p :reconnecting!
+            log.error("conn err: #{req.inspect}")
+            reconnect!
+          end
+
           if onre
             # Someone else will handle this
             onre.call
           else
-            req.emit(:error, Connection::Disconnected)
+            req.emit(:error, e)
           end
         when e.redirect?
+          p [:redirect]
+
           log.error("redirect: #{req.inspect}")
 
           # Closing the connection triggers a reconnect above.
           cn.close_connection
+
           if onre
             # Someone else will handle this
             onre.call
@@ -209,7 +213,12 @@ module Fraggle
           log.error("error: #{e.inspect} for #{req.inspect}")
           req.emit(:error, e)
         end
+
       end
+
+      wr = cn.send_request(wr)
+      req.tag = wr.tag
+      log.debug("sending: #{req.inspect}")
 
       req
     end

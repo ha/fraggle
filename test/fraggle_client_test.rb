@@ -214,7 +214,7 @@ class FraggleClientTest < Test::Unit::TestCase
     assert_equal [exp], c.cn.sent
   end
 
-  def test_redirect
+  def test_redirect_simple
     a, al = request(V::SET, :rev => 0, :path => "/foo")
     a = c.send(a)
 
