@@ -181,10 +181,8 @@ module Fraggle
       wr.error do |e|
         case true
         when e.disconnected?
-          p [:disconnected]
           # If we haven't already reconnected, do so.
           if cn.err?
-            p :reconnecting!
             log.error("conn err: #{req.inspect}")
             reconnect!
           end
@@ -196,7 +194,6 @@ module Fraggle
             req.emit(:error, e)
           end
         when e.redirect?
-          p [:redirect]
 
           log.error("redirect: #{req.inspect}")
 
