@@ -1,9 +1,9 @@
-# Fraggle (v1.0.0 is compatable with Doozer 0.5)
+# Fraggle (v1.0.0.pre.2 is compatable with Doozer 0.5)
 **An EventMachine based Doozer client**
 
 ## Install
 
-    $ gem install fraggle
+    $ gem install fraggle --pre
 
 ## Use
 
