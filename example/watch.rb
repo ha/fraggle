@@ -10,7 +10,7 @@ EM.run do
   c.watch("/example/*") do |e|
     p e
   end.error do |e|
-    p [:ASDFASDFDSFASDFADSF, :err, e]
+    p [:err, e]
   end
 
   EM.add_periodic_timer(0.5) do
