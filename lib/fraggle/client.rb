@@ -135,7 +135,9 @@ module Fraggle
                 end
               end
             else
-              add_addr(e.value)
+              get("/ctl/node/#{e.value}/addr", e.rev) do |b|
+                add_addr(b.value)
+              end
             end
           end
         end
@@ -146,7 +148,7 @@ module Fraggle
       return if s == self.addr
       return if @addrs.include?(s)
       log.debug("add addr: #{s}")
-      @addrs << addr
+      @addrs << s
     end
 
     # Sends a request to the server.  Returns the request with a new tag
@@ -256,7 +258,7 @@ module Fraggle
     def reconnect(addr)
       log.warn("reconnecting to #{addr}")
       host, port = addr.split(":")
-      @cn = EM.connect(host, port, Fraggle::Connection, @addrs)
+      @cn = EM.connect(host, port, Fraggle::Connection, addr)
     end
 
   end
