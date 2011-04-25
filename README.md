@@ -46,7 +46,7 @@
       end
 
       ## Setting a key (this will trigger the watch above)
-      req = c.set(0, "/foo", "zomg!") do |e|
+      req = c.set("/foo", "zomg!", 0) do |e|
         # Success!
       end.error do |e|
         if e.mismatch?
