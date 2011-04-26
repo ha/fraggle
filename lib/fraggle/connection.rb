@@ -26,7 +26,6 @@ module Fraggle
     attr_reader :last_received, :addr
 
     def initialize(addr)
-      p [:init, addr]
       @addr, @cb = addr, {}
     end
 
