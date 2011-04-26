@@ -36,6 +36,8 @@
         e.path       # => "/foo"
         e.value      # => "bar"
         e.rev        # => 123
+        e.set?       # => true
+        e.del?       # => false
 
         do_something_with(e)
 
@@ -59,10 +61,14 @@
       # Knowning when a command is done is useful in some cases.
       # Use the `done` callback for those situations.
       ents = []
-      req = c.getdir("/test") do |e|
+      c.getdir("/test") do |e|
         ents << e
       end.done do
         p ents
+      end
+
+      c.get("/nothere") do |e|
+        e.missing? # => true
       end
 
     end
