@@ -2,7 +2,7 @@ require 'bundler'
 Bundler::GemHelper.install_tasks
 
 HOME  = ENV["HOME"]
-PBDIR = HOME+"/src/doozer/src/pkg/proto"
+PBDIR = HOME+"/src/doozerd/src/pkg/server"
 
 namespace :proto do
   task :update do
