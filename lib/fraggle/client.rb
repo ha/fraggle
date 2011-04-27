@@ -84,16 +84,6 @@ module Fraggle
       resend(req)
     end
 
-    def watch(path, rev=nil, &blk)
-      req = Request.new
-      req.verb = WATCH
-      req.rev  = rev
-      req.path = path
-      req.valid(&blk)
-
-      resend(req)
-    end
-
     def rev(&blk)
       req = Request.new
       req.verb = REV
