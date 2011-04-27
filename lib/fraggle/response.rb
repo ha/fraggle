@@ -38,8 +38,8 @@ module Fraggle
       err_code.nil?
     end
 
-    def redirect?
-      err_code == Err::REDIRECT
+    def readonly?
+      err_code == Err::READONLY
     end
 
     def disconnected?

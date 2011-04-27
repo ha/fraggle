@@ -32,13 +32,5 @@ module Fraggle
       (@cb[name] || DEFAULT_PROC).call(*args)
     end
 
-    def cancel
-      @can ||= Request.new(:verb => Verb::CANCEL, :other_tag => self.tag)
-      req = cn.send_request(@can)
-      req.done do
-        emit(:done)
-      end
-    end
-
   end
 end

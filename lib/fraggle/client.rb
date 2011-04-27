@@ -54,7 +54,7 @@ module Fraggle
       idemp(req)
     end
 
-    def getdir(path, rev=nil, offset=nil, limit=nil, &blk)
+    def getdir(path, rev=nil, offset=nil, &blk)
       req = Request.new
       req.verb = GETDIR
       req.rev  = rev
@@ -64,13 +64,12 @@ module Fraggle
       # must default the offset to zero.  This is best done here and not in the
       # param declaration because the user could override it to nil there.
       req.offset = offset || 0
-      req.limit  = limit
       req.valid(&blk)
 
       resend(req)
     end
 
-    def walk(path, rev=nil, offset=nil, limit=nil, &blk)
+    def walk(path, rev=nil, offset=nil, &blk)
       req = Request.new
       req.verb = WALK
       req.rev  = rev
@@ -80,7 +79,6 @@ module Fraggle
       # must default the offset to zero.  This is best done here and not in the
       # param declaration because the user could override it to nil there.
       req.offset = offset || 0
-      req.limit  = limit
       req.valid(&blk)
 
       resend(req)
@@ -164,10 +162,6 @@ module Fraggle
           req.offset += 1
         end
 
-        if req.limit
-          req.limit -= 1
-        end
-
         if (req.rev || 0) < (e.rev || 0)
           log.debug("updating rev: to #{e.rev} - #{req.inspect}")
           req.rev = e.rev
@@ -195,9 +189,9 @@ module Fraggle
           else
             req.emit(:error, e)
           end
-        when e.redirect?
+        when e.readonly?
 
-          log.error("redirect: #{req.inspect}")
+          log.error("readonly: #{req.inspect}")
 
           # Closing the connection triggers a reconnect above.
           cn.close_connection

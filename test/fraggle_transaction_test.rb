@@ -124,36 +124,6 @@ class FraggleTransactionTest < Test::Unit::TestCase
     end
   end
 
-  def test_cancel
-    req, _ = nop
-    req = cn.send_request(req)
-    can = req.cancel
-
-    canx = Fraggle::Response.new(:tag => can.tag, :flags => F::VALID|F::DONE)
-    cn.receive_response(canx)
-  end
-
-  def test_cannot_cancel_more_than_once
-    req, _ = nop
-    req = cn.send_request(req)
-    req.cancel
-
-    assert_raises Fraggle::Connection::SendError do
-      req.cancel
-    end
-  end
-
-  def test_cancel_emits_done
-    req, log = nop
-    req = cn.send_request(req)
-    can = req.cancel
-
-    canx = Fraggle::Response.new(:tag => can.tag, :flags => F::VALID|F::DONE)
-    cn.receive_response(canx)
-
-    assert_equal [req], log.done
-  end
-
   def test_disconnected
     a, al = nop
     a = cn.send_request(a)

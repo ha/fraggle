@@ -168,19 +168,6 @@ class FraggleClientTest < Test::Unit::TestCase
     assert_equal [exp], c.cn.sent
   end
 
-  def test_manage_limit
-    req, log = request(V::WALK, :path => "/foo/*", :limit => 4)
-    req = c.resend(req)
-
-    res = Fraggle::Response.new :tag => req.tag, :flags => F::VALID
-    c.cn.receive_response(res)
-
-    c.cn.close_connection
-
-    exp, _ = request(V::WALK, :tag => req.tag, :path => "/foo/*", :limit => 3)
-    assert_equal [exp], c.cn.sent
-  end
-
   def test_manage_rev
     req, log = request(V::WALK, :path => "/foo/*", :rev => 4)
     req = c.resend(req)
@@ -214,7 +201,7 @@ class FraggleClientTest < Test::Unit::TestCase
     assert_equal [exp], c.cn.sent
   end
 
-  def test_redirect_simple
+  def test_readonly_simple
     a, al = request(V::SET, :rev => 0, :path => "/foo")
     a = c.send(a)
 
@@ -223,7 +210,7 @@ class FraggleClientTest < Test::Unit::TestCase
 
     res = Fraggle::Response.new(
       :tag => a.tag,
-      :err_code => E::REDIRECT,
+      :err_code => E::READONLY,
       :err_detail => "9.9.9.9:9",
       :flags => F::VALID|F::DONE
     )
@@ -291,11 +278,10 @@ class FraggleClientTest < Test::Unit::TestCase
       :verb => V::GETDIR,
       :rev => 0,
       :path => "/foo",
-      :offset => 0,
-      :limit => 5
+      :offset => 0
     }
 
-    assert_verb exp, :getdir, "/foo", 0, 0, 5
+    assert_verb exp, :getdir, "/foo", 0, 0
   end
 
   def test_rev
@@ -321,32 +307,10 @@ class FraggleClientTest < Test::Unit::TestCase
       :verb => V::WALK,
       :rev => 0,
       :path => "/foo/*",
-      :offset => 0,
-      :limit => 5
-    }
-
-    assert_verb exp, :walk, "/foo/*", 0, 0, 5
-  end
-
-  def test_walk_no_offset_limit_given
-    exp = {
-      :verb => V::WALK,
-      :rev => 0,
-      :path => "/foo/*",
       :offset => 0
     }
 
-    assert_verb exp, :walk, "/foo/*", 0
-  end
-
-  def test_watch
-    exp = {
-      :verb => V::WATCH,
-      :rev => 0,
-      :path => "/foo/*"
-    }
-
-    assert_verb exp, :watch, "/foo/*", 0
+    assert_verb exp, :walk, "/foo/*", 0, 0
   end
 
 end
