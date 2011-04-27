@@ -16,7 +16,6 @@ module Fraggle
 
     def initialize(cn, addrs, log=DefaultLog)
       @cn, @addrs, @log = cn, addrs, log
-      monitor_addrs
     end
 
     def addr
