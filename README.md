@@ -94,12 +94,6 @@ This also means you can go back in time or into the future!
 
   Fraggle has mechanisms to gracefully deal with connection loss.  They are:
 
-*Monitoring cluster activity*
-
-  Fraggle monitors new Doozer nodes that come and go.  This enables Fraggle to
-  keep an up-to-date list of available nodes it can connect to in the case of
-  a connection loss.
-
 *Resend / Connection loss*
 
   When a connection is lost and Fraggle successfully reconnects to another
