@@ -1,4 +1,4 @@
-# Fraggle (v1.0.0.pre.2 is compatable with Doozer 0.5)
+# Fraggle (v1.0.0.pre.2 is compatible with Doozer 0.5)
 **An EventMachine based Doozer client**
 
 ## Install
@@ -90,6 +90,10 @@ This also means you can go back in time or into the future!
     # This will not yield until the data store is at revision 100,000
     c.get("/a", 100_000) { ... }
 
+NOTE:  Doozer's data store is a persistent data structure.  You can reference the
+stores history as far back as it is configured to hold it.  The default is
+360,000 revisions.  See [data model][] for more information.
+
 ## High Availability
 
   Fraggle has mechanisms to gracefully deal with connection loss.  They are:
@@ -101,20 +105,13 @@ This also means you can go back in time or into the future!
   This means you will not miss events; Even events that happened while you were
   disconnected!  All read commands will pick up where they left off.  This is
   valuable to understand because it means you don't need to code for failure on
-  reads; Fraggle gracefully handles it for you.  This is really important for
-  the `WATCH` command.
+  reads; Fraggle gracefully handles it for you.
 
   Write commands will be resent if their `rev` is greater than 0.  These are
-  idempotent requests.  A rev of 0 or less will cause that request's error
+  idempotent requests.  A rev of 0 will cause that request's error
   callback to be invoked with a Fraggle::Connection::Disconnected response.
   You will have to handle these yourself because Fraggle cannot know whether or
   not it's safe to retry on your behalf.
-
-  For commands with multiple responses (i.e. `walk`, `watch`, `getdir`), Fraggle
-  will update their offset and limit as each response comes in.  This means
-  if you disconnect in the middle of the responses, Fraggle will gracefully
-  resend the requests making it appear nothing happened and continue giving you
-  the remaining responses.
 
 ## Dev
 
@@ -127,3 +124,6 @@ This also means you can go back in time or into the future!
     $ gem install turn
 
     $ turn
+
+
+[data model]: https://github.com/ha/doozerd/blob/master/doc/data-model.md
