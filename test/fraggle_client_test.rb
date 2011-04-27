@@ -235,4 +235,14 @@ class FraggleClientTest < Test::Unit::TestCase
     assert_verb exp, :walk, "/foo/*", 0, 0
   end
 
+  def test_wait
+    exp = {
+      :verb => V::WAIT,
+      :rev => 0,
+      :path => "/foo/*"
+    }
+
+    assert_verb exp, :wait, "/foo/*", 0
+  end
+
 end
