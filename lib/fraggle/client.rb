@@ -102,36 +102,6 @@ module Fraggle
       resend(req)
     end
 
-    def monitor_addrs
-      log.debug("monitor addrs")
-      rev do |v|
-        walk("/ctl/cal/*", v.rev) do |e|
-          get("/ctl/node/#{e.value}/addr", v.rev) do |a|
-            if a.value != ""
-              add_addr(a.value)
-            end
-          end
-        end.done do
-          watch("/ctl/cal/*", v.rev+1) do |e|
-            if e.value == ""
-              ## Look to see what it was before
-              get(e.path, e.rev-1) do |b|
-                if b.rev > 0
-                  # The node was cleared.  Delete it from the list of addrs.
-                  log.debug("del addr: #{addr}")
-                  @addrs.delete(b.value)
-                end
-              end
-            else
-              get("/ctl/node/#{e.value}/addr", e.rev) do |b|
-                add_addr(b.value)
-              end
-            end
-          end
-        end
-      end
-    end
-
     def add_addr(s)
       return if s == self.addr
       return if @addrs.include?(s)
