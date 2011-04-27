@@ -120,16 +120,6 @@ module Fraggle
 
       wr.valid do |e|
         log.debug("response: #{e.inspect} for #{req.inspect}")
-
-        if req.offset
-          req.offset += 1
-        end
-
-        if (req.rev || 0) < (e.rev || 0)
-          log.debug("updating rev: to #{e.rev} - #{req.inspect}")
-          req.rev = e.rev
-        end
-
         req.emit(:valid, e)
       end
 
