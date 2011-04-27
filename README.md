@@ -1,4 +1,8 @@
-# Fraggle (v1.0.0.pre.2 is compatible with Doozer 0.5)
+# Fraggle (v2.0.0 is compatible with Doozer 0.6)
+
+Fraggle currently is only a raw interface to Doozer 0.6.
+Sugar for `WALK`, `GETDIR`, etc are to come in v3.0.0.
+
 **An EventMachine based Doozer client**
 
 ## Install
@@ -125,5 +129,9 @@ stores history as far back as it is configured to hold it.  The default is
 
     $ turn
 
+**Mailing List**
+
+Please join the Doozer mailing list for help:
+http://groups.google.com/forum/#!forum/doozer
 
 [data model]: https://github.com/ha/doozerd/blob/master/doc/data-model.md
