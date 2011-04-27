@@ -26,33 +26,11 @@ class FraggleTransactionTest < Test::Unit::TestCase
     req, log =  nop
     req = cn.send_request(req)
 
-    res = Fraggle::Response.new :tag => req.tag, :flags => F::VALID
+    res = Fraggle::Response.new :tag => req.tag
     cn.receive_response(res)
 
     assert_equal [res], log.valid
     assert_equal [], log.done
-  end
-
-  def test_done
-    req, log = nop
-    req = cn.send_request(req)
-
-    res = Fraggle::Response.new :tag => req.tag, :flags => F::DONE
-    cn.receive_response(res)
-
-    assert_equal [], log.valid
-    assert_equal [req], log.done
-  end
-
-  def test_valid_and_done
-    req, log = nop
-    req = cn.send_request(req)
-
-    res = Fraggle::Response.new :tag => req.tag, :flags => F::VALID|F::DONE
-    cn.receive_response(res)
-
-    assert_equal [res], log.valid
-    assert_equal [req], log.done
   end
 
   def test_error
@@ -61,7 +39,6 @@ class FraggleTransactionTest < Test::Unit::TestCase
 
     res = Fraggle::Response.new(
       :tag => req.tag,
-      :flags => F::VALID|F::DONE,
       :err_code => E::OTHER
     )
 
@@ -75,7 +52,6 @@ class FraggleTransactionTest < Test::Unit::TestCase
   def test_invalid_tag
     res = Fraggle::Response.new(
       :tag => 0,
-      :flags => F::VALID|F::DONE,
       :err_code => E::OTHER
     )
 
@@ -84,11 +60,11 @@ class FraggleTransactionTest < Test::Unit::TestCase
     end
   end
 
-  def test_done_deletes_callback
+  def test_deletes_callback
     req, log = nop
     req = cn.send_request(req)
 
-    res = Fraggle::Response.new(:tag => req.tag, :flags => F::VALID|F::DONE)
+    res = Fraggle::Response.new(:tag => req.tag)
     cn.receive_response(res)
 
     # This should be ignored
@@ -97,13 +73,12 @@ class FraggleTransactionTest < Test::Unit::TestCase
     assert_equal [res], log.valid
   end
 
-  def test_error_with_done_deletes_callback
+  def test_error_deletes_callback
     req, log = nop
     req = cn.send_request(req)
 
     res = Fraggle::Response.new(
       :tag => req.tag,
-      :flags => F::VALID|F::DONE,
       :err_code => E::OTHER
     )
 
@@ -150,7 +125,7 @@ class FraggleTransactionTest < Test::Unit::TestCase
 
     cn.unbind
 
-    res = Fraggle::Response.new(:tag => a.tag, :flags => F::VALID|F::DONE)
+    res = Fraggle::Response.new(:tag => a.tag)
     cn.receive_response(res)
 
     assert_equal [], al.valid
@@ -165,39 +140,4 @@ class FraggleTransactionTest < Test::Unit::TestCase
 
     assert_equal nil, log.error.first
   end
-
-  def test_liveness
-    live = cn.post_init
-
-    def cn.timer(_, &blk)
-      blk.call
-    end
-
-    res = Fraggle::Response.new(:tag => live.tag, :rev => 1, :flags => F::VALID|F::DONE)
-    cn.receive_response(res)
-    assert ! cn.err?
-
-    # Connections reuse tags and we're only responding to one request in this
-    # test, so we know the next rev will use the previous tag
-    res = Fraggle::Response.new(:tag => live.tag, :rev => 2, :flags => F::VALID|F::DONE)
-    cn.receive_response(res)
-    assert ! cn.err?
-  end
-
-  def test_not_alive
-    live = cn.post_init
-
-    def cn.timer(_, &blk)
-      blk.call
-    end
-
-    res = Fraggle::Response.new(:tag => live.tag, :rev => 1, :flags => F::VALID|F::DONE)
-    cn.receive_response(res)
-    assert ! cn.err?
-
-    res.tag += 1
-    cn.receive_response(res)
-    assert cn.err?
-  end
-
 end

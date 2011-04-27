@@ -15,23 +15,23 @@ class FraggleProtocolTest < Test::Unit::TestCase
   end
 
   def test_simple
-    req = Fraggle::Response.new :tag => 0, :verb => V::NOP, :flags => F::VALID
+    req = Fraggle::Response.new :tag => 0, :verb => V::NOP
     cn.receive_data(encode(req))
 
     assert_equal [req], cn.received
   end
 
   def test_multiple_single
-    a = Fraggle::Response.new :tag => 0, :verb => V::NOP, :flags => F::VALID
-    b = Fraggle::Response.new :tag => 1, :verb => V::NOP, :flags => F::VALID
+    a = Fraggle::Response.new :tag => 0, :verb => V::NOP
+    b = Fraggle::Response.new :tag => 1, :verb => V::NOP
     cn.receive_data(encode(a) + encode(b))
 
     assert_equal [a, b], cn.received
   end
 
   def test_multiple_double
-    a = Fraggle::Response.new :tag => 0, :verb => V::NOP, :flags => F::VALID
-    b = Fraggle::Response.new :tag => 1, :verb => V::NOP, :flags => F::VALID
+    a = Fraggle::Response.new :tag => 0, :verb => V::NOP
+    b = Fraggle::Response.new :tag => 1, :verb => V::NOP
     cn.receive_data(encode(a))
     cn.receive_data(encode(b))
 
@@ -39,7 +39,7 @@ class FraggleProtocolTest < Test::Unit::TestCase
   end
 
   def test_small_chunks
-    req = Fraggle::Response.new :tag => 0, :verb => V::NOP, :flags => F::VALID
+    req = Fraggle::Response.new :tag => 0, :verb => V::NOP
 
     bytes = encode(req) * 3
     len   = bytes.length
@@ -53,7 +53,7 @@ class FraggleProtocolTest < Test::Unit::TestCase
   end
 
   def test_big_chunks
-    req = Fraggle::Response.new :tag => 0, :verb => V::NOP, :flags => F::VALID
+    req = Fraggle::Response.new :tag => 0, :verb => V::NOP
 
     bytes = encode(req) * 3
     len   = bytes.length

@@ -23,44 +23,13 @@ class FraggleClientTest < Test::Unit::TestCase
     @c.__send__(:initialize, cn, @addrs)
   end
 
-  def test_send_valid_done
-    req, log = request(V::NOP)
-    req = c.send(req)
-
-    res = Fraggle::Response.new :tag => req.tag, :value => "ing", :flags => F::VALID|F::DONE
-    c.cn.receive_response(res)
-
-    assert_equal [res], log.valid
-    assert_equal [req], log.done
-    assert_equal [], log.error
-  end
-
-  def test_send_valid_called_before_done
-    req, _ = request(V::NOP)
-    req = c.send(req)
-
-    log = []
-    req.valid do
-      log << :valid
-    end
-    req.done do
-      log << :done
-    end
-
-    res = Fraggle::Response.new :tag => req.tag, :value => "ing", :flags => F::VALID|F::DONE
-    c.cn.receive_response(res)
-
-    assert_equal [:valid, :done], log
-  end
-
   def test_send_error
     req, log = request(V::NOP)
     req = c.send(req)
 
-    res = Fraggle::Response.new :tag => req.tag, :err_code => E::OTHER, :flags => F::VALID|F::DONE
+    res = Fraggle::Response.new :tag => req.tag, :err_code => E::OTHER
     c.cn.receive_response(res)
 
-    assert_equal [], log.valid
     assert_equal [], log.done
     assert_equal [res], log.error
   end
@@ -155,52 +124,6 @@ class FraggleClientTest < Test::Unit::TestCase
     assert_equal [Fraggle::Connection::Disconnected], nlog.error
   end
 
-  def test_manage_offset
-    req, log = request(V::WALK, :path => "/foo/*", :offset => 3)
-    req = c.resend(req)
-
-    res = Fraggle::Response.new :tag => req.tag, :flags => F::VALID
-    c.cn.receive_response(res)
-
-    c.cn.close_connection
-
-    exp, _ = request(V::WALK, :tag => req.tag, :path => "/foo/*", :offset => 4)
-    assert_equal [exp], c.cn.sent
-  end
-
-  def test_manage_rev
-    req, log = request(V::WALK, :path => "/foo/*", :rev => 4)
-    req = c.resend(req)
-
-    # nil rev
-    res = Fraggle::Response.new :tag => req.tag, :flags => F::VALID
-    c.cn.receive_response(res)
-    assert_equal 4, req.rev
-
-    # equal to rev
-    res = Fraggle::Response.new :tag => req.tag, :rev => 4, :flags => F::VALID
-    c.cn.receive_response(res)
-    assert_equal 4, req.rev
-
-    # less than rev
-    res = Fraggle::Response.new :tag => req.tag, :rev => 3, :flags => F::VALID
-    c.cn.receive_response(res)
-    assert_equal 4, req.rev
-
-    # greater than rev
-    # NOTE: This will never happen in life on a WALK, this is purely a
-    # test.
-    res = Fraggle::Response.new :tag => req.tag, :rev => 5, :flags => F::VALID
-    c.cn.receive_response(res)
-    assert_equal 5, req.rev
-
-    # force retry
-    c.cn.close_connection
-
-    exp, _ = request(V::WALK, :tag => req.tag, :rev => 5, :path => "/foo/*")
-    assert_equal [exp], c.cn.sent
-  end
-
   def test_readonly_simple
     a, al = request(V::SET, :rev => 0, :path => "/foo")
     a = c.send(a)
@@ -211,8 +134,7 @@ class FraggleClientTest < Test::Unit::TestCase
     res = Fraggle::Response.new(
       :tag => a.tag,
       :err_code => E::READONLY,
-      :err_detail => "9.9.9.9:9",
-      :flags => F::VALID|F::DONE
+      :err_detail => "9.9.9.9:9"
     )
 
     c.cn.receive_response(res)

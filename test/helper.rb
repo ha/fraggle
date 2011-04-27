@@ -71,14 +71,7 @@ class Test::Unit::TestCase
   end
 
   def reply(tag, attrs={})
-    attrs[:flags] ||= 0
-    attrs[:flags] |= F::VALID
     Fraggle::Response.new(attrs.merge(:tag => tag))
-  end
-
-  def reply!(tag, attrs={})
-    attrs[:flags] = F::DONE
-    reply(tag, attrs)
   end
 
 end

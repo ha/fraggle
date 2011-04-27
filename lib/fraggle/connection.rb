@@ -55,25 +55,16 @@ module Fraggle
         return
       end
 
-      req = @cb[res.tag]
+      req = @cb.delete(res.tag)
 
       if ! req
         return
       end
 
-      if ! res.ok?
-        @cb.delete(req.tag)
-        req.emit(:error, res)
-        return
-      end
-
-      if res.valid?
+      if res.ok?
         req.emit(:valid, res)
-      end
-
-      if res.done?
-        @cb.delete(req.tag)
-        req.emit(:done)
+      else
+        req.emit(:error, res)
       end
     end
 
@@ -104,22 +95,6 @@ module Fraggle
       send_data("#{head}#{data}")
 
       req
-    end
-
-    def post_init
-      last = 0
-      rev  = Request.new :verb => Request::Verb::REV
-
-      rev.valid do |e|
-        if e.rev <= last
-          close_connection
-        else
-          timer(5) { send_request(rev.dup) }
-          last = e.rev
-        end
-      end
-
-      send_request(rev.dup)
     end
 
     def unbind
