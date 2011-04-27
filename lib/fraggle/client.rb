@@ -56,14 +56,10 @@ module Fraggle
 
     def getdir(path, rev=nil, offset=nil, &blk)
       req = Request.new
-      req.verb = GETDIR
-      req.rev  = rev
-      req.path = path
-
-      # To reliably pick-up where we left off in the event of a disconnect, we
-      # must default the offset to zero.  This is best done here and not in the
-      # param declaration because the user could override it to nil there.
-      req.offset = offset || 0
+      req.verb   = GETDIR
+      req.rev    = rev
+      req.path   = path
+      req.offset = offset
       req.valid(&blk)
 
       resend(req)
@@ -71,14 +67,10 @@ module Fraggle
 
     def walk(path, rev=nil, offset=nil, &blk)
       req = Request.new
-      req.verb = WALK
-      req.rev  = rev
-      req.path = path
-
-      # To reliably pick-up where we left off in the event of a disconnect, we
-      # must default the offset to zero.  This is best done here and not in the
-      # param declaration because the user could override it to nil there.
-      req.offset = offset || 0
+      req.verb   = WALK
+      req.rev    = rev
+      req.path   = path
+      req.offset = offset
       req.valid(&blk)
 
       resend(req)
