@@ -102,13 +102,6 @@ module Fraggle
       resend(req)
     end
 
-    def add_addr(s)
-      return if s == self.addr
-      return if @addrs.include?(s)
-      log.debug("add addr: #{s}")
-      @addrs << s
-    end
-
     # Sends a request to the server.  Returns the request with a new tag
     # assigned. If `onre` is supplied, it will be invoked when a new connection
     # is established
