@@ -25,7 +25,7 @@ module Fraggle
       (flags & SET) > 0
     end
 
-    def set?
+    def del?
       return false if !flags
       (flags & DEL) > 0
     end
