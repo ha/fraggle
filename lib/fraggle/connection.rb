@@ -54,7 +54,7 @@ module Fraggle
       return if err?
       req = @cb.delete(res.tag)
       return if ! req
-      req.emit(:valid, res)
+      req.call(res)
     end
 
     def send_request(req)
@@ -63,7 +63,7 @@ module Fraggle
       end
 
       if err?
-        next_tick { req.emit(:valid, Disconnected) }
+        next_tick { req.call(Disconnected) }
         return req
       end
 
@@ -89,7 +89,7 @@ module Fraggle
     def unbind
       @err = true
       @cb.values.each do |req|
-        req.emit(:valid, Disconnected)
+        req.call(Disconnected)
       end
     end
 

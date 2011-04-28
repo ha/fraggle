@@ -124,7 +124,7 @@ module Fraggle
             # Someone else will handle this
             onre.call
           else
-            req.emit(:valid, e)
+            req.call(e)
           end
         when e.readonly?
 
@@ -137,13 +137,13 @@ module Fraggle
             # Someone else will handle this
             onre.call
           else
-            req.emit(:valid, Connection::Disconnected)
+            req.call(Connection::Disconnected)
           end
         when e.ok?
-          req.emit(:valid, e)
+          req.call(e)
         else
           log.error("error: #{e.inspect} for #{req.inspect}")
-          req.emit(:valid, e)
+          req.call(e)
         end
 
       end
@@ -175,7 +175,7 @@ module Fraggle
           idemp(req)
         else
           # We can't safely retry the write.  Inform the user.
-          req.emit(:valid, Connection::Disconnected)
+          req.call(Connection::Disconnected)
         end
       end
     end
