@@ -3,7 +3,7 @@ require 'fraggle/client'
 
 class FraggleClientTest < Test::Unit::TestCase
 
-  attr_reader :c, :addrs, :blk, :called
+  attr_reader :c
 
   def setup
     addr = "127.0.0.1:0"
