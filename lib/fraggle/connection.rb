@@ -23,15 +23,13 @@ module Fraggle
     end
 
 
-    attr_reader :last_received, :addr
+    attr_reader :addr
 
     def initialize(addr)
       @addr, @cb = addr, {}
     end
 
     def receive_data(data)
-      @last_received = Time.now
-
       (@buf ||= "") << data
 
       while @buf.length > 0
