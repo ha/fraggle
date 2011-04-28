@@ -109,10 +109,6 @@ module Fraggle
     def send(req, &onre)
       wr = Request.new(req.to_hash)
 
-      wr.done do
-        req.emit(:done)
-      end
-
       wr.valid do |e|
         log.debug("response: #{e.inspect} for #{req.inspect}")
 

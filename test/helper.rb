@@ -50,19 +50,16 @@ class Test::Unit::TestCase
   F = Fraggle::Response
   E = Fraggle::Response::Err
 
-  Log = Struct.new(:valid, :error, :done)
+  Log = Struct.new(:valid, :error)
 
   def request(verb, attrs={})
     logable(Fraggle::Request.new(attrs.merge(:verb => verb)))
   end
 
   def logable(req)
-    log = Log.new([], [], [])
+    log = Log.new([], [])
     req.valid do |e|
       log.valid << e
-    end
-    req.done do
-      log.done << req
     end
     req.error do |e|
       log.error << e

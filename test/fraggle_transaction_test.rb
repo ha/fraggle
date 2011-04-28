@@ -3,7 +3,7 @@ require 'fraggle/connection'
 
 class FraggleTransactionTest < Test::Unit::TestCase
 
-  attr_reader :cn, :tmp, :valid, :done, :error
+  attr_reader :cn, :tmp, :valid, :error
 
   def nop(attrs={})
     request(V::NOP, attrs)

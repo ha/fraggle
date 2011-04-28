@@ -18,11 +18,6 @@ module Fraggle
       self
     end
 
-    def done(&blk)
-      @cb[:done] = blk
-      self
-    end
-
     def error(&blk)
       @cb[:error] = blk
       self
