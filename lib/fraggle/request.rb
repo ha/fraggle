@@ -18,11 +18,6 @@ module Fraggle
       self
     end
 
-    def error(&blk)
-      @cb[:error] = blk
-      self
-    end
-
     def emit(name, *args)
       (@cb[name] || DEFAULT_PROC).call(*args)
     end

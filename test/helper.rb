@@ -61,9 +61,6 @@ class Test::Unit::TestCase
     req.valid do |e|
       log.valid << e
     end
-    req.error do |e|
-      log.error << e
-    end
     [req, log]
   end
 
