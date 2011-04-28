@@ -62,15 +62,6 @@ Sugar for `WALK`, `GETDIR`, etc are to come in v3.0.0.
         end
       end
 
-      # Knowning when a command is done is useful in some cases.
-      # Use the `done` callback for those situations.
-      ents = []
-      c.getdir("/test") do |e|
-        ents << e
-      end.done do
-        p ents
-      end
-
       c.get("/nothere") do |e|
         e.missing? # => true
       end
