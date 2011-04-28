@@ -23,37 +23,29 @@ class FraggleTransactionTest < Test::Unit::TestCase
   end
 
   def test_valid
-    req, log =  nop
-    req = cn.send_request(req)
+    req, log = request(V::REV)
 
-    res = Fraggle::Response.new :tag => req.tag
+    cn.send_request(req)
+
+    res = reply(req.tag)
     cn.receive_response(res)
 
     assert_equal [res], log.valid
-    assert_equal [], log.done
   end
 
   def test_error
-    req, log = nop
-    req = cn.send_request(req)
+    req, log = request(V::REV)
 
-    res = Fraggle::Response.new(
-      :tag => req.tag,
-      :err_code => E::OTHER
-    )
+    cn.send_request(req)
 
+    res = reply(req.tag, :err_code => E::OTHER)
     cn.receive_response(res)
 
-    assert_equal [], log.valid
-    assert_equal [], log.done
-    assert_equal [res], log.error
+    assert_equal [res], log.valid
   end
 
   def test_invalid_tag
-    res = Fraggle::Response.new(
-      :tag => 0,
-      :err_code => E::OTHER
-    )
+    res = reply(0, :err_code => E::OTHER)
 
     assert_nothing_raised do
       cn.receive_response(res)
@@ -61,10 +53,11 @@ class FraggleTransactionTest < Test::Unit::TestCase
   end
 
   def test_deletes_callback
-    req, log = nop
-    req = cn.send_request(req)
+    req, log = request(V::REV)
 
-    res = Fraggle::Response.new(:tag => req.tag)
+    cn.send_request(req)
+
+    res = reply(req.tag)
     cn.receive_response(res)
 
     # This should be ignored
@@ -74,70 +67,53 @@ class FraggleTransactionTest < Test::Unit::TestCase
   end
 
   def test_error_deletes_callback
-    req, log = nop
-    req = cn.send_request(req)
+    req, log = request(V::REV)
 
-    res = Fraggle::Response.new(
-      :tag => req.tag,
-      :err_code => E::OTHER
-    )
+    cn.send_request(req)
 
+    res = reply(req.tag, :err_code => E::OTHER)
     cn.receive_response(res)
 
     # This should be ignored
     cn.receive_response(res)
 
-    assert_equal [res], log.error
+    assert_equal [res], log.valid
   end
 
   def test_cannot_reuse_sent_request
-    req, _ = nop
-    req = cn.send_request(req)
+    req, _ = request(V::REV)
+    cn.send_request(req)
 
     assert_raises Fraggle::Connection::SendError do
       cn.send_request(req)
     end
   end
 
-  def test_disconnected
-    a, al = nop
+  def test_disconnect_with_pending_requests
+    a, al = request(V::REV)
     a = cn.send_request(a)
-    b, bl = nop
+    b, bl = request(V::REV)
     b = cn.send_request(b)
-    c, cl = nop
+    c, cl = request(V::REV)
     c = cn.send_request(c)
 
     cn.unbind
 
-    assert_equal 1, al.error.length
-    assert_equal Fraggle::Connection::Disconnected, al.error.first
-
-    assert_equal 1, bl.error.length
-    assert_equal Fraggle::Connection::Disconnected, bl.error.first
-
-    assert_equal 1, cl.error.length
-    assert_equal Fraggle::Connection::Disconnected,  cl.error.first
+    assert_equal [Fraggle::Connection::Disconnected], al.valid
+    assert_equal [Fraggle::Connection::Disconnected], bl.valid
+    assert_equal [Fraggle::Connection::Disconnected], cl.valid
   end
 
-  def test_ignores_responses_in_err_state
-    a, al = nop
-    a = cn.send_request(a)
-
+  def test_send_when_disconnected
     cn.unbind
 
-    res = Fraggle::Response.new(:tag => a.tag)
-    cn.receive_response(res)
+    req, log = request(V::REV)
+    ret = cn.send_request(req)
 
-    assert_equal [], al.valid
-  end
+    assert_equal req, ret
 
-  def test_send_request_in_error_state
-    cn.err = true
+    cn.tick!
 
-    req, log = nop
-    req = cn.send_request(req)
-    assert_equal nil, req.tag
-
-    assert_equal nil, log.error.first
+    assert_equal [Fraggle::Connection::Disconnected], log.valid
   end
 end

@@ -109,16 +109,13 @@ module Fraggle
     def send(req, &onre)
       wr = Request.new(req.to_hash)
 
-      wr.valid do |e|
-        log.debug("response: #{e.inspect} for #{req.inspect}")
-        req.emit(:valid, e)
-      end
-
       wr.done do
         req.emit(:done)
       end
 
-      wr.error do |e|
+      wr.valid do |e|
+        log.debug("response: #{e.inspect} for #{req.inspect}")
+
         case true
         when e.disconnected?
           # If we haven't already reconnected, do so.
@@ -131,7 +128,7 @@ module Fraggle
             # Someone else will handle this
             onre.call
           else
-            req.emit(:error, e)
+            req.emit(:valid, e)
           end
         when e.readonly?
 
@@ -144,11 +141,13 @@ module Fraggle
             # Someone else will handle this
             onre.call
           else
-            req.emit(:error, Connection::Disconnected)
+            req.emit(:valid, Connection::Disconnected)
           end
+        when e.ok?
+          req.emit(:valid, e)
         else
           log.error("error: #{e.inspect} for #{req.inspect}")
-          req.emit(:error, e)
+          req.emit(:valid, e)
         end
 
       end
@@ -180,7 +179,7 @@ module Fraggle
           idemp(req)
         else
           # We can't safely retry the write.  Inform the user.
-          req.emit(:error, Connection::Disconnected)
+          req.emit(:valid, Connection::Disconnected)
         end
       end
     end

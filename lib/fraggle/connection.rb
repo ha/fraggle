@@ -51,21 +51,10 @@ module Fraggle
 
     # The default receive_response
     def receive_response(res)
-      if err?
-        return
-      end
-
+      return if err?
       req = @cb.delete(res.tag)
-
-      if ! req
-        return
-      end
-
-      if res.ok?
-        req.emit(:valid, res)
-      else
-        req.emit(:error, res)
-      end
+      return if ! req
+      req.emit(:valid, res)
     end
 
     def send_request(req)
@@ -74,7 +63,7 @@ module Fraggle
       end
 
       if err?
-        next_tick { req.emit(:error, Disconnected) }
+        next_tick { req.emit(:valid, Disconnected) }
         return req
       end
 
@@ -100,7 +89,7 @@ module Fraggle
     def unbind
       @err = true
       @cb.values.each do |req|
-        req.emit(:error, Disconnected)
+        req.emit(:valid, Disconnected)
       end
     end
 

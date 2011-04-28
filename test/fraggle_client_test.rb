@@ -24,14 +24,14 @@ class FraggleClientTest < Test::Unit::TestCase
   end
 
   def test_send_error
-    req, log = request(V::NOP)
-    req = c.send(req)
+    req, log = request(V::REV)
 
-    res = Fraggle::Response.new :tag => req.tag, :err_code => E::OTHER
+    c.send(req)
+
+    res = reply(req.tag, :err_code => E::OTHER)
     c.cn.receive_response(res)
 
-    assert_equal [], log.done
-    assert_equal [res], log.error
+    assert_equal [res], log.valid
   end
 
   def test_reconnect_without_pending_requests
@@ -41,8 +41,8 @@ class FraggleClientTest < Test::Unit::TestCase
     c.cn.close_connection
 
     # Send a request to invoke reconnect
-    req, log = request(V::NOP)
-    req = c.send(req)
+    req, log = request(V::REV)
+    c.send(req)
 
     # Fake reactor turn (only available in tests)
     c.cn.tick!
@@ -50,15 +50,15 @@ class FraggleClientTest < Test::Unit::TestCase
     assert exp.include?(c.cn.addr), "#{c.cn.addr.inspect} not in #{exp.inspect}"
 
     # If the client can handle an error, it should not mention it to the user.
-    assert_equal [Fraggle::Connection::Disconnected], log.error
+    assert_equal [Fraggle::Connection::Disconnected], log.valid
   end
 
   def test_reconnect_with_pending_request
     exp = @addrs.dup
 
     # Send a request to invoke reconnect
-    req, log = request(V::NOP)
-    req = c.send(req)
+    req, log = request(V::REV)
+    c.send(req)
 
     # Disconnect from 127.0.0.1:0
     c.cn.close_connection
@@ -68,17 +68,17 @@ class FraggleClientTest < Test::Unit::TestCase
 
     assert exp.include?(c.cn.addr), "#{c.cn.addr.inspect} not in #{exp.inspect}"
 
-    assert_equal [Fraggle::Connection::Disconnected], log.error
+    assert_equal [Fraggle::Connection::Disconnected], log.valid
   end
 
   def test_reconnect_with_multiple_pending_requests
     exp = @addrs.dup
 
     # Send a request to invoke reconnect
-    req, loga = request(V::NOP)
+    req, loga = request(V::REV)
     req = c.send(req)
 
-    req, logb = request(V::NOP)
+    req, logb = request(V::REV)
     req = c.send(req)
 
     # Disconnect from 127.0.0.1:0
@@ -93,8 +93,8 @@ class FraggleClientTest < Test::Unit::TestCase
     assert_equal exp.length - 1, c.addrs.length
 
     # If the client can handle an error, it should not mention it to the user.
-    assert_equal [Fraggle::Connection::Disconnected], loga.error
-    assert_equal [Fraggle::Connection::Disconnected], logb.error
+    assert_equal [Fraggle::Connection::Disconnected], loga.valid
+    assert_equal [Fraggle::Connection::Disconnected], logb.valid
   end
 
   def test_resend_pending_requests
@@ -120,8 +120,8 @@ class FraggleClientTest < Test::Unit::TestCase
 
     assert_equal [one], c.cn.sent
 
-    assert_equal [Fraggle::Connection::Disconnected], zlog.error
-    assert_equal [Fraggle::Connection::Disconnected], nlog.error
+    assert_equal [Fraggle::Connection::Disconnected], zlog.valid
+    assert_equal [Fraggle::Connection::Disconnected], nlog.valid
   end
 
   def test_readonly_simple
@@ -131,19 +131,14 @@ class FraggleClientTest < Test::Unit::TestCase
     b, bl = request(V::SET, :rev => 0, :path => "/foo")
     b = c.send(b)
 
-    res = Fraggle::Response.new(
-      :tag => a.tag,
-      :err_code => E::READONLY,
-      :err_detail => "9.9.9.9:9"
-    )
-
+    res = reply(a.tag, :err_code => E::READONLY)
     c.cn.receive_response(res)
 
     assert_equal "1.1.1.1:1", c.cn.addr
     assert_equal ["2.2.2.2:2", "3.3.3.3:3"], c.addrs
 
-    assert_equal [Fraggle::Connection::Disconnected], al.error
-    assert_equal [Fraggle::Connection::Disconnected], bl.error
+    assert_equal [Fraggle::Connection::Disconnected], al.valid
+    assert_equal [Fraggle::Connection::Disconnected], bl.valid
   end
 
   ###
