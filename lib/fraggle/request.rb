@@ -4,7 +4,6 @@ module Fraggle
   class Request
     DEFAULT_PROC = Proc.new {}
 
-    attr_accessor :cn
     attr_reader   :cb
 
     def valid(&blk)

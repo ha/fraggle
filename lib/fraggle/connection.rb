@@ -74,8 +74,6 @@ module Fraggle
         req.tag %= 2**31
       end
 
-      req.cn = self
-
       @cb[req.tag] = req
 
       data = req.encode
