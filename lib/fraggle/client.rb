@@ -101,13 +101,9 @@ module Fraggle
       cb = Proc.new do |e|
         log.debug("response: #{e.inspect} for #{req.inspect}")
 
-        case true
-        when e.disconnected?
-          # If we haven't already reconnected, do so.
-          if cn.err?
-            log.error("conn err: #{req.inspect}")
-            reconnect!
-          end
+        if e.disconnected? && cn.err?
+          log.error("conn err: #{req.inspect}")
+          reconnect!
         end
 
         blk.call(e)
