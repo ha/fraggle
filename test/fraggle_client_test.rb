@@ -26,7 +26,7 @@ class FraggleClientTest < Test::Unit::TestCase
   def test_send_error
     req, log = request(V::REV)
 
-    c.send(req, log)
+    c.send(req, &log)
 
     res = reply(req.tag, :err_code => E::OTHER)
     c.cn.receive_response(res)
@@ -42,7 +42,7 @@ class FraggleClientTest < Test::Unit::TestCase
 
     # Send a request to invoke reconnect
     req, log = request(V::REV)
-    c.send(req, log)
+    c.send(req, &log)
 
     # Fake reactor turn (only available in tests)
     c.cn.tick!
@@ -58,7 +58,7 @@ class FraggleClientTest < Test::Unit::TestCase
 
     # Send a request to invoke reconnect
     req, log = request(V::REV)
-    c.send(req, log)
+    c.send(req, &log)
 
     # Disconnect from 127.0.0.1:0
     c.cn.close_connection
@@ -76,10 +76,10 @@ class FraggleClientTest < Test::Unit::TestCase
 
     # Send a request to invoke reconnect
     req, loga = request(V::REV)
-    c.send(req, loga)
+    c.send(req, &loga)
 
     req, logb = request(V::REV)
-    c.send(req, logb)
+    c.send(req, &logb)
 
     # Disconnect from 127.0.0.1:0
     c.cn.close_connection
@@ -99,7 +99,7 @@ class FraggleClientTest < Test::Unit::TestCase
 
   def test_resend_pending_requests
     req, log = request(V::GET, :path => "/foo")
-    c.resend(req, log)
+    c.resend(req, &log)
 
     c.cn.close_connection
 
@@ -108,13 +108,13 @@ class FraggleClientTest < Test::Unit::TestCase
 
   def test_idemp_pending_requests
     one, olog = request(V::SET, :rev => 1, :path => "/foo", :value => "bar")
-    c.idemp(one, olog)
+    c.idemp(one, &olog)
 
     zero, zlog = request(V::SET, :rev => 0, :path => "/foo", :value => "bar")
-    c.idemp(zero, zlog)
+    c.idemp(zero, &zlog)
 
     neg, nlog = request(V::SET, :rev => -1, :path => "/foo", :value => "bar")
-    c.idemp(neg, nlog)
+    c.idemp(neg, &nlog)
 
     c.cn.close_connection
 

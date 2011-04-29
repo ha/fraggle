@@ -29,7 +29,7 @@ module Fraggle
       req.path  = path
       req.value = value
 
-      idemp(req, blk)
+      idemp(req, &blk)
     end
 
     def get(path, rev=nil, &blk)
@@ -38,7 +38,7 @@ module Fraggle
       req.rev  = rev
       req.path = path
 
-      resend(req, blk)
+      resend(req, &blk)
     end
 
     def del(path, rev, &blk)
@@ -47,7 +47,7 @@ module Fraggle
       req.rev  = rev
       req.path = path
 
-      idemp(req, blk)
+      idemp(req, &blk)
     end
 
     def getdir(path, rev=nil, offset=nil, &blk)
@@ -57,7 +57,7 @@ module Fraggle
       req.path   = path
       req.offset = offset
 
-      resend(req, blk)
+      resend(req, &blk)
     end
 
     def walk(path, rev=nil, offset=nil, &blk)
@@ -67,7 +67,7 @@ module Fraggle
       req.path   = path
       req.offset = offset
 
-      resend(req, blk)
+      resend(req, &blk)
     end
 
     def wait(path, rev=nil, &blk)
@@ -76,14 +76,14 @@ module Fraggle
       req.rev  = rev
       req.path = path
 
-      resend(req, blk)
+      resend(req, &blk)
     end
 
     def rev(&blk)
       req = Request.new
       req.verb = REV
 
-      resend(req, blk)
+      resend(req, &blk)
     end
 
     def stat(path, rev=nil, &blk)
@@ -92,12 +92,12 @@ module Fraggle
       req.verb = STAT
       req.path = path
 
-      resend(req, blk)
+      resend(req, &blk)
     end
 
     # Sends a request to the server.  Returns the request with a new tag
     # assigned.
-    def send(req, blk)
+    def send(req, &blk)
       cb = Proc.new do |e|
         log.debug("response: #{e.inspect} for #{req.inspect}")
 
@@ -118,21 +118,21 @@ module Fraggle
       cn.send_request(req)
     end
 
-    def resend(req, blk)
+    def resend(req, &blk)
       cb = Proc.new do |e|
         if e.disconnected?
           req.tag = nil
           log.debug("resending: #{req.inspect}")
-          resend(req, blk)
+          resend(req, &blk)
         else
           blk.call(e)
         end
       end
 
-      send(req, cb)
+      send(req, &cb)
     end
 
-    def idemp(req, blk)
+    def idemp(req, &blk)
       cb = Proc.new do |e|
         if e.disconnected? && req.rev > 0
           # If we're trying to update a value that isn't missing or that we're
@@ -141,14 +141,14 @@ module Fraggle
           # client that sets and/or deletes the key during the time between your
           # read and write.
           req.tag = nil
-          idemp(req, blk)
+          idemp(req, &blk)
           next
         end
 
         blk.call(e)
       end
 
-      send(req, cb)
+      send(req, &cb)
     end
 
     def reconnect!
