@@ -96,9 +96,8 @@ module Fraggle
     end
 
     # Sends a request to the server.  Returns the request with a new tag
-    # assigned. If `onre` is supplied, it will be invoked when a new connection
-    # is established
-    def send(req, blk, &onre)
+    # assigned.
+    def send(req, blk)
       cb = Proc.new do |e|
         log.debug("response: #{e.inspect} for #{req.inspect}")
 
@@ -109,25 +108,14 @@ module Fraggle
             log.error("conn err: #{req.inspect}")
             reconnect!
           end
-
-          if onre
-            # Someone else will handle this
-            onre.call
-          else
-            blk.call(e)
-          end
+          blk.call(e)
         when e.readonly?
           log.error("readonly: #{req.inspect}")
 
           # Closing the connection triggers a reconnect above.
           cn.close_connection
 
-          if onre
-            # Someone else will handle this
-            onre.call
-          else
-            blk.call(Connection::Disconnected)
-          end
+          blk.call(Connection::Disconnected)
         when e.ok?
           blk.call(e)
         else
@@ -143,16 +131,22 @@ module Fraggle
     end
 
     def resend(req, blk)
-      send(req, blk) do
-        req.tag = nil
-        log.debug("resending: #{req.inspect}")
-        resend(req, blk)
+      cb = Proc.new do |e|
+        if e.disconnected?
+          req.tag = nil
+          log.debug("resending: #{req.inspect}")
+          resend(req, blk)
+        else
+          blk.call(e)
+        end
       end
+
+      send(req, cb)
     end
 
     def idemp(req, blk)
-      send(req, blk) do
-        if req.rev > 0
+      cb = Proc.new do |e|
+        if e.disconnected? && req.rev > 0
           # If we're trying to update a value that isn't missing or that we're
           # not trying to clobber, it's safe to retry.  We can't idempotently
           # update missing values because there may be a race with another
@@ -160,11 +154,13 @@ module Fraggle
           # read and write.
           req.tag = nil
           idemp(req, blk)
-        else
-          # We can't safely retry the write.  Inform the user.
-          blk.call(Connection::Disconnected)
+          next
         end
+
+        blk.call(e)
       end
+
+      send(req, cb)
     end
 
     def reconnect!
