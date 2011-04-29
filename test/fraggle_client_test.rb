@@ -124,23 +124,6 @@ class FraggleClientTest < Test::Unit::TestCase
     assert_equal [Fraggle::Connection::Disconnected], nlog.valid
   end
 
-  def test_readonly_simple
-    a, al = request(V::SET, :rev => 0, :path => "/foo")
-    a = c.send(a, al)
-
-    b, bl = request(V::SET, :rev => 0, :path => "/foo")
-    b = c.send(b, bl)
-
-    res = reply(a.tag, :err_code => E::READONLY)
-    c.cn.receive_response(res)
-
-    assert_equal "1.1.1.1:1", c.cn.addr
-    assert_equal ["2.2.2.2:2", "3.3.3.3:3"], c.addrs
-
-    assert_equal [true], al.valid.map(&:disconnected?)
-    assert_equal [true], bl.valid.map(&:disconnected?)
-  end
-
   ###
   # Sugar
 

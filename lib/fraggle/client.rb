@@ -108,12 +108,6 @@ module Fraggle
             log.error("conn err: #{req.inspect}")
             reconnect!
           end
-        when e.readonly?
-          log.error("readonly: #{req.inspect}")
-
-          # Closing the connection triggers a reconnect above.
-          cn.close_connection
-          e.disconnected = true
         end
 
         blk.call(e)
