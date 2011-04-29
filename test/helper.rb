@@ -14,8 +14,8 @@ class TestConn
     @ticks = []
   end
 
-  def send_request(req)
-    @sent << super(req)
+  def send_request(req, blk)
+    @sent << super(req, blk)
     req
   end
 

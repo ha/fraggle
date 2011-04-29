@@ -55,7 +55,9 @@ module Fraggle
       req.call(res)
     end
 
-    def send_request(req)
+    def send_request(req, blk)
+      req.valid(&blk)
+
       if req.tag
         raise SendError, "Already sent #{req.inspect}"
       end
@@ -72,6 +74,7 @@ module Fraggle
         req.tag %= 2**31
       end
 
+      # TODO: remove this!
       @cb[req.tag] = req
 
       data = req.encode

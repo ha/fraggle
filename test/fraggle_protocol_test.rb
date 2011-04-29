@@ -80,7 +80,7 @@ class FraggleProtocolTest < Test::Unit::TestCase
     end
 
     nop = Fraggle::Request.new :verb => V::NOP
-    cn.send_request(nop)
+    cn.send_request(nop, nil)
 
     assert_equal head+bytes, got
   end

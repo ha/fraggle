@@ -112,10 +112,9 @@ module Fraggle
 
         blk.call(e)
       end
-      req.valid(&cb)
 
       log.debug("sending: #{req.inspect}")
-      cn.send_request(req)
+      cn.send_request(req, cb)
     end
 
     def resend(req, &blk)

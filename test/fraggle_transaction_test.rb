@@ -15,17 +15,17 @@ class FraggleTransactionTest < Test::Unit::TestCase
 
   def test_tagging
     req, _ = nop
-    assert_equal 0, cn.send_request(req).tag
+    assert_equal 0, cn.send_request(req, _).tag
     req, _ = nop
-    assert_equal 1, cn.send_request(req).tag
+    assert_equal 1, cn.send_request(req, _).tag
     req, _ = nop
-    assert_equal 2, cn.send_request(req).tag
+    assert_equal 2, cn.send_request(req, _).tag
   end
 
   def test_valid
     req, log = request(V::REV)
 
-    cn.send_request(req)
+    cn.send_request(req, log)
 
     res = reply(req.tag)
     cn.receive_response(res)
@@ -36,7 +36,7 @@ class FraggleTransactionTest < Test::Unit::TestCase
   def test_error
     req, log = request(V::REV)
 
-    cn.send_request(req)
+    cn.send_request(req, log)
 
     res = reply(req.tag, :err_code => E::OTHER)
     cn.receive_response(res)
@@ -55,7 +55,7 @@ class FraggleTransactionTest < Test::Unit::TestCase
   def test_deletes_callback
     req, log = request(V::REV)
 
-    cn.send_request(req)
+    cn.send_request(req, log)
 
     res = reply(req.tag)
     cn.receive_response(res)
@@ -69,7 +69,7 @@ class FraggleTransactionTest < Test::Unit::TestCase
   def test_error_deletes_callback
     req, log = request(V::REV)
 
-    cn.send_request(req)
+    cn.send_request(req, log)
 
     res = reply(req.tag, :err_code => E::OTHER)
     cn.receive_response(res)
@@ -82,20 +82,20 @@ class FraggleTransactionTest < Test::Unit::TestCase
 
   def test_cannot_reuse_sent_request
     req, _ = request(V::REV)
-    cn.send_request(req)
+    cn.send_request(req, _)
 
     assert_raises Fraggle::Connection::SendError do
-      cn.send_request(req)
+      cn.send_request(req, _)
     end
   end
 
   def test_disconnect_with_pending_requests
     a, al = request(V::REV)
-    a = cn.send_request(a)
+    a = cn.send_request(a, al)
     b, bl = request(V::REV)
-    b = cn.send_request(b)
+    b = cn.send_request(b, bl)
     c, cl = request(V::REV)
-    c = cn.send_request(c)
+    c = cn.send_request(c, cl)
 
     cn.unbind
 
@@ -108,7 +108,7 @@ class FraggleTransactionTest < Test::Unit::TestCase
     cn.unbind
 
     req, log = request(V::REV)
-    ret = cn.send_request(req)
+    ret = cn.send_request(req, log)
 
     assert_equal req, ret
 
