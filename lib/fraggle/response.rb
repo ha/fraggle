@@ -26,10 +26,6 @@ module Fraggle
       err_code.nil?
     end
 
-    def readonly?
-      err_code == Err::READONLY
-    end
-
     def disconnected?
       !!@disconnected
     end
