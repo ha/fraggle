@@ -108,21 +108,15 @@ module Fraggle
             log.error("conn err: #{req.inspect}")
             reconnect!
           end
-          blk.call(e)
         when e.readonly?
           log.error("readonly: #{req.inspect}")
 
           # Closing the connection triggers a reconnect above.
           cn.close_connection
-
-          blk.call(Connection::Disconnected)
-        when e.ok?
-          blk.call(e)
-        else
-          log.error("error: #{e.inspect} for #{req.inspect}")
-          blk.call(e)
+          e.disconnected = true
         end
 
+        blk.call(e)
       end
       req.valid(&cb)
 

@@ -137,8 +137,8 @@ class FraggleClientTest < Test::Unit::TestCase
     assert_equal "1.1.1.1:1", c.cn.addr
     assert_equal ["2.2.2.2:2", "3.3.3.3:3"], c.addrs
 
-    assert_equal [Fraggle::Connection::Disconnected], al.valid
-    assert_equal [Fraggle::Connection::Disconnected], bl.valid
+    assert_equal [true], al.valid.map(&:disconnected?)
+    assert_equal [true], bl.valid.map(&:disconnected?)
   end
 
   ###
