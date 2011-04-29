@@ -1,4 +1,4 @@
-# Fraggle (v2.0.0 is compatible with Doozer 0.6)
+# Fraggle (v3.0.0 is compatible with Doozer 0.6)
 
 Fraggle currently is only a raw interface to Doozer 0.6.
 Sugar for `WALK`, `GETDIR`, etc are to come in v3.0.0.
@@ -7,7 +7,7 @@ Sugar for `WALK`, `GETDIR`, etc are to come in v3.0.0.
 
 ## Install
 
-    $ gem install fraggle --pre
+    $ gem install fraggle
 
 ## Use
 
@@ -16,54 +16,49 @@ Sugar for `WALK`, `GETDIR`, etc are to come in v3.0.0.
     require 'fraggle'
 
     EM.start do
-      # Fraggle keeps track of this addr plus all others it finds once
-      # connected.  In the event of a lost connection, fraggle will attempt
+      # In the event of a lost connection, fraggle will attempt
       # other doozers until one accepts or it runs out of options; A NoAddrs
       # exception will be raised if that later happens.
       c = Fraggle.connect "doozerd://127.0.0.1:8046"
 
       req = c.get("/foo") do |e|
-        e.value   # => "bar"
-        e.rev     # => 123
+        if e.ok?
+          e.value    # => nil
+          e.rev      # => 0
+          e.missing? # => true
+        else
+          e.err_code # => Fraggle::<CONST>
+          e.err_detail # => "bad path" or something
+        end
       end
 
-      req.error do |e|
-        e.err_code   # => nil
-        e.err_detail # => nil
-      end
-
-      watch = c.watch("/foo") do |e|
-        # The event has:
-        # ------------------------
-        e.err_code   # => nil
-        e.err_detail # => nil
-        e.path       # => "/foo"
-        e.value      # => "bar"
-        e.rev        # => 123
-        e.set?       # => true
-        e.del?       # => false
-
-        do_something_with(e)
-
-        # Phoney check for example
-        if can_stop_watching?(path)
-          watch.cancel
+      c.rev do |v|
+        ## Obtain the current revision the store is at and watch from then on for
+        ## any SET or DEL to /foo.
+        c.wait("/foo", v.rev) do |e|
+          # The event has:
+          # ------------------------
+          e.err_code   # => nil
+          e.err_detail # => nil
+          e.path       # => "/foo"
+          e.value      # => "zomg!"
+          e.rev        # => 123
+          e.set?       # => true
+          e.del?       # => false
         end
       end
 
       ## Setting a key (this will trigger the watch above)
       req = c.set("/foo", "zomg!", 0) do |e|
         # Success!
-      end.error do |e|
-        if e.mismatch?
-          # There was a rev mismatch, handle this.
+        case e.err_code
+        when Fraggle::REV_MISMATCH
+          # We didn't win
+        when nil
+          # Success!
         else
-          raise e.err_detail
+          fail "something bad happened"
         end
-      end
-
-      c.get("/nothere") do |e|
-        e.missing? # => true
       end
 
     end
