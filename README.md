@@ -19,7 +19,7 @@ Sugar for `WALK`, `GETDIR`, etc are to come in a later version of v3.0.0.
       # In the event of a lost connection, fraggle will attempt
       # other doozers until one accepts or it runs out of options; A NoAddrs
       # exception will be raised if that later happens.
-      c = Fraggle.connect "doozerd://127.0.0.1:8046"
+      c = Fraggle.connect "doozerd:?ca=127.0.0.1:8046"
 
       req = c.get("/foo") do |e|
         if e.ok?
