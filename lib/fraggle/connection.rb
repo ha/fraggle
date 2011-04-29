@@ -1,4 +1,3 @@
-require 'fraggle/request'
 require 'fraggle/response'
 
 module Fraggle
@@ -50,20 +49,18 @@ module Fraggle
     # The default receive_response
     def receive_response(res)
       return if err?
-      req = @cb.delete(res.tag)
-      return if ! req
-      req.call(res)
+      req, blk = @cb.delete(res.tag)
+      return if ! blk
+      blk.call(res)
     end
 
     def send_request(req, blk)
-      req.valid(&blk)
-
       if req.tag
         raise SendError, "Already sent #{req.inspect}"
       end
 
       if err?
-        next_tick { req.call(Disconnected) }
+        next_tick { blk.call(Disconnected) }
         return req
       end
 
@@ -75,7 +72,7 @@ module Fraggle
       end
 
       # TODO: remove this!
-      @cb[req.tag] = req
+      @cb[req.tag] = [req, blk]
 
       data = req.encode
       head = [data.length].pack("N")
@@ -87,8 +84,8 @@ module Fraggle
 
     def unbind
       @err = true
-      @cb.values.each do |req|
-        req.call(Disconnected)
+      @cb.values.each do |_, blk|
+        blk.call(Disconnected)
       end
     end
 

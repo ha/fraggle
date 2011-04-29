@@ -73,7 +73,6 @@ class Test::Unit::TestCase
 
   def logable(req)
     log = Log.new
-    req.valid(&log)
     [req, log]
   end
 
