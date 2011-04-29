@@ -50,17 +50,30 @@ class Test::Unit::TestCase
   F = Fraggle::Response
   E = Fraggle::Response::Err
 
-  Log = Struct.new(:valid, :error)
+  class Log
+    attr_reader :valid
+
+    def initialize
+      @valid = []
+    end
+
+    def call(e)
+      @valid << e
+    end
+
+    def to_proc
+      me = self
+      Proc.new {|e| me.call(e) }
+    end
+  end
 
   def request(verb, attrs={})
     logable(Fraggle::Request.new(attrs.merge(:verb => verb)))
   end
 
   def logable(req)
-    log = Log.new([], [])
-    req.valid do |e|
-      log.valid << e
-    end
+    log = Log.new
+    req.valid(&log)
     [req, log]
   end
 

@@ -28,9 +28,8 @@ module Fraggle
       req.rev   = rev
       req.path  = path
       req.value = value
-      req.valid(&blk)
 
-      idemp(req)
+      idemp(req, blk)
     end
 
     def get(path, rev=nil, &blk)
@@ -38,9 +37,8 @@ module Fraggle
       req.verb = GET
       req.rev  = rev
       req.path = path
-      req.valid(&blk)
 
-      resend(req)
+      resend(req, blk)
     end
 
     def del(path, rev, &blk)
@@ -48,9 +46,8 @@ module Fraggle
       req.verb = DEL
       req.rev  = rev
       req.path = path
-      req.valid(&blk)
 
-      idemp(req)
+      idemp(req, blk)
     end
 
     def getdir(path, rev=nil, offset=nil, &blk)
@@ -59,9 +56,8 @@ module Fraggle
       req.rev    = rev
       req.path   = path
       req.offset = offset
-      req.valid(&blk)
 
-      resend(req)
+      resend(req, blk)
     end
 
     def walk(path, rev=nil, offset=nil, &blk)
@@ -70,9 +66,8 @@ module Fraggle
       req.rev    = rev
       req.path   = path
       req.offset = offset
-      req.valid(&blk)
 
-      resend(req)
+      resend(req, blk)
     end
 
     def wait(path, rev=nil, &blk)
@@ -80,17 +75,15 @@ module Fraggle
       req.verb = WAIT
       req.rev  = rev
       req.path = path
-      req.valid(&blk)
 
-      resend(req)
+      resend(req, blk)
     end
 
     def rev(&blk)
       req = Request.new
       req.verb = REV
-      req.valid(&blk)
 
-      resend(req)
+      resend(req, blk)
     end
 
     def stat(path, rev=nil, &blk)
@@ -98,18 +91,15 @@ module Fraggle
       req.rev  = rev
       req.verb = STAT
       req.path = path
-      req.valid(&blk)
 
-      resend(req)
+      resend(req, blk)
     end
 
     # Sends a request to the server.  Returns the request with a new tag
     # assigned. If `onre` is supplied, it will be invoked when a new connection
     # is established
-    def send(req, &onre)
-      wr = Request.new(req.to_hash)
-
-      wr.valid do |e|
+    def send(req, blk, &onre)
+      cb = Proc.new do |e|
         log.debug("response: #{e.inspect} for #{req.inspect}")
 
         case true
@@ -124,10 +114,9 @@ module Fraggle
             # Someone else will handle this
             onre.call
           else
-            req.call(e)
+            blk.call(e)
           end
         when e.readonly?
-
           log.error("readonly: #{req.inspect}")
 
           # Closing the connection triggers a reconnect above.
@@ -137,34 +126,32 @@ module Fraggle
             # Someone else will handle this
             onre.call
           else
-            req.call(Connection::Disconnected)
+            blk.call(Connection::Disconnected)
           end
         when e.ok?
-          req.call(e)
+          blk.call(e)
         else
           log.error("error: #{e.inspect} for #{req.inspect}")
-          req.call(e)
+          blk.call(e)
         end
 
       end
+      req.valid(&cb)
 
-      wr = cn.send_request(wr)
-      req.tag = wr.tag
       log.debug("sending: #{req.inspect}")
-
-      req
+      cn.send_request(req)
     end
 
-    def resend(req)
-      send(req) do
+    def resend(req, blk)
+      send(req, blk) do
         req.tag = nil
         log.debug("resending: #{req.inspect}")
-        resend(req)
+        resend(req, blk)
       end
     end
 
-    def idemp(req)
-      send(req) do
+    def idemp(req, blk)
+      send(req, blk) do
         if req.rev > 0
           # If we're trying to update a value that isn't missing or that we're
           # not trying to clobber, it's safe to retry.  We can't idempotently
@@ -172,10 +159,10 @@ module Fraggle
           # client that sets and/or deletes the key during the time between your
           # read and write.
           req.tag = nil
-          idemp(req)
+          idemp(req, blk)
         else
           # We can't safely retry the write.  Inform the user.
-          req.call(Connection::Disconnected)
+          blk.call(Connection::Disconnected)
         end
       end
     end
