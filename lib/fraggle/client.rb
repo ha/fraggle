@@ -34,7 +34,7 @@ module Fraggle
       idemp(req, &blk)
     end
 
-    def get(path, rev=nil, &blk)
+    def get(path, rev, &blk)
       req = Request.new
       req.verb = GET
       req.rev  = rev
@@ -52,7 +52,7 @@ module Fraggle
       idemp(req, &blk)
     end
 
-    def getdir(path, rev=nil, offset=nil, &blk)
+    def getdir(path, rev, offset, &blk)
       req = Request.new
       req.verb   = GETDIR
       req.rev    = rev
@@ -62,7 +62,7 @@ module Fraggle
       resend(req, &blk)
     end
 
-    def walk(path, rev=nil, offset=nil, &blk)
+    def walk(path, rev, offset, &blk)
       req = Request.new
       req.verb   = WALK
       req.rev    = rev
@@ -72,7 +72,7 @@ module Fraggle
       resend(req, &blk)
     end
 
-    def wait(path, rev=nil, &blk)
+    def wait(path, rev, &blk)
       req = Request.new
       req.verb = WAIT
       req.rev  = rev
@@ -88,7 +88,7 @@ module Fraggle
       resend(req, &blk)
     end
 
-    def stat(path, rev=nil, &blk)
+    def stat(path, rev, &blk)
       req = Request.new
       req.rev  = rev
       req.verb = STAT
@@ -106,7 +106,7 @@ module Fraggle
       end
     end
 
-    def getdir_all(path, off=0, lim=MaxInt64, rev=nil, ents=[], &blk)
+    def getdir_all(path, rev, off=0, lim=MaxInt64, ents=[], &blk)
       if ents.length >= lim
         cn.next_tick { blk.call([], nil) }
         return
@@ -116,7 +116,7 @@ module Fraggle
         case e.err_code
         when nil
           ents << e
-          getdir_all(path, off+1, lim-1, rev, ents, &blk)
+          getdir_all(path, rev, off+1, lim-1, ents, &blk)
         when Fraggle::Response::Err::RANGE
           blk.call(ents, nil)
         else
