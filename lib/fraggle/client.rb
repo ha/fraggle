@@ -107,35 +107,24 @@ module Fraggle
     end
 
     def getdir_all(path, rev, off=0, lim=MaxInt64, ents=[], &blk)
-      if ents.length >= lim
-        cn.next_tick { blk.call([], nil) }
-        return
-      end
-
-      getdir(path, rev, off) do |e|
-        case e.err_code
-        when nil
-          ents << e
-          getdir_all(path, rev, off+1, lim-1, ents, &blk)
-        when Fraggle::Response::Err::RANGE
-          blk.call(ents, nil)
-        else
-          blk.call(nil, e)
-        end
-      end
+      all(:getdir, path, rev, off, lim, ents, &blk)
     end
 
     def walk_all(path, rev, off=0, lim=MaxInt64, ents=[], &blk)
+      all(:walk, path, rev, off, lim, ents, &blk)
+    end
+
+    def all(m, path, rev, off, lim, ents=[], &blk)
       if ents.length >= lim
         cn.next_tick { blk.call([], nil) }
         return
       end
 
-      walk(path, rev, off) do |e|
+      __send__(m, path, rev, off) do |e|
         case e.err_code
         when nil
           ents << e
-          walk_all(path, rev, off+1, lim-1, ents, &blk)
+          all(m, path, rev, off+1, lim-1, ents, &blk)
         when Fraggle::Response::Err::RANGE
           blk.call(ents, nil)
         else
