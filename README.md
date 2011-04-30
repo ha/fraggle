@@ -11,6 +11,15 @@ Sugar for `WALK`, `GETDIR`, etc are to come in a later version of v3.0.0.
 
 ## Use
 
+*Connecting to a cluster*
+
+Use `Fraggle.connect`.  It takes an optional [doozer uri][] (String).  If no
+parameters are given, it will use the DOOZER_URI` environment variable if
+present, otherwise it will default to the uri containing the default doozer
+addresses with IP 127.0.0.1 and ports 8046, 8041, 8042, 8043.
+
+*simple example*
+
     require 'rubygems'
     require 'eventmachine'
     require 'fraggle'
@@ -20,11 +29,6 @@ Sugar for `WALK`, `GETDIR`, etc are to come in a later version of v3.0.0.
       # other doozers until one accepts or it runs out of options; A NoAddrs
       # exception will be raised if that later happens.
 
-      # This can take an optional [doozer uri][] (String).
-      # If no parameters are given, it will use the DOOZER_URI` environment
-      # variable if present, otherwise it will default to the uri containing
-      # the default doozer addresses with IP 127.0.0.1 and ports 8046, 8041,
-      # 8042, 8043.
       c = Fraggle.connect
 
       req = c.get("/foo") do |e|
