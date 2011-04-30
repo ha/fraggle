@@ -97,6 +97,15 @@ module Fraggle
       resend(req, &blk)
     end
 
+    def watch(path, rev, &blk)
+      wait(path, rev) do |e|
+        blk.call(e)
+        if e.ok?
+          watch(path, e.rev+1, &blk)
+        end
+      end
+    end
+
     def getdir_all(path, off=0, lim=MaxInt64, rev=nil, ents=[], &blk)
       if ents.length >= lim
         cn.next_tick { blk.call([], nil) }
