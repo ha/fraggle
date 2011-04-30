@@ -6,6 +6,8 @@ module Fraggle
   class Client
     include Request::Verb
 
+    MaxInt64 = 1<<63 - 1
+
     class NoMoreAddrs < StandardError
     end
 
@@ -93,6 +95,25 @@ module Fraggle
       req.path = path
 
       resend(req, &blk)
+    end
+
+    def getdir_all(path, off=0, lim=MaxInt64, rev=nil, ents=[], &blk)
+      if ents.length >= lim
+        cn.next_tick { blk.call([], nil) }
+        return
+      end
+
+      getdir(path, rev, off) do |e|
+        case e.err_code
+        when nil
+          ents << e
+          getdir_all(path, off+1, lim-1, rev, ents, &blk)
+        when Fraggle::Response::Err::RANGE
+          blk.call(ents, nil)
+        else
+          blk.call(nil, e)
+        end
+      end
     end
 
     # Sends a request to the server.  Returns the request with a new tag
