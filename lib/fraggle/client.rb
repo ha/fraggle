@@ -125,6 +125,25 @@ module Fraggle
       end
     end
 
+    def walk_all(path, rev, off=0, lim=MaxInt64, ents=[], &blk)
+      if ents.length >= lim
+        cn.next_tick { blk.call([], nil) }
+        return
+      end
+
+      walk(path, rev, off) do |e|
+        case e.err_code
+        when nil
+          ents << e
+          walk_all(path, rev, off+1, lim-1, ents, &blk)
+        when Fraggle::Response::Err::RANGE
+          blk.call(ents, nil)
+        else
+          blk.call(nil, e)
+        end
+      end
+    end
+
     # Sends a request to the server.  Returns the request with a new tag
     # assigned.
     def send(req, &blk)
