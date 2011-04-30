@@ -19,7 +19,13 @@ Sugar for `WALK`, `GETDIR`, etc are to come in a later version of v3.0.0.
       # In the event of a lost connection, fraggle will attempt
       # other doozers until one accepts or it runs out of options; A NoAddrs
       # exception will be raised if that later happens.
-      c = Fraggle.connect "doozerd:?ca=127.0.0.1:8046"
+
+      # This can take an optional [doozer uri][] (String).
+      # If no parameters are given, it will use the DOOZER_URI` environment
+      # variable if present, otherwise it will default to the uri containing
+      # the default doozer addresses with IP 127.0.0.1 and ports 8046, 8041,
+      # 8042, 8043.
+      c = Fraggle.connect
 
       req = c.get("/foo") do |e|
         if e.ok?
@@ -121,3 +127,4 @@ Please join the Doozer mailing list for help:
 http://groups.google.com/forum/#!forum/doozer
 
 [data model]: https://github.com/ha/doozerd/blob/master/doc/data-model.md
+[doozer uri]: https://github.com/ha/doozerd/blob/master/doc/uri.md
