@@ -79,15 +79,15 @@ the most up-to-date data.   If you need to do multiple reads at certain
 point in time for consistency, use the `rev` command.
 
     c.rev do |v|
-      c.get("/a", v.rev) { ... }
-      c.get("/b", v.rev) { ... }
-      c.get("/c", v.rev) { ... }
+      c.get(v.rev, "/a") { ... }
+      c.get(v.rev, "/b") { ... }
+      c.get(v.rev, "/c") { ... }
     end
 
 This also means you can go back in time or into the future!
 
     # This will not yield until the data store is at revision 100,000
-    c.get("/a", 100_000) { ... }
+    c.get(100_000, "/a") { ... }
 
 NOTE:  Doozer's data store is a [persistent data structure][pd].  You can reference the
 stores history as far back as it is configured to hold it.  The default is
