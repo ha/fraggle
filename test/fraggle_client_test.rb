@@ -150,7 +150,7 @@ class FraggleClientTest < Test::Unit::TestCase
       :value => "bar"
     }
 
-    assert_verb exp, :set, "/foo", "bar", 0
+    assert_verb exp, :set, 0, "/foo", "bar"
   end
 
   def test_get
@@ -160,7 +160,7 @@ class FraggleClientTest < Test::Unit::TestCase
       :path => "/foo"
     }
 
-    assert_verb exp, :get, "/foo", 0
+    assert_verb exp, :get, 0, "/foo"
   end
 
   def test_del
@@ -170,7 +170,7 @@ class FraggleClientTest < Test::Unit::TestCase
       :path => "/foo"
     }
 
-    assert_verb exp, :del, "/foo", 0
+    assert_verb exp, :del, 0, "/foo"
   end
 
   def test_getdir
@@ -181,7 +181,7 @@ class FraggleClientTest < Test::Unit::TestCase
       :offset => 0
     }
 
-    assert_verb exp, :getdir, "/foo", 0, 0
+    assert_verb exp, :getdir, 0, "/foo", 0
   end
 
   def test_rev
@@ -199,7 +199,7 @@ class FraggleClientTest < Test::Unit::TestCase
       :path => "/foo"
     }
 
-    assert_verb exp, :stat, "/foo", 0
+    assert_verb exp, :stat, 0, "/foo"
   end
 
   def test_walk
@@ -210,7 +210,7 @@ class FraggleClientTest < Test::Unit::TestCase
       :offset => 0
     }
 
-    assert_verb exp, :walk, "/foo/*", 0, 0
+    assert_verb exp, :walk, 0, "/foo/*", 0
   end
 
   def test_wait
@@ -220,7 +220,7 @@ class FraggleClientTest < Test::Unit::TestCase
       :path => "/foo/*"
     }
 
-    assert_verb exp, :wait, "/foo/*", 0
+    assert_verb exp, :wait, 0, "/foo/*"
   end
 
 end

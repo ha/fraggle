@@ -24,7 +24,7 @@ module Fraggle
       cn.addr
     end
 
-    def set(path, value, rev, &blk)
+    def set(rev, path, value, &blk)
       req = Request.new
       req.verb  = SET
       req.rev   = rev
@@ -34,7 +34,7 @@ module Fraggle
       idemp(req, &blk)
     end
 
-    def get(path, rev, &blk)
+    def get(rev, path, &blk)
       req = Request.new
       req.verb = GET
       req.rev  = rev
@@ -43,7 +43,7 @@ module Fraggle
       resend(req, &blk)
     end
 
-    def del(path, rev, &blk)
+    def del(rev, path, &blk)
       req = Request.new
       req.verb = DEL
       req.rev  = rev
@@ -52,7 +52,7 @@ module Fraggle
       idemp(req, &blk)
     end
 
-    def getdir(path, rev, offset, &blk)
+    def getdir(rev, path, offset, &blk)
       req = Request.new
       req.verb   = GETDIR
       req.rev    = rev
@@ -62,7 +62,7 @@ module Fraggle
       resend(req, &blk)
     end
 
-    def walk(path, rev, offset, &blk)
+    def walk(rev, path, offset, &blk)
       req = Request.new
       req.verb   = WALK
       req.rev    = rev
@@ -72,7 +72,7 @@ module Fraggle
       resend(req, &blk)
     end
 
-    def wait(path, rev, &blk)
+    def wait(rev, path, &blk)
       req = Request.new
       req.verb = WAIT
       req.rev  = rev
@@ -88,7 +88,7 @@ module Fraggle
       resend(req, &blk)
     end
 
-    def stat(path, rev, &blk)
+    def stat(rev, path, &blk)
       req = Request.new
       req.rev  = rev
       req.verb = STAT
@@ -97,34 +97,34 @@ module Fraggle
       resend(req, &blk)
     end
 
-    def watch(path, rev, &blk)
-      wait(path, rev) do |e|
+    def watch(rev, path, &blk)
+      wait(rev, path, rev) do |e|
         blk.call(e)
         if e.ok?
-          watch(path, e.rev+1, &blk)
+          watch(rev, path, e.rev+1, &blk)
         end
       end
     end
 
-    def getdir_all(path, rev, off=0, lim=MaxInt64, ents=[], &blk)
-      all(:getdir, path, rev, off, lim, ents, &blk)
+    def getdir_all(rev, path, off=0, lim=MaxInt64, ents=[], &blk)
+      all(:getdir, rev, path, off, lim, ents, &blk)
     end
 
-    def walk_all(path, rev, off=0, lim=MaxInt64, ents=[], &blk)
-      all(:walk, path, rev, off, lim, ents, &blk)
+    def walk_all(rev, path, off=0, lim=MaxInt64, ents=[], &blk)
+      all(:walk, rev, path, off, lim, ents, &blk)
     end
 
-    def all(m, path, rev, off, lim, ents=[], &blk)
+    def all(m, rev, path, off, lim, ents=[], &blk)
       if lim == 0
         cn.next_tick { blk.call([], nil) }
         return
       end
 
-      __send__(m, path, rev, off) do |e|
+      __send__(m, rev, path, off) do |e|
         case e.err_code
         when nil
           ents << e
-          all(m, path, rev, off+1, lim-1, ents, &blk)
+          all(m, rev, path, off+1, lim-1, ents, &blk)
         when Fraggle::Response::Err::RANGE
           blk.call(ents, nil)
         else
