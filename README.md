@@ -90,7 +90,7 @@ This also means you can go back in time or into the future!
     # This will not yield until the data store is at revision 100,000
     c.get("/a", 100_000) { ... }
 
-NOTE:  Doozer's data store is a persistent data structure.  You can reference the
+NOTE:  Doozer's data store is a [persistent data structure][pd].  You can reference the
 stores history as far back as it is configured to hold it.  The default is
 360,000 revisions.  See [data model][] for more information.
 
@@ -176,3 +176,4 @@ http://groups.google.com/forum/#!forum/doozer
 [data model]: https://github.com/ha/doozerd/blob/master/doc/data-model.md
 [doozer uri]: https://github.com/ha/doozerd/blob/master/doc/uri.md
 [proto spec]: https://github.com/ha/doozerd/blob/master/doc/proto.md
+[pd]: http://en.wikipedia.org/wiki/Persistent_data_structure
