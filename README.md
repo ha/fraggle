@@ -135,9 +135,12 @@ returned from the server.
 
 `stat(path, rev, &blk)`
 
+## Sugar commands
+
 `watch(path, rev, &blk)`
 
-## Sugar commands
+Watches `path` (a glob pattern) for changes, from `rev` in history on.  Its
+`blk` is called with a `Fraggle::Response` for each event.
 
 `getdir_all(path, rev, off=0, lim=MaxInt64, ents=[], &blk)`
 
