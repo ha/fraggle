@@ -23,7 +23,7 @@ addresses with IP 127.0.0.1 and ports 8046, 8041, 8042, 8043.
     require 'eventmachine'
     require 'fraggle'
 
-    EM.start do
+    EM.run do
       # In the event of a lost connection, fraggle will attempt
       # other doozers until one accepts or it runs out of options; A NoAddrs
       # exception will be raised if that later happens.
@@ -32,6 +32,7 @@ addresses with IP 127.0.0.1 and ports 8046, 8041, 8042, 8043.
 
       c.rev do |v|
         c.get(v.rev, "/foo") do |e|
+          p [:get, e]
           if e.ok?
             e.value    # => nil
             e.rev      # => 0
@@ -44,7 +45,7 @@ addresses with IP 127.0.0.1 and ports 8046, 8041, 8042, 8043.
 
         ## Obtain the current revision the store is at and watch from then on for
         ## any SET or DEL to /foo.
-        c.wait(v.rev, /foo") do |e|
+        c.wait(v.rev, "/foo") do |e|
           # The event has:
           # ------------------------
           e.err_code   # => nil
@@ -54,11 +55,13 @@ addresses with IP 127.0.0.1 and ports 8046, 8041, 8042, 8043.
           e.rev        # => 123
           e.set?       # => true
           e.del?       # => false
+
+          p [:wait, e]
         end
       end
 
       ## Setting a key (this will trigger the watch above)
-      c.set(0, "/foo", "zomg!") do |e|
+      c.set(Fraggle::Clobber, "/foo", "zomg!") do |e|
         # Success!
         case e.err_code
         when Fraggle::REV_MISMATCH
@@ -66,11 +69,12 @@ addresses with IP 127.0.0.1 and ports 8046, 8041, 8042, 8043.
         when nil
           # Success!
         else
-          fail "something bad happened"
+          fail "something bad happened: " + e.inspect
         end
       end
 
     end
+
 
 ## Consistency
 
