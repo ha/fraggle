@@ -1,7 +1,6 @@
 # Fraggle (v3.0.0 is compatible with Doozer 0.6)
 
 Fraggle currently is only a raw interface to Doozer 0.6.
-Sugar for `WALK`, `GETDIR`, etc are to come in a later version of v3.0.0.
 
 **An EventMachine based Doozer client**
 
