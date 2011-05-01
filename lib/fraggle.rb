@@ -1,6 +1,9 @@
 require 'fraggle/client'
 
 module Fraggle
+  include Response::Err
+
+  Clobber = Client::MaxInt64
 
   DEFAULT_URI = "doozer:?" + [
     "ca=127.0.0.1:8046",
