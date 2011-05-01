@@ -157,7 +157,7 @@ other will be set and the other with be `nil`.
 
 **Clone**
 
-    $ git clone http://github.com/bmizerany/fraggle.git
+    $ git clone http://github.com/ha/fraggle.git
 
 **Test**
 
