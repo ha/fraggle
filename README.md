@@ -113,6 +113,44 @@ stores history as far back as it is configured to hold it.  The default is
   You will have to handle these yourself because Fraggle cannot know whether or
   not it's safe to retry on your behalf.
 
+## Commands
+
+Each command behaves according to the [proto spec][], respectivly.
+`blk`s are called with one parameter, a `Fraggle::Response`, when a response is
+returned from the server.
+
+`set(path, value, rev, &blk)`
+
+`del(path, rev, &blk)`
+
+`get(path, rev, &blk)`
+
+`getdir(path, rev, offset, &blk)`
+
+`walk(path, rev, n, &blk)`
+
+`wait(path, rev, &blk)`
+
+`rev(&blk)`
+
+`stat(path, rev, &blk)`
+
+`watch(path, rev, &blk)`
+
+## Sugar commands
+
+`getdir_all(path, rev, off=0, lim=MaxInt64, ents=[], &blk)`
+
+Behaves like `getdir` but collects `ents` then calls `blk` with the result as
+the first parameter or an error as the second.  Depending on the response, one
+or the other will be set and the other with be `nil`.
+
+`walk_all(path, rev, off=0, lim=MaxInt64, ents=[], &blk)`
+
+Behaves like `walk` but collects `ents` then calls `blk` with the result as
+the first parameter or an error as the second.  Depending on the response, one
+or the other will be set and the other with be `nil`.
+
 ## Dev
 
 **Clone**
@@ -132,3 +170,4 @@ http://groups.google.com/forum/#!forum/doozer
 
 [data model]: https://github.com/ha/doozerd/blob/master/doc/data-model.md
 [doozer uri]: https://github.com/ha/doozerd/blob/master/doc/uri.md
+[proto spec]: https://github.com/ha/doozerd/blob/master/doc/proto.md
