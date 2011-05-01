@@ -36,10 +36,10 @@ addresses with IP 127.0.0.1 and ports 8046, 8041, 8042, 8043.
           if e.ok?
             e.value    # => nil
             e.rev      # => 0
-            e.missing? # => false
+            e.missing? # => true
           else
-            e.err_code # => Fraggle::NOENT
-            e.err_detail # => ""
+            e.err_code # => nil
+            e.err_detail # => nil
           end
         end
 
@@ -74,7 +74,6 @@ addresses with IP 127.0.0.1 and ports 8046, 8041, 8042, 8043.
       end
 
     end
-
 
 ## Consistency
 

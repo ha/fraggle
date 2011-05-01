@@ -15,10 +15,10 @@ EM.run do
       if e.ok?
         e.value    # => nil
         e.rev      # => 0
-        e.missing? # => false
+        e.missing? # => true
       else
-        e.err_code # => Fraggle::NOENT
-        e.err_detail # => ""
+        e.err_code # => nil
+        e.err_detail # => nil
       end
     end
 
