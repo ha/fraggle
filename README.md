@@ -31,21 +31,21 @@ addresses with IP 127.0.0.1 and ports 8046, 8041, 8042, 8043.
 
       c = Fraggle.connect
 
-      req = c.get("/foo") do |e|
-        if e.ok?
-          e.value    # => nil
-          e.rev      # => 0
-          e.missing? # => true
-        else
-          e.err_code # => Fraggle::<CONST>
-          e.err_detail # => "bad path" or something
-        end
-      end
-
       c.rev do |v|
+        c.get(v.rev, "/foo") do |e|
+          if e.ok?
+            e.value    # => nil
+            e.rev      # => 0
+            e.missing? # => false
+          else
+            e.err_code # => Fraggle::NOENT
+            e.err_detail # => ""
+          end
+        end
+
         ## Obtain the current revision the store is at and watch from then on for
         ## any SET or DEL to /foo.
-        c.wait("/foo", v.rev) do |e|
+        c.wait(v.rev, /foo") do |e|
           # The event has:
           # ------------------------
           e.err_code   # => nil
@@ -59,7 +59,7 @@ addresses with IP 127.0.0.1 and ports 8046, 8041, 8042, 8043.
       end
 
       ## Setting a key (this will trigger the watch above)
-      req = c.set("/foo", "zomg!", 0) do |e|
+      c.set(0, "/foo", "zomg!") do |e|
         # Success!
         case e.err_code
         when Fraggle::REV_MISMATCH
