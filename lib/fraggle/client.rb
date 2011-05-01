@@ -115,7 +115,7 @@ module Fraggle
     end
 
     def all(m, path, rev, off, lim, ents=[], &blk)
-      if ents.length >= lim
+      if lim == 0
         cn.next_tick { blk.call([], nil) }
         return
       end
