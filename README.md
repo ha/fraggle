@@ -115,7 +115,7 @@ stores history as far back as it is configured to hold it.  The default is
 
 ## Commands
 
-Each command behaves according to the [proto spec][], respectivly.
+Each command behaves according to the [proto spec][], respectively.
 `blk`s are called with one parameter, a `Fraggle::Response`, when a response is
 returned from the server.
 
