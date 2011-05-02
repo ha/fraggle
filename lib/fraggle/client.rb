@@ -1,6 +1,5 @@
 require 'eventmachine'
 require 'fraggle/connection'
-require 'logger'
 
 module Fraggle
   class Client
@@ -11,13 +10,10 @@ module Fraggle
     class NoMoreAddrs < StandardError
     end
 
-    DefaultLog = Logger.new(STDERR)
-    DefaultLog.level = Logger::UNKNOWN
+    attr_reader :cn, :addrs
 
-    attr_reader :cn, :log, :addrs
-
-    def initialize(cn, addrs, log=DefaultLog)
-      @cn, @addrs, @log = cn, addrs, log
+    def initialize(cn, addrs)
+      @cn, @addrs = cn, addrs
     end
 
     def addr
@@ -137,17 +133,13 @@ module Fraggle
     # assigned.
     def send(req, &blk)
       cb = Proc.new do |e|
-        log.debug("response: #{e.inspect} for #{req.inspect}")
-
         if e.disconnected? && cn.err?
-          log.error("conn err: #{req.inspect}")
           reconnect!
         end
 
         blk.call(e)
       end
 
-      log.debug("sending: #{req.inspect}")
       cn.send_request(req, cb)
     end
 
@@ -155,7 +147,6 @@ module Fraggle
       cb = Proc.new do |e|
         if e.disconnected?
           req.tag = nil
-          log.debug("resending: #{req.inspect}")
           resend(req, &blk)
         else
           blk.call(e)
@@ -193,7 +184,6 @@ module Fraggle
     end
 
     def reconnect(addr)
-      log.warn("reconnecting to #{addr}")
       host, port = addr.split(":")
       @cn = EM.connect(host, port, Fraggle::Connection, addr)
     end
