@@ -4,10 +4,10 @@ require 'fraggle'
 
 reqs = 0
 
-def rget(c, path, rev, &blk)
-  c.get(path, rev) do |e|
+def rget(c, rev, path, &blk)
+  c.get(rev, path) do |e|
     blk.call
-    rget(c, path, rev, &blk)
+    rget(c, rev, path, &blk)
   end
 end
 
@@ -23,7 +23,7 @@ EM.run do
   end
 
   c.rev do |v|
-    rget(c, "/ctl/cal/0", v.rev) do
+    rget(c, v.rev, "/ctl/cal/0") do
       reqs += 1
     end
   end
