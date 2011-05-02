@@ -1,4 +1,4 @@
-# Fraggle (v3.0.0 is compatible with Doozer 0.6)
+# Fraggle (v4.0.0.pre.1 is compatible with Doozer 0.6)
 
 Fraggle currently is only a raw interface to Doozer 0.6.
 
