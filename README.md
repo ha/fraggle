@@ -6,6 +6,8 @@ Fraggle currently is only a raw interface to Doozer 0.6.
 
 ## Install
 
+(For pre-releases, use `--pre`)
+
     $ gem install fraggle
 
 ## Use
