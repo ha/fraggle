@@ -158,7 +158,7 @@ module Fraggle
 
     def idemp(req, &blk)
       cb = Proc.new do |e|
-        if e.disconnected? && req.rev > 0
+        if e.disconnected? && req.rev && req.rev > 0
           # If we're trying to update a value that isn't missing or that we're
           # not trying to clobber, it's safe to retry.  We can't idempotently
           # update missing values because there may be a race with another
