@@ -10,7 +10,7 @@ prof = ARGV[0]
 
 def rset(c, count, rev, path, value, &blk)
   c.set(rev, path, value) do |e|
-    if count == 0
+    if count == 1
       blk.call
     end
 
@@ -21,13 +21,16 @@ end
 EM.run do
   c = Fraggle.connect
 
+  c.del(Fraggle::Clobber, "/sets") {|e| }
+
   if prof
     PerfTools::CpuProfiler.start("fraggle-sets.prof")
   end
 
+
   c.rev do |v|
     start = Time.now
-    rset(c, 100_000, 0, "/sets", "bar") do
+    rset(c, 1_000, 0, "/sets", "bar") do
       if prof
         PerfTools::CpuProfiler.stop
         `pprof.rb fraggle-sets.prof --gif > fraggle-sets.prof.gif`
