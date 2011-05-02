@@ -40,13 +40,14 @@ EM.run do
   end
 
   ## Setting a key (this will trigger the watch above)
-  c.set(Fraggle::Clobber, "/foo", "zomg!") do |e|
+  c.set(0, "/foo", "zomg!") do |e|
     # Success!
     case e.err_code
     when Fraggle::REV_MISMATCH
-      # We didn't win
+      p :not_it
     when nil
       # Success!
+      p :it
     else
       fail "something bad happened: " + e.inspect
     end
