@@ -6,23 +6,23 @@ EM.run do
 
   c.rev do |v|
     # Valid
-    req = c.getdir_all("/ctl/node", v.rev) do |ents, err|
+    req = c.walk(v.rev, "/ctl/node/**") do |ents, err|
       if err
         p [:err, err]
       else
         ents.each do |e|
-          puts File.join(req.path, e.path)
+          puts File.join(req.path, e.path) + "=" + e.value
         end
       end
     end
 
     # Limit 0 return nothing
-    c.getdir_all("/ctl/node", v.rev, 0, 0) do |ents, err|
+    c.walk(v.rev, "/ctl/node/**", 0, 0) do |ents, err|
       p [:ret, ents, err]
     end
 
     # Error
-    c.getdir_all("/nothere", v.rev) do |ents, err|
+    c.walk(v.rev, "/nothere") do |ents, err|
       p [:ret, ents, err]
     end
   end

@@ -120,7 +120,7 @@ stores history as far back as it is configured to hold it.  The default is
 
 ## Commands
 
-Each command behaves according to the [proto spec][], respectively.
+Each command below behaves according to the [proto spec][], respectively.
 Their `blk`s are called with one parameter, a `Fraggle::Response`, when a response is
 returned from the server.
 
@@ -129,10 +129,6 @@ returned from the server.
 `del(rev, path, &blk)`
 
 `get(rev, path, &blk)`
-
-`getdir(rev, path, offset, &blk)`
-
-`walk(rev, path, offset, &blk)`
 
 `wait(rev, path, &blk)`
 
@@ -147,14 +143,14 @@ returned from the server.
 Watches `path` (a glob pattern) for changes, from `rev` in history on.  Its
 `blk` is called with a `Fraggle::Response` for each event.
 
-`getdir_all(rev, path, off=0, lim=MaxInt64, ents=[], &blk)`
+`getdir(rev, path, off=0, lim=MaxInt64, ents=[], &blk)`
 
 Behaves like `getdir` but collects `ents`, starting at `off` until all or `lim`
 entries are read. When done `blk` is called with the result as the first
 parameter or an error as the second.  Depending on the response, one or the
 other will be set and the other with be `nil`.
 
-`walk_all(rev, path, off=0, lim=MaxInt64, ents=[], &blk)`
+`walk(rev, path, off=0, lim=MaxInt64, ents=[], &blk)`
 
 Behaves like `walk` but collects `ents`, starting at `off` until all or `lim`
 entries are read. When done `blk` is called with the result as the first

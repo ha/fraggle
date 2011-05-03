@@ -48,7 +48,7 @@ module Fraggle
       idemp(req, &blk)
     end
 
-    def getdir(rev, path, offset, &blk)
+    def _getdir(rev, path, offset, &blk)
       req = Request.new
       req.verb   = GETDIR
       req.rev    = rev
@@ -58,7 +58,7 @@ module Fraggle
       resend(req, &blk)
     end
 
-    def walk(rev, path, offset, &blk)
+    def _walk(rev, path, offset, &blk)
       req = Request.new
       req.verb   = WALK
       req.rev    = rev
@@ -102,12 +102,12 @@ module Fraggle
       end
     end
 
-    def getdir_all(rev, path, off=0, lim=MaxInt64, ents=[], &blk)
-      all(:getdir, rev, path, off, lim, ents, &blk)
+    def getdir(rev, path, off=0, lim=MaxInt64, ents=[], &blk)
+      all(:_getdir, rev, path, off, lim, ents, &blk)
     end
 
-    def walk_all(rev, path, off=0, lim=MaxInt64, ents=[], &blk)
-      all(:walk, rev, path, off, lim, ents, &blk)
+    def walk(rev, path, off=0, lim=MaxInt64, ents=[], &blk)
+      all(:_walk, rev, path, off, lim, ents, &blk)
     end
 
     def all(m, rev, path, off, lim, ents=[], &blk)
