@@ -5,7 +5,7 @@ EM.run do
   c = Fraggle.connect
 
   c.rev do |v|
-    c.watch("/ctl/node/**", v.rev) do |e|
+    c.watch(v.rev, "/ctl/node/**") do |e|
       p e
     end
   end
