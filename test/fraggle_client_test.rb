@@ -181,7 +181,7 @@ class FraggleClientTest < Test::Unit::TestCase
       :offset => 0
     }
 
-    assert_verb exp, :getdir, 0, "/foo", 0
+    assert_verb exp, :_getdir, 0, "/foo", 0
   end
 
   def test_rev
@@ -210,7 +210,7 @@ class FraggleClientTest < Test::Unit::TestCase
       :offset => 0
     }
 
-    assert_verb exp, :walk, 0, "/foo/*", 0
+    assert_verb exp, :_walk, 0, "/foo/*", 0
   end
 
   def test_wait
