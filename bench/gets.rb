@@ -1,41 +1,66 @@
-require 'rubygems'
-require 'perftools'
-require 'eventmachine'
-require 'fraggle'
+#!/usr/bin/env ruby
 
-ENV['CPUPROFILE_FREQUENCY'] = '4000'
+# By Mark McGranaghan
 
-reqs = 0
-prof = ARGV[0]
+require "rubygems"
+require "bundler"
+Bundler.setup
+require "fraggle"
+require "statsample"
 
-def rget(c, count, rev, path, &blk)
-  c.get(rev, path) do |e|
-    if count == 0
-      blk.call
-    end
+$stdout.sync = true
 
-    rget(c, count-1, rev, path, &blk)
-  end
-end
+abort("read <total> <width> [verbose]") if (ARGV.size < 2)
+total = ARGV[0].to_i
+width = ARGV[1].to_i
+verbose = !!ARGV[2]
+latencies = []
 
 EM.run do
-  c = Fraggle.connect
-
-  if prof
-    PerfTools::CpuProfiler.start("fraggle-gets.prof")
-  end
-
-  c.rev do |v|
-    start = Time.now
-    rget(c, 100_000, v.rev, "/ctl/cal/0") do
-      if prof
-        PerfTools::CpuProfiler.stop
-        `pprof.rb fraggle-gets.prof --gif > fraggle-gets.prof.gif`
+  client = Fraggle.connect
+  sent = 0
+  received = 0
+  start = Time.now
+  tick = Proc.new do
+    if (sent == total)
+      # done sending
+    elsif ((sent - received) < width)
+      # pipe open
+      sent_at = Time.now
+      sent += 1
+      if verbose
+        $stdout.puts("sent=#{sent}")
       end
+      client.get(nil, "/processes/#{sent}") do |r|
+        received_at = Time.now
+        received +=1
+        latency = received_at - sent_at
 
-      EM.stop_event_loop
-
-      puts "Time: #{Time.now - start}"
+        latencies << latency
+        if verbose
+          $stdout.puts("received=#{received} ok=#{r.ok?} rev=#{r.rev} latency=#{latency}")
+        elsif (received % 10 == 0)
+          $stdout.print(".")
+        end
+        if (received == total)
+          EM.stop
+          elapsed = Time.now - start
+          vector = latencies.to_scale
+          $stdout.puts
+          $stdout.puts("total=#{total}")
+          $stdout.puts("elapsed=#{elapsed}")
+          $stdout.puts("rate=#{total / elapsed}")
+          $stdout.puts("mean=#{vector.mean}")
+          $stdout.puts("sd=#{vector.sd}")
+          $stdout.puts("perc90=#{vector.percentil(90)}")
+          $stdout.puts("perc99=#{vector.percentil(99)}")
+          $stdout.puts("max=#{vector.max}")
+        end
+      end
+    else
+      # pipe closed
     end
+    EM.next_tick(&tick)
   end
+  tick.call
 end
