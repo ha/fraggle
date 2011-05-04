@@ -23,4 +23,5 @@ Gem::Specification.new do |s|
   s.add_dependency "eventmachine"
 
   s.add_development_dependency "turn"
+  s.add_development_dependency "statsample"
 end
