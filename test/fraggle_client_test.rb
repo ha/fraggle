@@ -223,4 +223,13 @@ class FraggleClientTest < Test::Unit::TestCase
     assert_verb exp, :wait, 0, "/foo/*"
   end
 
+  def test_wait
+    exp = {
+      :verb => V::ACCESS,
+      :value => "abc"
+    }
+
+    assert_verb exp, :access, "abc"
+  end
+
 end

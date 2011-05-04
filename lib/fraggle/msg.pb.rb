@@ -16,6 +16,7 @@ module Fraggle
       WALK = 9
       GETDIR = 14
       STAT = 16
+      ACCESS = 99
     end
 
     optional :tag, :int32, 1

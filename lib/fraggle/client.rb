@@ -93,6 +93,14 @@ module Fraggle
       resend(req, &blk)
     end
 
+    def access(secret, &blk)
+      req = Request.new
+      req.verb  = ACCESS
+      req.value = secret
+
+      resend(req, &blk)
+    end
+
     def watch(rev, path, &blk)
       wait(rev, path, rev) do |e|
         blk.call(e)
