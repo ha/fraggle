@@ -176,7 +176,7 @@ module Fraggle
     end
 
     def reconnect!
-      if addr = @addrs.shift
+      if addr = @addrs.slice!(rand(@addrs.length))
         reconnect(addr)
       else
         raise NoMoreAddrs
