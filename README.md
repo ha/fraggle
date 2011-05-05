@@ -33,38 +33,44 @@ addresses with IP 127.0.0.1 and ports 8046, 8041, 8042, 8043.
       c = Fraggle.connect
 
       c.rev do |v|
-        c.get(v.rev, "/foo") do |e|
-          p [:get, e]
-          if e.ok?
+        c.get(v, "/foo") do |e, err|
+          if err
+            err.code   # => nil
+            err.detail # => nil
+          else
             e.value    # => nil
             e.rev      # => 0
             e.missing? # => true
-          else
-            e.err_code # => nil
-            e.err_detail # => nil
           end
+
+          p [:get, e, err]
         end
 
         ## Obtain the current revision the store is at and watch from then on for
         ## any SET or DEL to /foo.
-        c.wait(v.rev, "/foo") do |e|
+        c.wait(v, "/foo") do |e, err|
           # The event has:
           # ------------------------
-          e.err_code   # => nil
-          e.err_detail # => nil
-          e.path       # => "/foo"
-          e.value      # => "zomg!"
-          e.rev        # => 123
-          e.set?       # => true
-          e.del?       # => false
+          if err
+            err.err_code   # => nil
+            err.err_detail # => nil
+          else
+            e.path       # => "/foo"
+            e.value      # => "zomg!"
+            e.rev        # => 123
+            e.set?       # => true
+            e.del?       # => false
+          end
 
-          p [:wait, e]
+          p [:wait, e, err]
         end
       end
 
       ## Setting a key (this will trigger the watch above)
-      f = Proc.new do |e|
-        if e.disconnected?
+      f = Proc.new do |e, err|
+        p [:e, e, err]
+
+        if err && err.disconnected?
           # Fraggle (for now) does not attempt a non-idempotent request.  This means
           # Fraggle will hand off the error to the user if there is a SET or DEL
           # with rev 0 (missing) and delete it during the time we may be
@@ -82,14 +88,16 @@ addresses with IP 127.0.0.1 and ports 8046, 8041, 8042, 8043.
         end
 
         # Success!
-        case e.err_code
-        when Fraggle::REV_MISMATCH
-          p :not_it
-        when nil
-          # Success!
-          p [:it, e]
-        else
-          fail "something bad happened: " + e.inspect
+        if err
+          case err.code
+          when Fraggle::REV_MISMATCH
+            p :not_it
+          when nil
+            # Success!
+            p [:it, e]
+          else
+            fail "something bad happened: " + e.inspect
+          end
         end
       end
 
@@ -103,9 +111,9 @@ the most up-to-date data.   If you need to do multiple reads at certain
 point in time for consistency, use the `rev` command.
 
     c.rev do |v|
-      c.get(v.rev, "/a") { ... }
-      c.get(v.rev, "/b") { ... }
-      c.get(v.rev, "/c") { ... }
+      c.get(v, "/a") { ... }
+      c.get(v, "/b") { ... }
+      c.get(v, "/c") { ... }
     end
 
 This also means you can go back in time or into the future!
@@ -139,7 +147,8 @@ stores history as far back as it is configured to hold it.  The default is
 ## Commands
 
 Each command below behaves according to the [proto spec][], respectively.
-Their `blk`s are called with one parameter, a `Fraggle::Response`, when a response is
+Their `blk`s are called with two parameters, a `Fraggle::Response` as the first
+or a `Fraggle::Connection::ResponseError` as the second if a response is
 returned from the server.
 
 `set(rev, path, value, &blk)`
@@ -164,16 +173,14 @@ Watches `path` (a glob pattern) for changes, from `rev` in history on.  Its
 `getdir(rev, path, off=0, lim=MaxInt64, ents=[], &blk)`
 
 Behaves like `getdir` but collects `ents`, starting at `off` until all or `lim`
-entries are read. When done `blk` is called with the result as the first
-parameter or an error as the second.  Depending on the response, one or the
-other will be set and the other with be `nil`.
+entries are read. When done, `blk` is called with the result (an `Array`) as the
+first parameter or a `Fraggle::Connection::Response` as the second.  Depending
+on the response, one or the other will be set and the other with be `nil`.
 
 `walk(rev, path, off=0, lim=MaxInt64, ents=[], &blk)`
 
-Behaves like `walk` but collects `ents`, starting at `off` until all or `lim`
-entries are read. When done `blk` is called with the result as the first
-parameter or an error as the second.  Depending on the response, one or the
-other will be set and the other with be `nil`.
+Like `getdir`, but but path is a glob pattern and each result contains a `path`,
+`value`, and `rev`.
 
 ## Dev
 
