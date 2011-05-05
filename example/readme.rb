@@ -10,38 +10,44 @@ EM.run do
   c = Fraggle.connect
 
   c.rev do |v|
-    c.get(v.rev, "/foo") do |e|
-      p [:get, e]
-      if e.ok?
+    c.get(v, "/foo") do |e, err|
+      if err
+        err.code   # => nil
+        err.detail # => nil
+      else
         e.value    # => nil
         e.rev      # => 0
         e.missing? # => true
-      else
-        e.err_code # => nil
-        e.err_detail # => nil
       end
+
+      p [:get, e, err]
     end
 
     ## Obtain the current revision the store is at and watch from then on for
     ## any SET or DEL to /foo.
-    c.wait(v.rev, "/foo") do |e|
+    c.wait(v, "/foo") do |e, err|
       # The event has:
       # ------------------------
-      e.err_code   # => nil
-      e.err_detail # => nil
-      e.path       # => "/foo"
-      e.value      # => "zomg!"
-      e.rev        # => 123
-      e.set?       # => true
-      e.del?       # => false
+      if err
+        err.err_code   # => nil
+        err.err_detail # => nil
+      else
+        e.path       # => "/foo"
+        e.value      # => "zomg!"
+        e.rev        # => 123
+        e.set?       # => true
+        e.del?       # => false
+      end
 
-      p [:wait, e]
+      p [:wait, e, err]
     end
   end
 
   ## Setting a key (this will trigger the watch above)
-  f = Proc.new do |e|
-    if e.disconnected?
+  f = Proc.new do |e, err|
+    p [:e, e, err]
+
+    if err && err.disconnected?
       # Fraggle (for now) does not attempt a non-idempotent request.  This means
       # Fraggle will hand off the error to the user if there is a SET or DEL
       # with rev 0 (missing) and delete it during the time we may be
@@ -59,14 +65,16 @@ EM.run do
     end
 
     # Success!
-    case e.err_code
-    when Fraggle::REV_MISMATCH
-      p :not_it
-    when nil
-      # Success!
-      p [:it, e]
-    else
-      fail "something bad happened: " + e.inspect
+    if err
+      case err.code
+      when Fraggle::REV_MISMATCH
+        p :not_it
+      when nil
+        # Success!
+        p [:it, e]
+      else
+        fail "something bad happened: " + e.inspect
+      end
     end
   end
 

@@ -6,7 +6,7 @@ EM.run do
 
   c.rev do |v|
     # Valid
-    req = c.walk(v.rev, "/ctl/node/**") do |ents, err|
+    req = c.walk(v, "/ctl/node/**") do |ents, err|
       if err
         p [:err, err]
       else
@@ -17,13 +17,13 @@ EM.run do
     end
 
     # Limit 0 return nothing
-    c.walk(v.rev, "/ctl/node/**", 0, 0) do |ents, err|
-      p [:ret, ents, err]
+    c.walk(v, "/ctl/node/**", 0, 0) do |ents, err|
+      p [:nothing, ents, err]
     end
 
     # Error
-    c.walk(v.rev, "/nothere") do |ents, err|
-      p [:ret, ents, err]
+    c.walk(v, "/nothere") do |ents, err|
+      p [:nothere, ents, err]
     end
   end
 end

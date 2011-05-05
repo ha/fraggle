@@ -23,7 +23,7 @@ class FraggleClientTest < Test::Unit::TestCase
     @c.__send__(:initialize, cn, @addrs)
   end
 
-  def test_send_error
+  def test_response_error
     req, log = request(V::REV)
 
     c.send(req, &log)
@@ -31,7 +31,7 @@ class FraggleClientTest < Test::Unit::TestCase
     res = reply(req.tag, :err_code => E::OTHER)
     c.cn.receive_response(res)
 
-    assert_equal [res], log.valid
+    assert_equal [[nil, C::ResponseError.new(res)]], log.valid
   end
 
   def test_reconnect_without_pending_requests
@@ -50,7 +50,7 @@ class FraggleClientTest < Test::Unit::TestCase
     assert exp.include?(c.cn.addr), "#{c.cn.addr.inspect} not in #{exp.inspect}"
 
     # If the client can handle an error, it should not mention it to the user.
-    assert_equal [Fraggle::Connection::Disconnected], log.valid
+    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], log.valid
   end
 
   def test_reconnect_with_pending_request
@@ -68,7 +68,7 @@ class FraggleClientTest < Test::Unit::TestCase
 
     assert exp.include?(c.cn.addr), "#{c.cn.addr.inspect} not in #{exp.inspect}"
 
-    assert_equal [Fraggle::Connection::Disconnected], log.valid
+    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], log.valid
   end
 
   def test_reconnect_with_multiple_pending_requests
@@ -93,8 +93,8 @@ class FraggleClientTest < Test::Unit::TestCase
     assert_equal exp.length - 1, c.addrs.length
 
     # If the client can handle an error, it should not mention it to the user.
-    assert_equal [Fraggle::Connection::Disconnected], loga.valid
-    assert_equal [Fraggle::Connection::Disconnected], logb.valid
+    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], loga.valid
+    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], logb.valid
   end
 
   def test_resend_pending_requests
@@ -120,8 +120,8 @@ class FraggleClientTest < Test::Unit::TestCase
 
     assert_equal [one], c.cn.sent
 
-    assert_equal [Fraggle::Connection::Disconnected], zlog.valid
-    assert_equal [Fraggle::Connection::Disconnected], nlog.valid
+    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], zlog.valid
+    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], nlog.valid
   end
 
   ###

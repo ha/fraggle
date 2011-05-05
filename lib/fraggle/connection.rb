@@ -4,21 +4,41 @@ module Fraggle
 
   module Connection
 
-    Disconnected = Response.new
-    Disconnected.disconnected = true
-
-    # Base class for all Connection errors
-    class Error < StandardError
-      attr_accessor :req
-
+    # Raised when a request is invalid
+    class SendError < StandardError
       def initialize(req, msg=nil)
         @req = req
         super(msg)
       end
     end
 
-    # Raised when a request is invalid
-    class SendError < Error
+    class DisconnectedError < StandardError
+      def disconnected?
+        true
+      end
+
+      def ==(o)
+        return false if ! o.kind_of?(self.class)
+        message == o.message
+      end
+    end
+
+    class ResponseError < StandardError
+      attr_reader :code
+
+      def initialize(res)
+        @code = res.err_code
+        super("#{res.name_for(Response::Err, code)}: #{res.err_detail}")
+      end
+
+      def ==(o)
+        return false if ! o.kind_of?(self.class)
+        code == o.code && message == o.message
+      end
+
+      def disconnected?
+        false
+      end
     end
 
 
@@ -51,7 +71,11 @@ module Fraggle
       return if err?
       req, blk = @cb.delete(res.tag)
       return if ! blk
-      blk.call(res)
+      if res.err_code
+        blk.call(nil, ResponseError.new(res))
+      else
+        blk.call(res, nil)
+      end
     end
 
     def send_request(req, blk)
@@ -60,7 +84,7 @@ module Fraggle
       end
 
       if err?
-        next_tick { blk.call(Disconnected) }
+        next_tick { blk.call(nil, DisconnectedError.new(self.addr)) }
         return req
       end
 
@@ -85,7 +109,7 @@ module Fraggle
     def unbind
       @err = true
       @cb.values.each do |_, blk|
-        blk.call(Disconnected)
+        blk.call(nil, DisconnectedError.new(self.addr))
       end
     end
 

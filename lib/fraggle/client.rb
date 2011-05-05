@@ -81,7 +81,9 @@ module Fraggle
       req = Request.new
       req.verb = REV
 
-      resend(req, &blk)
+      resend(req) do |v, _|
+        blk.call(v.rev)
+      end
     end
 
     def stat(rev, path, &blk)
@@ -102,10 +104,10 @@ module Fraggle
     end
 
     def watch(rev, path, &blk)
-      wait(rev, path, rev) do |e|
-        blk.call(e)
-        if e.ok?
-          watch(rev, path, e.rev+1, &blk)
+      wait(rev, path) do |e, err|
+        blk.call(e, err)
+        if ! err
+          watch(e.rev+1, path, &blk)
         end
       end
     end
@@ -124,15 +126,16 @@ module Fraggle
         return
       end
 
-      __send__(m, rev, path, off) do |e|
-        case e.err_code
-        when nil
-          ents << e
-          all(m, rev, path, off+1, lim-1, ents, &blk)
-        when Fraggle::Response::Err::RANGE
-          blk.call(ents, nil)
+      __send__(m, rev, path, off) do |e, err|
+        if err
+          case err.code
+          when Fraggle::Response::Err::RANGE
+            blk.call(ents, nil)
+          else
+            blk.call(nil, e)
+          end
         else
-          blk.call(nil, e)
+          all(m, rev, path, off+1, lim-1, ents << e, &blk)
         end
       end
     end
@@ -140,24 +143,26 @@ module Fraggle
     # Sends a request to the server.  Returns the request with a new tag
     # assigned.
     def send(req, &blk)
-      cb = Proc.new do |e|
-        if e.disconnected? && cn.err?
-          reconnect!
+      cb = Proc.new do |e, err|
+        case err
+        when Connection::DisconnectedError
+          if cn.err?
+            reconnect!
+          end
         end
-
-        blk.call(e)
+        blk.call(e, err)
       end
 
       cn.send_request(req, cb)
     end
 
     def resend(req, &blk)
-      cb = Proc.new do |e|
-        if e.disconnected?
+      cb = Proc.new do |e, err|
+        if err && err.disconnected?
           req.tag = nil
           resend(req, &blk)
         else
-          blk.call(e)
+          blk.call(e, err)
         end
       end
 
@@ -165,8 +170,8 @@ module Fraggle
     end
 
     def idemp(req, &blk)
-      cb = Proc.new do |e|
-        if e.disconnected? && req.rev && req.rev > 0
+      cb = Proc.new do |e, err|
+        if err && err.disconnected? && req.rev && req.rev > 0
           # If we're trying to update a value that isn't missing or that we're
           # not trying to clobber, it's safe to retry.  We can't idempotently
           # update missing values because there may be a race with another
@@ -175,7 +180,7 @@ module Fraggle
           req.tag = nil
           idemp(req, &blk)
         else
-          blk.call(e)
+          blk.call(e, err)
         end
       end
 

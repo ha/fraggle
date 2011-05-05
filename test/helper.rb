@@ -46,6 +46,7 @@ end
 
 class Test::Unit::TestCase
 
+  C = Fraggle::Connection
   V = Fraggle::Request::Verb
   F = Fraggle::Response
   E = Fraggle::Response::Err
@@ -57,13 +58,13 @@ class Test::Unit::TestCase
       @valid = []
     end
 
-    def call(e)
-      @valid << e
+    def call(e, err)
+      @valid << [e, err]
     end
 
     def to_proc
       me = self
-      Proc.new {|e| me.call(e) }
+      Proc.new {|e, err| me.call(e, err) }
     end
   end
 

@@ -26,7 +26,7 @@ class FraggleTransactionTest < Test::Unit::TestCase
     res = reply(req.tag)
     cn.receive_response(res)
 
-    assert_equal [res], log.valid
+    assert_equal [[res, nil]], log.valid
   end
 
   def test_error
@@ -37,7 +37,8 @@ class FraggleTransactionTest < Test::Unit::TestCase
     res = reply(req.tag, :err_code => E::OTHER)
     cn.receive_response(res)
 
-    assert_equal [res], log.valid
+    err = C::ResponseError.new(res)
+    assert_equal [[nil, err]], log.valid
   end
 
   def test_invalid_tag
@@ -59,7 +60,7 @@ class FraggleTransactionTest < Test::Unit::TestCase
     # This should be ignored
     cn.receive_response(res)
 
-    assert_equal [res], log.valid
+    assert_equal [[res, nil]], log.valid
   end
 
   def test_error_deletes_callback
@@ -73,14 +74,14 @@ class FraggleTransactionTest < Test::Unit::TestCase
     # This should be ignored
     cn.receive_response(res)
 
-    assert_equal [res], log.valid
+    assert_equal [[nil, C::ResponseError.new(res)]], log.valid
   end
 
   def test_cannot_reuse_sent_request
     req, _ = request(V::REV)
     cn.send_request(req, _)
 
-    assert_raises Fraggle::Connection::SendError do
+    assert_raises C::SendError do
       cn.send_request(req, _)
     end
   end
@@ -95,9 +96,9 @@ class FraggleTransactionTest < Test::Unit::TestCase
 
     cn.unbind
 
-    assert_equal [Fraggle::Connection::Disconnected], al.valid
-    assert_equal [Fraggle::Connection::Disconnected], bl.valid
-    assert_equal [Fraggle::Connection::Disconnected], cl.valid
+    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], al.valid
+    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], bl.valid
+    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], cl.valid
   end
 
   def test_send_when_disconnected
@@ -110,6 +111,6 @@ class FraggleTransactionTest < Test::Unit::TestCase
 
     cn.tick!
 
-    assert_equal [Fraggle::Connection::Disconnected], log.valid
+    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], log.valid
   end
 end
