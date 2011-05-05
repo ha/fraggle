@@ -53,8 +53,8 @@ addresses with IP 127.0.0.1 and ports 8046, 8041, 8042, 8043.
           # The event has:
           # ------------------------
           if err
-            err.err_code   # => nil
-            err.err_detail # => nil
+            err.code   # => nil
+            err.detail # => nil
           else
             e.path       # => "/foo"
             e.value      # => "zomg!"

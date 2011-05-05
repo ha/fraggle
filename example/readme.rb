@@ -29,8 +29,8 @@ EM.run do
       # The event has:
       # ------------------------
       if err
-        err.err_code   # => nil
-        err.err_detail # => nil
+        err.code   # => nil
+        err.detail # => nil
       else
         e.path       # => "/foo"
         e.value      # => "zomg!"

@@ -22,6 +22,8 @@ module Fraggle
     class ResponseError < StandardError
       attr_reader :code
 
+      alias :detail :message
+
       def initialize(res)
         @code = res.err_code
         super("#{res.name_for(Response::Err, code)}: #{res.err_detail}")
