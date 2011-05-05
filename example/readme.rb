@@ -40,17 +40,35 @@ EM.run do
   end
 
   ## Setting a key (this will trigger the watch above)
-  c.set(0, "/foo", "zomg!") do |e|
+  f = Proc.new do |e|
+    if e.disconnected?
+      # Fraggle (for now) does not attempt a non-idempotent request.  This means
+      # Fraggle will hand off the error to the user if there is a SET or DEL
+      # with rev 0 (missing) and delete it during the time we may be
+      # disconnected.
+      #
+      # In this scenario, there are no other clients that can exist that will
+      # attempt to set this "lock" if it's missing then delete it.  It is safe
+      # for us to resend the request if we were disconnected from the previous
+      # server before a response.
+      #
+      # See High-Availability in the README for more information about this.
+      #
+      c.set(0, "/foo", "zomg!", &f)
+      next
+    end
+
     # Success!
     case e.err_code
     when Fraggle::REV_MISMATCH
       p :not_it
     when nil
       # Success!
-      p :it
+      p [:it, e]
     else
       fail "something bad happened: " + e.inspect
     end
   end
 
+  c.set(0, "/foo", "zomg!", &f)
 end
