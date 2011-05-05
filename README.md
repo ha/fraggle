@@ -1,6 +1,7 @@
-# Fraggle (v4.0.0.pre.1 is compatible with Doozer 0.6)
+# Fraggle
+## The current gem is v4.0.0.pre.1 is compatible with Doozer 0.6
 
-Fraggle currently is only a raw interface to Doozer 0.6.
+Please see the [4.0.0.pre.1 README](https://github.com/ha/fraggle/tree/v4.0.0.pre.1) for instructions on use.
 
 **An EventMachine based Doozer client**
 
