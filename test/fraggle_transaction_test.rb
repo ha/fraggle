@@ -5,20 +5,16 @@ class FraggleTransactionTest < Test::Unit::TestCase
 
   attr_reader :cn
 
-  def nop(attrs={})
-    request(V::NOP, attrs)
-  end
-
   def setup
     @cn = TestConn.new("127.0.0.1:0")
   end
 
   def test_tagging
-    req, _ = nop
+    req, _ = request(V::REV)
     assert_equal 0, cn.send_request(req, _).tag
-    req, _ = nop
+    req, _ = request(V::REV)
     assert_equal 1, cn.send_request(req, _).tag
-    req, _ = nop
+    req, _ = request(V::REV)
     assert_equal 2, cn.send_request(req, _).tag
   end
 
