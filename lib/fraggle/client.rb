@@ -174,10 +174,9 @@ module Fraggle
           # read and write.
           req.tag = nil
           idemp(req, &blk)
-          next
+        else
+          blk.call(e)
         end
-
-        blk.call(e)
       end
 
       send(req, &cb)
