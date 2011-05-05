@@ -13,10 +13,6 @@ module Fraggle
     end
 
     class DisconnectedError < StandardError
-      def disconnected?
-        true
-      end
-
       def ==(o)
         return false if ! o.kind_of?(self.class)
         message == o.message
@@ -34,10 +30,6 @@ module Fraggle
       def ==(o)
         return false if ! o.kind_of?(self.class)
         code == o.code && message == o.message
-      end
-
-      def disconnected?
-        false
       end
     end
 

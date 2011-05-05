@@ -6,8 +6,6 @@ module Fraggle
     SET   = 4
     DEL   = 8
 
-    attr_accessor :disconnected
-
     def set?
       return false if !flags
       (flags & SET) > 0
@@ -24,10 +22,6 @@ module Fraggle
 
     def ok?
       err_code.nil?
-    end
-
-    def disconnected?
-      !!@disconnected
     end
 
   end

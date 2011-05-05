@@ -127,15 +127,13 @@ module Fraggle
       end
 
       __send__(m, rev, path, off) do |e, err|
-        if err
-          case err.code
-          when Fraggle::Response::Err::RANGE
-            blk.call(ents, nil)
-          else
-            blk.call(nil, e)
-          end
-        else
+        case err && err.code
+        when nil
           all(m, rev, path, off+1, lim-1, ents << e, &blk)
+        when Fraggle::Response::Err::RANGE
+          blk.call(ents, nil)
+        else
+          blk.call(nil, e)
         end
       end
     end
@@ -157,34 +155,38 @@ module Fraggle
     end
 
     def resend(req, &blk)
-      cb = Proc.new do |e, err|
-        if err && err.disconnected?
+      send(req) do |e, err|
+        case err
+        when nil
+          blk.call(e, err)
+        when Connection::DisconnectedError
           req.tag = nil
           resend(req, &blk)
         else
           blk.call(e, err)
         end
       end
-
-      send(req, &cb)
     end
 
     def idemp(req, &blk)
-      cb = Proc.new do |e, err|
-        if err && err.disconnected? && req.rev && req.rev > 0
+      send(req) do |e, err|
+        case err
+        when Connection::DisconnectedError
           # If we're trying to update a value that isn't missing or that we're
           # not trying to clobber, it's safe to retry.  We can't idempotently
           # update missing values because there may be a race with another
           # client that sets and/or deletes the key during the time between your
           # read and write.
-          req.tag = nil
-          idemp(req, &blk)
-        else
+          if (req.rev || 0) > 0
+            req.tag = nil
+            idemp(req, &blk)
+          else
+            blk.call(e, err)
+          end
+        when nil
           blk.call(e, err)
         end
       end
-
-      send(req, &cb)
     end
 
     def reconnect!
