@@ -33,10 +33,10 @@ module Fraggle
 
       while @buf.length > 0
         if @len && @buf.length >= @len
-            bytes = @buf.slice!(0, @len)
-            @len = nil
-            res = Response.decode(bytes)
-            receive_response(res)
+          bytes = @buf.slice!(0, @len)
+          @len = nil
+          res = Response.decode(bytes)
+          receive_response(res)
         elsif @buf.length >= 4
           bytes = @buf.slice!(0, 4)
           @len = bytes.unpack("N")[0]
