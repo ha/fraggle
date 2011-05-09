@@ -15,7 +15,7 @@ module Fraggle
   def self.connect(uri=nil)
     uri = uri || ENV["DOOZER_URI"] || DEFAULT_URI
 
-    addrs = uri(uri)
+    addrs, sk = uri(uri)
 
     if addrs.length == 0
       raise ArgumentError, "there were no addrs supplied in the uri (#{uri.inspect})"
@@ -25,22 +25,30 @@ module Fraggle
     host, port = addr.split(":")
 
     cn = EM.connect(host, port, Connection, addr)
-    Client.new(cn, addrs)
+    c  = Client.new(cn, addrs)
+    c.access(sk)
+    c
   end
 
   def self.uri(u)
+    addrs, sk = [], ""
+
     if u =~ /^doozer:\?(.*)$/
       parts = $1.split("&")
-      parts.inject([]) do |m, pt|
+      parts.each do |pt|
         k, v = pt.split("=")
-        if k == "ca"
-          m << v
+        case k
+        when "ca"
+          addrs << v
+        when "sk"
+          sk = v
         end
-        m
       end
     else
       raise ArgumentError, "invalid doozer uri"
     end
+
+    [addrs, sk]
   end
 
 end
