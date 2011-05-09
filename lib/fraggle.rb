@@ -12,7 +12,7 @@ module Fraggle
     "ca=127.0.0.1:8043"
   ].join("&")
 
-  def self.connect(uri=nil)
+  def self.connect(uri=nil, &blk)
     uri = uri || ENV["DOOZER_URI"] || DEFAULT_URI
 
     addrs, sk = uri(uri)
@@ -26,8 +26,13 @@ module Fraggle
 
     cn = EM.connect(host, port, Connection, addr)
     c  = Client.new(cn, addrs)
-    c.access(sk)
-    c
+    c.access(sk) do |_, err|
+      if err
+        blk.call(nil, err)
+      else
+        blk.call(c, nil)
+      end
+    end
   end
 
   def self.uri(u)
