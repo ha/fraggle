@@ -113,15 +113,11 @@ class FraggleClientTest < Test::Unit::TestCase
     zero, zlog = request(V::SET, :rev => 0, :path => "/foo", :value => "bar")
     c.idemp(zero, &zlog)
 
-    neg, nlog = request(V::SET, :rev => -1, :path => "/foo", :value => "bar")
-    c.idemp(neg, &nlog)
-
     c.cn.close_connection
 
     assert_equal [one], c.cn.sent
 
     assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], zlog.valid
-    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], nlog.valid
   end
 
   def test_idemp_unhandled_error
