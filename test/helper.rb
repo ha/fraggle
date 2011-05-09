@@ -51,15 +51,9 @@ class Test::Unit::TestCase
   F = Fraggle::Response
   E = Fraggle::Response::Err
 
-  class Log
-    attr_reader :valid
-
-    def initialize
-      @valid = []
-    end
-
+  class Log < Array
     def call(e, err)
-      @valid << [e, err]
+      self << [e, err]
     end
 
     def to_proc

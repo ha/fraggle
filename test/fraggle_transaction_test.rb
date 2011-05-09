@@ -18,7 +18,7 @@ class FraggleTransactionTest < Test::Unit::TestCase
     assert_equal 2, cn.send_request(req, _).tag
   end
 
-  def test_valid
+  def test
     req, log = request(V::REV)
 
     cn.send_request(req, log)
@@ -26,7 +26,7 @@ class FraggleTransactionTest < Test::Unit::TestCase
     res = reply(req.tag)
     cn.receive_response(res)
 
-    assert_equal [[res, nil]], log.valid
+    assert_equal [[res, nil]], log
   end
 
   def test_error
@@ -38,10 +38,10 @@ class FraggleTransactionTest < Test::Unit::TestCase
     cn.receive_response(res)
 
     err = C::ResponseError.new(res)
-    assert_equal [[nil, err]], log.valid
+    assert_equal [[nil, err]], log
   end
 
-  def test_invalid_tag
+  def test_i_tag
     res = reply(0, :err_code => E::OTHER)
 
     assert_nothing_raised do
@@ -60,7 +60,7 @@ class FraggleTransactionTest < Test::Unit::TestCase
     # This should be ignored
     cn.receive_response(res)
 
-    assert_equal [[res, nil]], log.valid
+    assert_equal [[res, nil]], log
   end
 
   def test_error_deletes_callback
@@ -74,7 +74,7 @@ class FraggleTransactionTest < Test::Unit::TestCase
     # This should be ignored
     cn.receive_response(res)
 
-    assert_equal [[nil, C::ResponseError.new(res)]], log.valid
+    assert_equal [[nil, C::ResponseError.new(res)]], log
   end
 
   def test_cannot_reuse_sent_request
@@ -96,9 +96,9 @@ class FraggleTransactionTest < Test::Unit::TestCase
 
     cn.unbind
 
-    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], al.valid
-    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], bl.valid
-    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], cl.valid
+    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], al
+    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], bl
+    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], cl
   end
 
   def test_send_when_disconnected
@@ -111,6 +111,6 @@ class FraggleTransactionTest < Test::Unit::TestCase
 
     cn.tick!
 
-    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], log.valid
+    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], log
   end
 end

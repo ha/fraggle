@@ -31,7 +31,7 @@ class FraggleClientTest < Test::Unit::TestCase
     res = reply(req.tag, :err_code => E::OTHER)
     c.cn.receive_response(res)
 
-    assert_equal [[nil, C::ResponseError.new(res)]], log.valid
+    assert_equal [[nil, C::ResponseError.new(res)]], log
   end
 
   def test_reconnect_without_pending_requests
@@ -50,7 +50,7 @@ class FraggleClientTest < Test::Unit::TestCase
     assert exp.include?(c.cn.addr), "#{c.cn.addr.inspect} not in #{exp.inspect}"
 
     # If the client can handle an error, it should not mention it to the user.
-    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], log.valid
+    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], log
   end
 
   def test_reconnect_with_pending_request
@@ -68,7 +68,7 @@ class FraggleClientTest < Test::Unit::TestCase
 
     assert exp.include?(c.cn.addr), "#{c.cn.addr.inspect} not in #{exp.inspect}"
 
-    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], log.valid
+    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], log
   end
 
   def test_reconnect_with_multiple_pending_requests
@@ -93,8 +93,8 @@ class FraggleClientTest < Test::Unit::TestCase
     assert_equal exp.length - 1, c.addrs.length
 
     # If the client can handle an error, it should not mention it to the user.
-    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], loga.valid
-    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], logb.valid
+    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], loga
+    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], logb
   end
 
   def test_resend_pending_requests
@@ -117,7 +117,7 @@ class FraggleClientTest < Test::Unit::TestCase
 
     assert_equal [one], c.cn.sent
 
-    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], zlog.valid
+    assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], zlog
   end
 
   def test_idemp_unhandled_error
@@ -127,7 +127,7 @@ class FraggleClientTest < Test::Unit::TestCase
     res = reply(req.tag, :err_code => E::OTHER)
     c.cn.receive_response(res)
 
-    assert_equal [[nil, C::ResponseError.new(res)]], log.valid
+    assert_equal [[nil, C::ResponseError.new(res)]], log
   end
 
   ###
