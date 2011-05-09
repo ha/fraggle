@@ -157,8 +157,6 @@ module Fraggle
     def resend(req, &blk)
       send(req) do |e, err|
         case err
-        when nil
-          blk.call(e, err)
         when Connection::DisconnectedError
           req.tag = nil
           resend(req, &blk)
