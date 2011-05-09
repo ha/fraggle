@@ -124,6 +124,16 @@ class FraggleClientTest < Test::Unit::TestCase
     assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], nlog.valid
   end
 
+  def test_idemp_unhandled_error
+    req, log = request(V::SET, :path => "/foo", :value => "bar", :rev => Fraggle::Client::MaxInt64)
+    c.idemp(req, &log)
+
+    res = reply(req.tag, :err_code => E::OTHER)
+    c.cn.receive_response(res)
+
+    assert_equal [[nil, C::ResponseError.new(res)]], log.valid
+  end
+
   ###
   # Sugar
 

@@ -183,7 +183,7 @@ module Fraggle
           else
             blk.call(e, err)
           end
-        when nil
+        else
           blk.call(e, err)
         end
       end
