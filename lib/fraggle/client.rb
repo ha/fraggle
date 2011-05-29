@@ -119,8 +119,10 @@ module Fraggle
     end
 
     def all(m, rev, path, off, lim, ents=[], &blk)
+      # We're decrementing lim as we go, so we need to return
+      # the accumulated values
       if lim == 0
-        cn.next_tick { blk.call([], nil) }
+        cn.next_tick { blk.call(ents, nil) }
         return
       end
 
