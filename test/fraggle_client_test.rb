@@ -89,9 +89,6 @@ class FraggleClientTest < Test::Unit::TestCase
 
     assert exp.include?(c.cn.addr), "#{c.cn.addr.inspect} not in #{exp.inspect}"
 
-    # Reconnect should only be called once.
-    assert_equal exp.length - 1, c.addrs.length
-
     # If the client can handle an error, it should not mention it to the user.
     assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], loga
     assert_equal [[nil, C::DisconnectedError.new("127.0.0.1:0")]], logb

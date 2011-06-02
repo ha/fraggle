@@ -14,6 +14,7 @@ module Fraggle
 
     def initialize(cn, addrs)
       @cn, @addrs = cn, addrs
+      @attempt = Proc.new { true }
     end
 
     def addr
@@ -187,11 +188,18 @@ module Fraggle
       end
     end
 
+    ##
+    # Setting `blk` will cause a client to call it before attempting to reconnect.
+    # `blk` is called with one parameter `addr`, which is the address that will be
+    # for reconnect.
+    def attempt(&blk)
+      @attempt = blk
+    end
+
     def reconnect!
-      if addr = @addrs.slice!(rand(@addrs.length))
+      addr = @addrs.slice(rand(@addrs.length))
+      if @attempt.call(addr)
         reconnect(addr)
-      else
-        raise NoMoreAddrs
       end
     end
 
