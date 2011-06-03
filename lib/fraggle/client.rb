@@ -14,7 +14,7 @@ module Fraggle
 
     def initialize(cn, addrs)
       @cn, @addrs = cn, addrs
-      @attempt = Proc.new { true }
+      @attempt = Proc.new {|_| true }
     end
 
     def addr
