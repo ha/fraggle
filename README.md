@@ -128,22 +128,22 @@ stores history as far back as it is configured to hold it.  The default is
 
 ## High Availability
 
-  Fraggle has mechanisms to gracefully deal with connection loss.  They are:
+Fraggle has mechanisms to gracefully deal with connection loss.  They are:
 
 *Resend / Connection loss*
 
-  When a connection is lost and Fraggle successfully reconnects to another
-  Doozer node, Fraggle will resend most pending requests to the new connection.
-  This means you will not miss events; Even events that happened while you were
-  disconnected!  All read commands will pick up where they left off.  This is
-  valuable to understand because it means you don't need to code for failure on
-  reads; Fraggle gracefully handles it for you.
+When a connection is lost and Fraggle successfully reconnects to another
+Doozer node, Fraggle will resend most pending requests to the new connection.
+This means you will not miss events; Even events that happened while you were
+disconnected!  All read commands will pick up where they left off.  This is
+valuable to understand because it means you don't need to code for failure on
+reads; Fraggle gracefully handles it for you.
 
-  Write commands will be resent if their `rev` is greater than 0.  These are
-  idempotent requests.  A rev of 0 will cause that request's error
-  callback to be invoked with a Fraggle::Connection::Disconnected response.
-  You will have to handle these yourself because Fraggle cannot know whether or
-  not it's safe to retry on your behalf.
+Write commands will be resent if their `rev` is greater than 0.  These are
+idempotent requests.  A rev of 0 will cause that request's error
+callback to be invoked with a Fraggle::Connection::Disconnected response.
+You will have to handle these yourself because Fraggle cannot know whether or
+not it's safe to retry on your behalf.
 
 **attempt**
 
