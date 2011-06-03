@@ -7,9 +7,6 @@ module Fraggle
 
     MaxInt64 = 1<<63 - 1
 
-    class NoMoreAddrs < StandardError
-    end
-
     attr_reader :cn, :addrs
 
     def initialize(cn, addrs)
