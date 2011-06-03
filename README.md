@@ -145,6 +145,23 @@ stores history as far back as it is configured to hold it.  The default is
   You will have to handle these yourself because Fraggle cannot know whether or
   not it's safe to retry on your behalf.
 
+**attempt**
+
+Before fraggle will attempt a new address after connection loss, it calls the
+block given to `Fraggle::Client#attempt`.  If the block returns `false`,
+Fraggle will not attempt that address or anymore.  The block is called with on
+parameter `addr`, which is the address being attempted.
+
+  Example:
+
+    c = Fraggle.connect
+
+    c.attempt do |addr|
+      addr =~ /^127\.*$/ # don't connect to localhost doozers
+    end
+
+  The default `attempt` is `Proc.new {|_| true }`
+
 ## Commands
 
 Each command below behaves according to the [proto spec][], respectively.
