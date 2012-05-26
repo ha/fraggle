@@ -190,10 +190,10 @@ Watches `path` (a glob pattern) for changes, from `rev` in history on.  Its
 
 `getdir(rev, path, off=0, lim=MaxInt64, ents=[], &blk)`
 
-Behaves like `getdir` but collects `ents`, starting at `off` until all or `lim`
-entries are read. When done, `blk` is called with the result (an `Array`) as the
-first parameter or a `Fraggle::Connection::Response` as the second.  Depending
-on the response, one or the other will be set and the other with be `nil`.
+Collects `ents`, starting at `off` until all or `lim`entries are read. When 
+done, `blk` is called with the result (an `Array`) as thefirst parameter or 
+a `Fraggle::Connection::Response` as the second.  Depending on the response, 
+one or the other will be set and the other with be `nil`.
 
 `walk(rev, path, off=0, lim=MaxInt64, ents=[], &blk)`
 
