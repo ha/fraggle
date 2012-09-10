@@ -21,7 +21,7 @@ module Fraggle
       raise ArgumentError, "there were no addrs supplied in the uri (#{uri.inspect})"
     end
 
-    addr = addrs.shift
+    addr = addrs.slice(rand(addrs.length))
     host, port = addr.split(":")
 
     cn = EM.connect(host, port, Connection, addr)
