@@ -46,15 +46,25 @@ module Fraggle
       (@buf ||= "") << data
 
       while @buf.length > 0
-        if @len && @buf.length >= @len
+        if not @len
+          # Get content length of response from first 4 bytes
+          if @buf.length < 4
+            # We do not have enough bytes for length yet.
+            break
+          end
+          # Decode content length from first 4 bytes.
+          bytes = @buf.slice!(0, 4)
+          @len = bytes.unpack("N")[0]
+        elsif @buf.length >= @len
+          # We have enough bytes to decode response.
           bytes = @buf.slice!(0, @len)
           @len = nil
           res = Response.decode(bytes)
+          # Return response.
           receive_response(res)
-        elsif @buf.length >= 4
-          bytes = @buf.slice!(0, 4)
-          @len = bytes.unpack("N")[0]
         else
+          # Not enough bytes for our response yet.
+          # Wait for next call to receive_data.
           break
         end
       end
